@@ -21,6 +21,8 @@ void set_image_list();
 
 void set_image_container(int position);
 
+void update_image_size(int position);
+
 gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer data);
 
 void Close();
@@ -51,6 +53,7 @@ typedef struct
     int src_height;
     int dst_width;
     int dst_height;
+    int *aspect_raito;
 } Image_Container_List_t;
 
 Image_Container_List_t **image_container_list;

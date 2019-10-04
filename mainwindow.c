@@ -211,6 +211,11 @@ void Close()
 
     if(image_container_list != NULL)
     {
+        for(int i = 0; i < detail->image_count; i++)
+        {
+            free(image_container_list[i]->aspect_raito);
+        }
+
         free_array_with_alloced((void**)image_container_list, detail->image_count);
     }
     else
@@ -236,25 +241,40 @@ void set_image_container(int position)
         image_container_list[position]->src_height = gdk_pixbuf_get_height(image_container_list[position]->src);
         image_container_list[position]->src_width = gdk_pixbuf_get_width(image_container_list[position]->src);
 
-
         int width = image_container_list[position]->src_width;
         int height = image_container_list[position]->src_height;
+                                                                                                                                             
+        image_container_list[position]->aspect_raito = calc_aspect_raito(width, height, mygcd(width, height));
 
-        int *asperct_raito = calc_aspect_raito(width, height, mygcd(width, height));
-        float w_aspect = (double)asperct_raito[0];
-        float h_aspect = (double)asperct_raito[1];
-        free(asperct_raito);
-
-        if(height > window.height)
-        {
-          int diff = height - window.height;
-          height = height - diff;
-          int result = (int)ceil((double)height * (w_aspect / h_aspect));
-          printf("%d\n", result);
-          width = result;
-        }
-        
-        image_container_list[position]->dst = gdk_pixbuf_scale_simple(image_container_list[position]->src, width, height, GDK_INTERP_BILINEAR);
+        update_image_size(position);
     }
 
+}
+
+void update_image_size(int position)
+{
+     gint window_width = 0;
+     gint window_height = 0;
+     gtk_window_get_size((GtkWindow*)window.window, &window_width, &window_height);
+                                                                                                                                             
+     int width = image_container_list[position]->src_width;
+     int height = image_container_list[position]->src_height;
+
+     double w_aspect = (double)image_container_list[position]->aspect_raito[0];
+     double h_aspect = (double)image_container_list[position]->aspect_raito[1];
+
+     printf("widow size w: %d h: %d\n", window_width, window_height);
+     printf("src w: %d h: %d\n", width, height);
+     printf("%f : %f\n", w_aspect, h_aspect);
+                                                                                                                                             
+     if(height > window_height)
+     {
+       int diff = height - window_height;
+       height = height - diff;
+       int result = (int)ceil((double)height * (w_aspect / h_aspect));
+       printf("result: %d, %d * %f\n", result, height, (w_aspect / h_aspect));
+       width = result;
+     }
+                                                                                                                                            
+     image_container_list[position]->dst = gdk_pixbuf_scale_simple(image_container_list[position]->src, width, height, GDK_INTERP_BILINEAR);
 }
