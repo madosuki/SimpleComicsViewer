@@ -31,17 +31,79 @@ int get_image_file_count(struct dirent **src, const int size, int *dst)
     int count = 1;
     for(int i = 0; i < size; ++i)
     {
-        if((strstr(src[i]->d_name, ".png") != NULL || strstr(src[i]->d_name, ".jpg") != NULL) 
-                && count < LIST_BUFFER)
+        if(count < LIST_BUFFER)
         {
-            number_list[count - 1] = i;
-            count++;
-            int *tmp = (int*)realloc(number_list, sizeof(int) * count);
-            if(tmp != NULL)
+            FILE *file = fopen(src[i]->d_name, "rb");
+            if(file != NULL)
             {
-                number_list = tmp;
+                fseek(file, 0, SEEK_END);
+                long file_length = ftell(file);
+                rewind(file);
+
+                printf("%s, File Size: %ld\n", src[i]->d_name, file_length);
+
+                char *buffer;
+                if(file_length > 8)
+                {
+                    buffer = (char*)calloc(8, 1);
+                    fread(buffer, 1, png_sig_size, file);
+
+                    int isImageFile = 0;
+                    int sig_count = 0;
+                    if(buffer[0] == (char)137)
+                    {
+                        for(int j = 0; j < png_sig_size; ++j)
+                        {
+                            if(buffer[j] == (char)png_sig[j])
+                            {
+                                sig_count++;
+                            }
+                        }
+                    }
+                    else if(buffer[0] == (char)255)
+                    {
+
+                        for(int j = 0; j < jpg_sig_size; ++j)
+                        {
+                            if(buffer[j] == (char)jpg_sig[j])
+                            {
+                                sig_count++;
+                            }
+                        }
+                    }
+
+                    free(buffer);
+
+                    switch(sig_count)
+                    {
+                        case 8:
+                            isImageFile = 1;
+                            break;
+                        case 4:
+                            isImageFile = 2;
+                            break;
+                        default:
+                            break;
+                    }
+
+                    if(isImageFile == 1 || isImageFile == 2)
+                    {
+
+                        number_list[count - 1] = i;
+                        count++;
+                        int *tmp = (int*)realloc(number_list, sizeof(int) * count);
+                        if(tmp != NULL)
+                        {
+                            number_list = tmp;
+                        }
+                    }
+
+                }
+
+                fclose(file);
             }
         }
+
     }
 
     int *tmp = (int*)realloc(dst, sizeof(int) * count);
@@ -270,10 +332,10 @@ void update_image_size(int position)
     double h_aspect = (double)image_container_list[position]->aspect_raito[1];
 
     /*
-    printf("widow size w: %d h: %d\n", window_width, window_height);
-    printf("src w: %d h: %d\n", width, height);
-    printf("%f : %f\n", w_aspect, h_aspect);
-    */
+       printf("widow size w: %d h: %d\n", window_width, window_height);
+       printf("src w: %d h: %d\n", width, height);
+       printf("%f : %f\n", w_aspect, h_aspect);
+       */
 
     if(height > window_height)
     {

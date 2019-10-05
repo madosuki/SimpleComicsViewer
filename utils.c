@@ -1,5 +1,16 @@
 #include "utils.h"
 
+const short png_sig_size = 8;
+const int png_sig[8] = {137, 80, 78, 71, 13, 10, 26, 10};
+
+const short jpg_sig_size = 4;
+const int jpg_sig[4] = {255, 216, 255, 219};
+
+const short zlib_sig_size = 2; 
+const int zlib_no_compression_or_low_sig[2] = {120, 1};
+const int zlib_default_compression_sig[2] = {120, 156};
+const int zlib_best_compression_sig[2] = {120, 218};
+
 int mygcd(int x, int y)
 {
   int tmp = x % y;
