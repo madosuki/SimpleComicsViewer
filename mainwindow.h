@@ -25,6 +25,8 @@ void update_image_size(int position);
 
 gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer data);
 
+gboolean detect_resize_window(GtkWidget *widget, GdkEvent *event, gpointer data);
+
 void Close();
 
 GtkWidget *image;
@@ -60,6 +62,7 @@ Image_Container_List_t **image_container_list;
 
 window_data_t window;
 
+
 static void print_hello(GtkWidget *widget, gpointer data)
 {
     g_print("Hello World\n");
@@ -80,6 +83,9 @@ static void activate(GtkApplication* app, gpointer user_data)
 
     gtk_widget_add_events(window.window, GDK_KEY_PRESS_MASK);
     g_signal_connect(G_OBJECT(window.window), "key-press-event", G_CALLBACK(my_key_press_function), NULL);
+
+    g_signal_connect(G_OBJECT(window.window), "configure-event", G_CALLBACK(detect_resize_window), NULL);
+
 
     // Create Vertical Box
     // GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);

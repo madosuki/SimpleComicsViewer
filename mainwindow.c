@@ -213,7 +213,11 @@ void Close()
     {
         for(int i = 0; i < detail->image_count; i++)
         {
-            free(image_container_list[i]->aspect_raito);
+            if(image_container_list[i] != NULL)
+            {
+                free(image_container_list[i]->aspect_raito);
+                image_container_list[i]->aspect_raito = NULL;
+            }
         }
 
         free_array_with_alloced((void**)image_container_list, detail->image_count);
@@ -243,38 +247,63 @@ void set_image_container(int position)
 
         int width = image_container_list[position]->src_width;
         int height = image_container_list[position]->src_height;
-                                                                                                                                             
+
         image_container_list[position]->aspect_raito = calc_aspect_raito(width, height, mygcd(width, height));
 
-        update_image_size(position);
     }
 
+    update_image_size(position);
 }
 
 void update_image_size(int position)
 {
-     gint window_width = 0;
-     gint window_height = 0;
-     gtk_window_get_size((GtkWindow*)window.window, &window_width, &window_height);
-                                                                                                                                             
-     int width = image_container_list[position]->src_width;
-     int height = image_container_list[position]->src_height;
+    gint window_width = 0;
+    gint window_height = 0;
+    gtk_window_get_size((GtkWindow*)window.window, &window_width, &window_height);
+    window.width = window_width;
+    window.height = window_height;
 
-     double w_aspect = (double)image_container_list[position]->aspect_raito[0];
-     double h_aspect = (double)image_container_list[position]->aspect_raito[1];
+    int width = image_container_list[position]->src_width;
+    int height = image_container_list[position]->src_height;
 
-     printf("widow size w: %d h: %d\n", window_width, window_height);
-     printf("src w: %d h: %d\n", width, height);
-     printf("%f : %f\n", w_aspect, h_aspect);
-                                                                                                                                             
-     if(height > window_height)
-     {
-       int diff = height - window_height;
-       height = height - diff;
-       int result = (int)ceil((double)height * (w_aspect / h_aspect));
-       printf("result: %d, %d * %f\n", result, height, (w_aspect / h_aspect));
-       width = result;
-     }
-                                                                                                                                            
-     image_container_list[position]->dst = gdk_pixbuf_scale_simple(image_container_list[position]->src, width, height, GDK_INTERP_BILINEAR);
+    double w_aspect = (double)image_container_list[position]->aspect_raito[0];
+    double h_aspect = (double)image_container_list[position]->aspect_raito[1];
+
+    /*
+    printf("widow size w: %d h: %d\n", window_width, window_height);
+    printf("src w: %d h: %d\n", width, height);
+    printf("%f : %f\n", w_aspect, h_aspect);
+    */
+
+    if(height > window_height)
+    {
+        int diff = height - window_height;
+        height = height - diff;
+        int result = (int)ceil((double)height * (w_aspect / h_aspect));
+        // printf("result: %d, %d * %f\n", result, height, (w_aspect / h_aspect));
+        width = result;
+    }
+
+    image_container_list[position]->dst = gdk_pixbuf_scale_simple(image_container_list[position]->src, width, height, GDK_INTERP_BILINEAR);
+}
+
+gboolean detect_resize_window(GtkWidget *widget, GdkEvent *event, gpointer data)
+{
+    gint width = 0;
+    gint height = 0;
+    gtk_window_get_size((GtkWindow*)window.window, &width, &height);
+
+    if(width != window.width || height != window.height)
+    {
+        update_image_size(current_page);
+
+        gtk_image_clear((GtkImage*)image);
+
+        gtk_image_set_from_pixbuf((GtkImage*)image, image_container_list[current_page]->dst);
+
+        return TRUE;
+    }
+
+
+    return FALSE;
 }
