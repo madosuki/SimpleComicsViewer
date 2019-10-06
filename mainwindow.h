@@ -30,6 +30,7 @@ gboolean detect_resize_window(GtkWidget *widget, GdkEvent *event, gpointer data)
 void Close();
 
 GtkWidget *image;
+GtkWidget *right;
 
 typedef struct
 {

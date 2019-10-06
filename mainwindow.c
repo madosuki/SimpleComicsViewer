@@ -363,6 +363,8 @@ gboolean detect_resize_window(GtkWidget *widget, GdkEvent *event, gpointer data)
 
         gtk_image_set_from_pixbuf((GtkImage*)image, image_container_list[current_page]->dst);
 
+        g_object_unref(image_container_list[current_page]->dst);
+
         return TRUE;
     }
 
