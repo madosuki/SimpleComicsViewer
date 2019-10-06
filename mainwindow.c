@@ -124,7 +124,7 @@ int get_image_file_count(struct dirent **src, const int size, int *dst)
     return count - 1;
 }
 
-int create_image_list(char **image_list)
+int create_image_path_list(char **image_path_list)
 {
     struct dirent **file_list;
 
@@ -139,12 +139,12 @@ int create_image_list(char **image_list)
 
     if(count < LIST_BUFFER)
     {
-        size_t image_list_size = sizeof(char*) * count;
-        char **tmp = (char**)realloc(image_list, image_list_size);
+        size_t image_path_list_size = sizeof(char*) * count;
+        char **tmp = (char**)realloc(image_path_list, image_path_list_size);
 
         if(tmp != NULL)
         {
-            image_list = tmp;
+            image_path_list = tmp;
 
             // memset(image_list, 0, image_list_size);
 
@@ -154,9 +154,9 @@ int create_image_list(char **image_list)
                 const size_t length = strlen(file_list[target]->d_name);
                 printf("%s\n", file_list[target]->d_name);
 
-                image_list[i] = (char*)calloc(length + 1, 1);
+                image_path_list[i] = (char*)calloc(length + 1, 1);
 
-                strncpy(image_list[i], file_list[target]->d_name, length);
+                strncpy(image_path_list[i], file_list[target]->d_name, length);
             }
         }
         else
@@ -172,22 +172,22 @@ int create_image_list(char **image_list)
     return count;
 }
 
-void set_image_list()
+void set_image_path_list()
 {
     detail = (DirectoryDetail_t*)malloc(sizeof(DirectoryDetail_t));
     if(detail != NULL)
     {
         memset(detail, 0, sizeof(DirectoryDetail_t));
-        detail->image_list = (char**)malloc(LIST_BUFFER);
-        if(detail->image_list != NULL)
+        detail->image_path_list = (char**)malloc(LIST_BUFFER);
+        if(detail->image_path_list != NULL)
         {
             printf("Not NULL from detail->image_list\n");
-            detail->image_count = create_image_list(detail->image_list);
+            detail->image_count = create_image_path_list(detail->image_path_list);
         }
         else
         {
             printf("Failed malloc to detail->image_list\n");
-            free(detail->image_list);
+            free(detail->image_path_list);
         }
     }
 
@@ -223,7 +223,7 @@ gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer d
                 current_page = 0;
             }
 
-            printf("%s\n", detail->image_list[current_page]);
+            printf("%s\n", detail->image_path_list[current_page]);
 
             set_image_container(current_page);
 
@@ -261,13 +261,13 @@ gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer d
 
 void Close()
 {
-    if(detail->image_list != NULL) 
+    if(detail->image_path_list != NULL) 
     {                                                                                
-        free_array_with_alloced((void**)detail->image_list, detail->image_count);    
+        free_array_with_alloced((void**)detail->image_path_list, detail->image_count);    
     }                                                                                
     else                                                                             
     {                                                                                
-        free(detail->image_list);                                                    
+        free(detail->image_path_list);                                                    
     }                                                                                
 
 
@@ -279,6 +279,11 @@ void Close()
             {
                 free(image_container_list[i]->aspect_raito);
                 image_container_list[i]->aspect_raito = NULL;
+
+                if(image_container_list[i]->src != NULL)
+                {
+                    g_object_unref(image_container_list[i]->src);
+                }
             }
         }
 
@@ -299,11 +304,11 @@ void set_image_container(int position)
 {
     if(image_container_list[position] == NULL)
     {
-        image_container_list[position] = malloc(sizeof(Image_Container_List_t));
-        memset(image_container_list[position], 0, sizeof(Image_Container_List_t));
+        image_container_list[position] = malloc(sizeof(Image_Container_t));
+        memset(image_container_list[position], 0, sizeof(Image_Container_t));
 
         image_container_list[position]->err = NULL;
-        image_container_list[position]->src = gdk_pixbuf_new_from_file(detail->image_list[current_page], &image_container_list[position]->err);
+        image_container_list[position]->src = gdk_pixbuf_new_from_file(detail->image_path_list[current_page], &image_container_list[position]->err);
         image_container_list[position]->src_height = gdk_pixbuf_get_height(image_container_list[position]->src);
         image_container_list[position]->src_width = gdk_pixbuf_get_width(image_container_list[position]->src);
 
@@ -315,6 +320,7 @@ void set_image_container(int position)
     }
 
     update_image_size(position);
+
 }
 
 void update_image_size(int position)
@@ -370,4 +376,28 @@ gboolean detect_resize_window(GtkWidget *widget, GdkEvent *event, gpointer data)
 
 
     return FALSE;
+}
+
+void set_image(int position)
+{
+    image = gtk_image_new_from_pixbuf(image_container_list[position]->dst);
+    // g_object_unref(image_container_list[position]->dst);
+}
+
+int init_image_object()
+{
+    // set image file path
+    set_image_path_list();
+    if(detail->image_count > 0)
+    {
+        image_container_list = (Image_Container_t**)calloc(detail->image_count, sizeof(Image_Container_t*));
+
+        set_image_container(0);
+
+        set_image(0);
+
+        return 1;
+    }
+
+    return 0;
 }

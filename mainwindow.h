@@ -15,13 +15,17 @@ void free_array_with_alloced(void **list, const int size);
 
 int get_image_file_count(struct dirent **src, const int size, int *dst);
 
-int create_image_list(char **image_list);
+int create_image_path_list(char **image_path_list);
 
-void set_image_list();
+void set_image_path_list();
 
 void set_image_container(int position);
 
+void set_image(int position);
+
 void update_image_size(int position);
+
+int init_image_object();
 
 gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer data);
 
@@ -30,12 +34,18 @@ gboolean detect_resize_window(GtkWidget *widget, GdkEvent *event, gpointer data)
 void Close();
 
 GtkWidget *image;
-GtkWidget *right;
+
+typedef struct
+{
+    GtkWidget *left;
+    GtkWidget *right;
+    int isSingle;
+} Pages;
 
 typedef struct
 {
     int image_count;
-    char **image_list;
+    char **image_path_list;
 } DirectoryDetail_t;
 
 DirectoryDetail_t *detail;
@@ -57,9 +67,9 @@ typedef struct
     int dst_width;
     int dst_height;
     int *aspect_raito;
-} Image_Container_List_t;
+} Image_Container_t;
 
-Image_Container_List_t **image_container_list;
+Image_Container_t **image_container_list;
 
 window_data_t window;
 
@@ -102,15 +112,8 @@ static void activate(GtkApplication* app, gpointer user_data)
     GtkWidget *scrolled_window = gtk_scrolled_window_new(NULL, NULL);
 
     // set image file
-    set_image_list();
-    if(detail->image_count > 0)
+    if(init_image_object())
     {
-        image_container_list = (Image_Container_List_t**)calloc(detail->image_count, sizeof(Image_Container_List_t*));
-
-        set_image_container(0);
-
-        image = gtk_image_new_from_pixbuf(image_container_list[0]->dst);
-
         gtk_container_add(GTK_CONTAINER(scrolled_window), image);
     }
 
