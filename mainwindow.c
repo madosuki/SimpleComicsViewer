@@ -200,24 +200,6 @@ void set_image_path_list()
         }
     }
 
-    /*
-       if(detail->image_list != NULL) 
-       {
-       for(int i = 0; i < detail->image_count; i++)
-       {
-       if(detail->image_list[i] != NULL)
-       {
-       printf("%s\n", detail->image_list[i]);
-       }
-       }
-       free_array_with_alloced((void**)detail->image_list, detail->image_count);
-       }
-       else
-       {
-       free(detail->image_list);
-       }
-       */
-
 }
 
 void next_image(int isForward)
@@ -235,17 +217,20 @@ void next_image(int isForward)
         if(isForward)
         {
             set_image_container(current_page);
-            if(current_page + 1 < detail->image_count)
+            if(current_page - 1 < detail->image_count)
             {
-                set_image_container(current_page++);
+                set_image_container(current_page - 1);
             }
 
             gtk_image_clear((GtkImage*)pages->left);
+            gtk_image_clear((GtkImage*)pages->right);
 
+            /*
             if(pages->right != NULL)
             {
                 gtk_image_clear((GtkImage*)pages->right);
             }
+            */
 
             if(detail->isOdd && (current_page + 1 == detail->image_count))
             {
@@ -253,7 +238,7 @@ void next_image(int isForward)
             }
             else
             {
-                gtk_image_set_from_pixbuf((GtkImage*)pages->left, image_container_list[current_page]->dst);
+                gtk_image_set_from_pixbuf((GtkImage*)pages->left, image_container_list[current_page - 1]->dst);
                 gtk_image_set_from_pixbuf((GtkImage*)pages->right, image_container_list[current_page]->dst);
             }
 
@@ -265,16 +250,10 @@ void next_image(int isForward)
                 gtk_image_clear((GtkImage*)pages->left);
                 gtk_image_clear((GtkImage*)pages->right);
 
-                if(current_page == 1)
-                {
-                    current_page = detail->image_count - 1;
-                    gtk_image_set_from_pixbuf((GtkImage*)pages->left, image_container_list[current_page]->dst);
-                }
-                else
-                {
-                    gtk_image_set_from_pixbuf((GtkImage*)pages->left, image_container_list[current_page - 1]->dst);
-                    gtk_image_set_from_pixbuf((GtkImage*)pages->right, image_container_list[current_page]->dst);
-                }
+                set_image_container(current_page);
+
+                gtk_image_set_from_pixbuf((GtkImage*)pages->left, image_container_list[current_page]->dst);
+                // gtk_image_set_from_pixbuf((GtkImage*)pages->right, image_container_list[current_page]->dst);
 
             }
             else
@@ -282,10 +261,8 @@ void next_image(int isForward)
                 gtk_image_clear((GtkImage*)pages->left);
                 gtk_image_clear((GtkImage*)pages->right);
 
-                if(current_page == 1)
-                {
-                    current_page = detail->image_count - 1;
-                }
+                set_image_container(current_page);
+                set_image_container(current_page - 1);
 
                 gtk_image_set_from_pixbuf((GtkImage*)pages->left, image_container_list[current_page - 1]->dst);
                 gtk_image_set_from_pixbuf((GtkImage*)pages->right, image_container_list[current_page]->dst);
@@ -346,6 +323,7 @@ gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer d
                 current_page = detail->image_count - 1;
             }
 
+            printf("%d\n", current_page);
             next_image(FALSE);
 
             printf("pressed right left key\n");
@@ -410,7 +388,7 @@ void set_image_container(int position)
         memset(image_container_list[position], 0, sizeof(Image_Container_t));
 
         image_container_list[position]->err = NULL;
-        image_container_list[position]->src = gdk_pixbuf_new_from_file(detail->image_path_list[current_page], &image_container_list[position]->err);
+        image_container_list[position]->src = gdk_pixbuf_new_from_file(detail->image_path_list[position], &image_container_list[position]->err);
         image_container_list[position]->src_height = gdk_pixbuf_get_height(image_container_list[position]->src);
         image_container_list[position]->src_width = gdk_pixbuf_get_width(image_container_list[position]->src);
 
@@ -422,7 +400,6 @@ void set_image_container(int position)
     }
 
     update_image_size(position);
-
 }
 
 void update_image_size(int position)
@@ -454,7 +431,10 @@ void update_image_size(int position)
         width = result;
     }
 
+
     image_container_list[position]->dst = gdk_pixbuf_scale_simple(image_container_list[position]->src, width, height, GDK_INTERP_BILINEAR);
+    image_container_list[position]->dst_width = width;
+    image_container_list[position]->dst_height = height;
 }
 
 gboolean detect_resize_window(GtkWidget *widget, GdkEvent *event, gpointer data)
@@ -488,7 +468,7 @@ void set_image(GtkWidget **img, int position)
     *img = gtk_image_new_from_pixbuf(image_container_list[position]->dst);
 }
 
-int init_image_object()
+int init_image_object(int startpage)
 {
     // set image file path
     set_image_path_list();
@@ -504,8 +484,17 @@ int init_image_object()
         }
         else
         {
+            printf("%s\n%s\n", detail->image_path_list[0], detail->image_path_list[1]);
             set_image_container(0);
             set_image_container(1);
+
+            /*
+            int result_width = image_container_list[0]->src_width + image_container_list[1]->src_width + 1;
+            int result_height = image_container_list[0]->src_height + image_container_list[1]->src_height + 1;
+
+            gdk_pixbuf_copy_area(image_container_list[0]->src, image_container_list[0]->src_width, image_container_list[0]->src_width + 1, image_container_list[0]->src_height + 1, image_container_list[0]->src_height, image_container_list[0]->src, result_width, result_height);
+
+            */
 
             set_image(&pages->left, 0);
             set_image(&pages->right, 1);
@@ -513,10 +502,10 @@ int init_image_object()
             current_page = 1;
         }
 
-        return 1;
+        return TRUE;
     }
 
-    return 0;
+    return FALSE;
 }
 
 void unref_g_object(GtkWidget *object)

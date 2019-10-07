@@ -80,6 +80,7 @@ Image_Container_t **image_container_list;
 
 window_data_t window;
 
+GtkWidget *grid;
 
 static void print_hello(GtkWidget *widget, gpointer data)
 {
@@ -118,13 +119,33 @@ static void activate(GtkApplication* app, gpointer user_data)
     // Initial Scroll Window
     GtkWidget *scrolled_window = gtk_scrolled_window_new(NULL, NULL);
 
+    grid = gtk_grid_new();
+
+    gtk_container_add(GTK_CONTAINER(scrolled_window), grid);
+
     pages = (Pages*)malloc(sizeof(Pages));
     memset(pages, 0, sizeof(Pages));
-    pages->isSingle = 1;
+    // pages->isSingle = TRUE;
+    pages->isSingle = FALSE;
     // set image file
     if(init_image_object())
     {
-        gtk_container_add(GTK_CONTAINER(scrolled_window), pages->left);
+        if(pages->isSingle)
+        {
+            gtk_grid_attach(GTK_GRID(grid), pages->left, 0, 0, image_container_list[1]->dst_width, image_container_list[1]->dst_height);
+            // gtk_container_add(GTK_CONTAINER(scrolled_window), pages->left);
+        }
+        else
+        {
+            gtk_grid_attach(GTK_GRID(grid), pages->left, 0, 0, image_container_list[0]->dst_width, image_container_list[0]->dst_height);
+            gtk_grid_attach(GTK_GRID(grid), pages->right, 1, 0, image_container_list[1]->dst_width, image_container_list[1]->dst_height);
+
+            /*
+            gtk_container_add(GTK_CONTAINER(scrolled_window), pages->left);
+            gtk_container_add(GTK_CONTAINER(scrolled_window), pages->right);
+            */
+
+        }
     }
 
     // GtkWidget *second_scrolled_window = gtk_scrolled_window_new(NULL, NULL);
