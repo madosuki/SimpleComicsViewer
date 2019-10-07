@@ -50,22 +50,22 @@ int get_image_file_count(struct dirent **src, const int size, int *dst)
 
                     int isImageFile = 0;
                     int sig_count = 0;
-                    if(buffer[0] == (char)137)
+                    if(buffer[0] == png_sig[0])
                     {
                         for(int j = 0; j < png_sig_size; ++j)
                         {
-                            if(buffer[j] == (char)png_sig[j])
+                            if(buffer[j] == png_sig[j])
                             {
                                 sig_count++;
                             }
                         }
                     }
-                    else if(buffer[0] == (char)255)
+                    else if(buffer[0] == jpg_sig[0])
                     {
 
                         for(int j = 0; j < jpg_sig_size; ++j)
                         {
-                            if(buffer[j] == (char)jpg_sig[j])
+                            if(buffer[j] == jpg_sig[j])
                             {
                                 sig_count++;
                             }
@@ -183,6 +183,15 @@ void set_image_path_list()
         {
             printf("Not NULL from detail->image_list\n");
             detail->image_count = create_image_path_list(detail->image_path_list);
+
+            if(detail->image_count % 2)
+            {
+                detail->isOdd = TRUE;
+            }
+            else
+            {
+                detail->isOdd = FALSE;
+            }
         }
         else
         {
@@ -211,42 +220,133 @@ void set_image_path_list()
 
 }
 
+void next_image(int isForward)
+{
+    if(pages->isSingle)
+    {
+        set_image_container(current_page);
+
+        gtk_image_clear((GtkImage*)pages->left);
+
+        gtk_image_set_from_pixbuf((GtkImage*)pages->left, image_container_list[current_page]->dst);    
+    }
+    else
+    {
+        if(isForward)
+        {
+            set_image_container(current_page);
+            if(current_page + 1 < detail->image_count)
+            {
+                set_image_container(current_page++);
+            }
+
+            gtk_image_clear((GtkImage*)pages->left);
+
+            if(pages->right != NULL)
+            {
+                gtk_image_clear((GtkImage*)pages->right);
+            }
+
+            if(detail->isOdd && (current_page + 1 == detail->image_count))
+            {
+                gtk_image_set_from_pixbuf((GtkImage*)pages->left, image_container_list[current_page]->dst);
+            }
+            else
+            {
+                gtk_image_set_from_pixbuf((GtkImage*)pages->left, image_container_list[current_page]->dst);
+                gtk_image_set_from_pixbuf((GtkImage*)pages->right, image_container_list[current_page]->dst);
+            }
+
+        }
+        else
+        {
+            if(detail->isOdd)
+            {
+                gtk_image_clear((GtkImage*)pages->left);
+                gtk_image_clear((GtkImage*)pages->right);
+
+                if(current_page == 1)
+                {
+                    current_page = detail->image_count - 1;
+                    gtk_image_set_from_pixbuf((GtkImage*)pages->left, image_container_list[current_page]->dst);
+                }
+                else
+                {
+                    gtk_image_set_from_pixbuf((GtkImage*)pages->left, image_container_list[current_page - 1]->dst);
+                    gtk_image_set_from_pixbuf((GtkImage*)pages->right, image_container_list[current_page]->dst);
+                }
+
+            }
+            else
+            {
+                gtk_image_clear((GtkImage*)pages->left);
+                gtk_image_clear((GtkImage*)pages->right);
+
+                if(current_page == 1)
+                {
+                    current_page = detail->image_count - 1;
+                }
+
+                gtk_image_set_from_pixbuf((GtkImage*)pages->left, image_container_list[current_page - 1]->dst);
+                gtk_image_set_from_pixbuf((GtkImage*)pages->right, image_container_list[current_page]->dst);
+            }
+        }
+
+
+    }
+
+}
 
 gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer data)
 {
     switch(event->keyval) {
 
         case GDK_KEY_Right:
-            current_page++;
+            if(pages->isSingle)
+            {
+                current_page++;
+            }
+            else
+            {
+                current_page += 2;
+            }
+
             if(current_page >= detail->image_count)
             {
-                current_page = 0;
+                if(pages->isSingle)
+                {
+                    current_page = 0;
+                }
+                else
+                {
+                    current_page = 1;
+                }
             }
 
             printf("%s\n", detail->image_path_list[current_page]);
 
-            set_image_container(current_page);
-
-            gtk_image_clear((GtkImage*)image);
-
-            gtk_image_set_from_pixbuf((GtkImage*)image, image_container_list[current_page]->dst);
+            next_image(TRUE);
 
             printf("pressed right arrow key\n");
 
             return TRUE;
 
         case GDK_KEY_Left:
-            current_page--;
+            if(pages->isSingle)
+            {
+                current_page--;
+            }
+            else
+            {
+                current_page -= 2;
+            }
+
             if(current_page < 0)
             {
                 current_page = detail->image_count - 1;
             }
 
-            set_image_container(current_page);
-
-            gtk_image_clear((GtkImage*)image);
-
-            gtk_image_set_from_pixbuf((GtkImage*)image, image_container_list[current_page]->dst);
+            next_image(FALSE);
 
             printf("pressed right left key\n");
 
@@ -295,6 +395,8 @@ void Close()
     }
 
     free(detail);
+
+    free(pages);
 
     printf("Closed\n");
 }
@@ -363,13 +465,16 @@ gboolean detect_resize_window(GtkWidget *widget, GdkEvent *event, gpointer data)
 
     if(width != window.width || height != window.height)
     {
-        update_image_size(current_page);
+        if(pages->isSingle)
+        {
+            update_image_size(current_page);
 
-        gtk_image_clear((GtkImage*)image);
+            gtk_image_clear((GtkImage*)pages->left);
 
-        gtk_image_set_from_pixbuf((GtkImage*)image, image_container_list[current_page]->dst);
+            gtk_image_set_from_pixbuf((GtkImage*)pages->left, image_container_list[current_page]->dst);
 
-        g_object_unref(image_container_list[current_page]->dst);
+            unref_g_object((GtkWidget*)image_container_list[current_page]->dst);
+        }
 
         return TRUE;
     }
@@ -378,10 +483,9 @@ gboolean detect_resize_window(GtkWidget *widget, GdkEvent *event, gpointer data)
     return FALSE;
 }
 
-void set_image(int position)
+void set_image(GtkWidget **img, int position)
 {
-    image = gtk_image_new_from_pixbuf(image_container_list[position]->dst);
-    // g_object_unref(image_container_list[position]->dst);
+    *img = gtk_image_new_from_pixbuf(image_container_list[position]->dst);
 }
 
 int init_image_object()
@@ -392,12 +496,33 @@ int init_image_object()
     {
         image_container_list = (Image_Container_t**)calloc(detail->image_count, sizeof(Image_Container_t*));
 
-        set_image_container(0);
+        if(pages->isSingle)
+        {
+            set_image_container(0);
 
-        set_image(0);
+            set_image(&pages->left, 0);
+        }
+        else
+        {
+            set_image_container(0);
+            set_image_container(1);
+
+            set_image(&pages->left, 0);
+            set_image(&pages->right, 1);
+
+            current_page = 1;
+        }
 
         return 1;
     }
 
     return 0;
+}
+
+void unref_g_object(GtkWidget *object)
+{
+    if(object != NULL)
+    {
+        g_object_unref(object);
+    }
 }

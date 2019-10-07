@@ -21,11 +21,15 @@ void set_image_path_list();
 
 void set_image_container(int position);
 
-void set_image(int position);
+void set_image(GtkWidget **img, int position);
 
 void update_image_size(int position);
 
 int init_image_object();
+
+void unref_g_object(GtkWidget *object);
+
+void next_image(int isForward);
 
 gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer data);
 
@@ -42,8 +46,11 @@ typedef struct
     int isSingle;
 } Pages;
 
+Pages *pages;
+
 typedef struct
 {
+    int isOdd;
     int image_count;
     char **image_path_list;
 } DirectoryDetail_t;
@@ -111,12 +118,14 @@ static void activate(GtkApplication* app, gpointer user_data)
     // Initial Scroll Window
     GtkWidget *scrolled_window = gtk_scrolled_window_new(NULL, NULL);
 
+    pages = (Pages*)malloc(sizeof(Pages));
+    memset(pages, 0, sizeof(Pages));
+    pages->isSingle = 1;
     // set image file
     if(init_image_object())
     {
-        gtk_container_add(GTK_CONTAINER(scrolled_window), image);
+        gtk_container_add(GTK_CONTAINER(scrolled_window), pages->left);
     }
-
 
     // GtkWidget *second_scrolled_window = gtk_scrolled_window_new(NULL, NULL);
     // gtk_container_add(GTK_CONTAINER(second_scrolled_window), right);
