@@ -226,11 +226,11 @@ void next_image(int isForward)
             gtk_image_clear((GtkImage*)pages->right);
 
             /*
-            if(pages->right != NULL)
-            {
-                gtk_image_clear((GtkImage*)pages->right);
-            }
-            */
+               if(pages->right != NULL)
+               {
+               gtk_image_clear((GtkImage*)pages->right);
+               }
+               */
 
             if(detail->isOdd && (current_page + 1 == detail->image_count))
             {
@@ -455,6 +455,32 @@ gboolean detect_resize_window(GtkWidget *widget, GdkEvent *event, gpointer data)
 
             unref_g_object((GtkWidget*)image_container_list[current_page]->dst);
         }
+        else
+        {
+            if(detail->isOdd && detail->image_count == current_page - 1)
+            {
+                update_image_size(current_page);
+                gtk_image_clear((GtkImage*)pages->left);
+                gtk_image_set_from_pixbuf((GtkImage*)pages->left, image_container_list[current_page]->dst);
+                unref_g_object((GtkWidget*)image_container_list[current_page]->dst);
+
+            }
+            else
+            {
+                update_image_size(current_page - 1);
+                update_image_size(current_page);
+
+                gtk_image_clear((GtkImage*)pages->left);
+                gtk_image_clear((GtkImage*)pages->right);
+
+                gtk_image_set_from_pixbuf((GtkImage*)pages->left, image_container_list[current_page - 1]->dst);
+                gtk_image_set_from_pixbuf((GtkImage*)pages->right, image_container_list[current_page]->dst);
+
+                unref_g_object((GtkWidget*)image_container_list[current_page]->dst);
+                unref_g_object((GtkWidget*)image_container_list[current_page - 1]->dst);
+
+            }
+        }
 
         return TRUE;
     }
@@ -489,12 +515,12 @@ int init_image_object(int startpage)
             set_image_container(1);
 
             /*
-            int result_width = image_container_list[0]->src_width + image_container_list[1]->src_width + 1;
-            int result_height = image_container_list[0]->src_height + image_container_list[1]->src_height + 1;
+               int result_width = image_container_list[0]->src_width + image_container_list[1]->src_width + 1;
+               int result_height = image_container_list[0]->src_height + image_container_list[1]->src_height + 1;
 
-            gdk_pixbuf_copy_area(image_container_list[0]->src, image_container_list[0]->src_width, image_container_list[0]->src_width + 1, image_container_list[0]->src_height + 1, image_container_list[0]->src_height, image_container_list[0]->src, result_width, result_height);
+               gdk_pixbuf_copy_area(image_container_list[0]->src, image_container_list[0]->src_width, image_container_list[0]->src_width + 1, image_container_list[0]->src_height + 1, image_container_list[0]->src_height, image_container_list[0]->src, result_width, result_height);
 
-            */
+*/
 
             set_image(&pages->left, 0);
             set_image(&pages->right, 1);
