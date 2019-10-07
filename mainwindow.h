@@ -138,7 +138,7 @@ static void activate(GtkApplication* app, gpointer user_data)
         else
         {
             gtk_grid_attach(GTK_GRID(grid), pages->left, 0, 0, image_container_list[0]->dst_width, image_container_list[0]->dst_height);
-            gtk_grid_attach(GTK_GRID(grid), pages->right, 1, 0, image_container_list[1]->dst_width, image_container_list[1]->dst_height);
+            gtk_grid_attach(GTK_GRID(grid), pages->right, image_container_list[0]->dst_width + 1, 0, image_container_list[1]->dst_width, image_container_list[1]->dst_height);
 
             /*
             gtk_container_add(GTK_CONTAINER(scrolled_window), pages->left);
