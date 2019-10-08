@@ -134,13 +134,23 @@ static void activate(GtkApplication* app, gpointer user_data)
     {
         if(pages->isSingle)
         {
-            gtk_grid_attach(GTK_GRID(grid), pages->left, 0, 0, image_container_list[1]->dst_width, image_container_list[1]->dst_height);
+            gtk_widget_set_hexpand(pages->left, TRUE);
+            gtk_grid_attach(GTK_GRID(grid), pages->left, 0, 0, 1, 1);
+            // gtk_grid_attach(GTK_GRID(grid), pages->left, 1, 0, image_container_list[0]->dst_width, image_container_list[0]->dst_height);
             // gtk_container_add(GTK_CONTAINER(scrolled_window), pages->left);
         }
         else
         {
-            gtk_grid_attach(GTK_GRID(grid), pages->left, 0, 0, image_container_list[0]->dst_width, image_container_list[0]->dst_height);
-            gtk_grid_attach(GTK_GRID(grid), pages->right, image_container_list[0]->dst_width, 0, image_container_list[1]->dst_width, image_container_list[1]->dst_height);
+            gtk_widget_set_hexpand(pages->left, TRUE);
+            gtk_widget_set_vexpand(pages->left, TRUE);
+
+            gtk_widget_set_hexpand(pages->right, TRUE);
+            gtk_widget_set_vexpand(pages->right, TRUE);
+
+            gtk_grid_attach(GTK_GRID(grid), pages->left, 0, 0, 1, 1);
+            gtk_grid_attach(GTK_GRID(grid), pages->right, 1, 0, 1, 1);
+            // gtk_grid_attach(GTK_GRID(grid), pages->left, 0, 0, image_container_list[0]->dst_width, image_container_list[0]->dst_height);
+            // gtk_grid_attach(GTK_GRID(grid), pages->right, image_container_list[0]->dst_width, 0, image_container_list[1]->dst_width, image_container_list[1]->dst_height);
 
             /*
             gtk_container_add(GTK_CONTAINER(scrolled_window), pages->left);
