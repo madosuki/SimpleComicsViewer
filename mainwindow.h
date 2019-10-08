@@ -31,6 +31,8 @@ void unref_g_object(GtkWidget *object);
 
 void next_image(int isForward);
 
+void resize_when_spread(int page);
+
 gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer data);
 
 gboolean detect_resize_window(GtkWidget *widget, GdkEvent *event, gpointer data);
@@ -73,7 +75,7 @@ typedef struct
     int src_height;
     int dst_width;
     int dst_height;
-    int *aspect_raito;
+    double *aspect_raito;
 } Image_Container_t;
 
 Image_Container_t **image_container_list;
@@ -138,7 +140,7 @@ static void activate(GtkApplication* app, gpointer user_data)
         else
         {
             gtk_grid_attach(GTK_GRID(grid), pages->left, 0, 0, image_container_list[0]->dst_width, image_container_list[0]->dst_height);
-            gtk_grid_attach(GTK_GRID(grid), pages->right, image_container_list[0]->dst_width + 1, 0, image_container_list[1]->dst_width, image_container_list[1]->dst_height);
+            gtk_grid_attach(GTK_GRID(grid), pages->right, image_container_list[0]->dst_width, 0, image_container_list[1]->dst_width, image_container_list[1]->dst_height);
 
             /*
             gtk_container_add(GTK_CONTAINER(scrolled_window), pages->left);

@@ -17,6 +17,6 @@ const char zlib_best_compression_sig[2];
 
 int mygcd(int x, int y);
 
-int *calc_aspect_raito(int width, int height, int gcd);
+double *calc_aspect_raito(int width, int height, int gcd);
 
 #endif // COMICS_V_UTILS_H

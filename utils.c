@@ -26,15 +26,15 @@ int mygcd(int x, int y)
   }
 }
 
-int *calc_aspect_raito(int width, int height, int gcd)
+double *calc_aspect_raito(int width, int height, int gcd)
 {
   int width_aspect = width / gcd;
   int height_aspect = height / gcd;
 
-  int *tuple = (int*)calloc(2, sizeof(int));
+  double *tuple = (double*)calloc(2, sizeof(double));
 
-  tuple[0] = width_aspect;
-  tuple[1] = height_aspect;
+  tuple[0] = (double)width_aspect;
+  tuple[1] = (double)height_aspect;
   
   return tuple;
 }

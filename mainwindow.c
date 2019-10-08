@@ -220,6 +220,7 @@ void next_image(int isForward)
             if(current_page - 1 < detail->image_count)
             {
                 set_image_container(current_page - 1);
+
             }
 
             gtk_image_clear((GtkImage*)pages->left);
@@ -234,10 +235,12 @@ void next_image(int isForward)
 
             if(detail->isOdd && (current_page + 1 == detail->image_count))
             {
+                update_image_size(current_page);
                 gtk_image_set_from_pixbuf((GtkImage*)pages->left, image_container_list[current_page]->dst);
             }
             else
             {
+                resize_when_spread(current_page);
                 gtk_image_set_from_pixbuf((GtkImage*)pages->left, image_container_list[current_page - 1]->dst);
                 gtk_image_set_from_pixbuf((GtkImage*)pages->right, image_container_list[current_page]->dst);
             }
@@ -252,6 +255,8 @@ void next_image(int isForward)
 
                 set_image_container(current_page);
 
+                resize_when_spread(current_page);
+
                 gtk_image_set_from_pixbuf((GtkImage*)pages->left, image_container_list[current_page]->dst);
                 // gtk_image_set_from_pixbuf((GtkImage*)pages->right, image_container_list[current_page]->dst);
 
@@ -263,6 +268,8 @@ void next_image(int isForward)
 
                 set_image_container(current_page);
                 set_image_container(current_page - 1);
+
+                resize_when_spread(current_page);
 
                 gtk_image_set_from_pixbuf((GtkImage*)pages->left, image_container_list[current_page - 1]->dst);
                 gtk_image_set_from_pixbuf((GtkImage*)pages->right, image_container_list[current_page]->dst);
@@ -399,7 +406,10 @@ void set_image_container(int position)
 
     }
 
-    update_image_size(position);
+    if(pages->isSingle)
+    {
+        update_image_size(position);
+    }
 }
 
 void update_image_size(int position)
@@ -470,6 +480,8 @@ gboolean detect_resize_window(GtkWidget *widget, GdkEvent *event, gpointer data)
                 update_image_size(current_page - 1);
                 update_image_size(current_page);
 
+                resize_when_spread(current_page);
+
                 gtk_image_clear((GtkImage*)pages->left);
                 gtk_image_clear((GtkImage*)pages->right);
 
@@ -492,6 +504,61 @@ gboolean detect_resize_window(GtkWidget *widget, GdkEvent *event, gpointer data)
 void set_image(GtkWidget **img, int position)
 {
     *img = gtk_image_new_from_pixbuf(image_container_list[position]->dst);
+}
+
+void resize_when_spread(int page)
+{
+    int left_src_width = image_container_list[page - 1]->src_width;
+    int left_src_height = image_container_list[page - 1]->src_height;
+    double left_x_aspect = (double)image_container_list[page - 1]->aspect_raito[0];
+    double left_y_aspect = (double)image_container_list[page - 1]->aspect_raito[1];
+
+    int right_src_width = image_container_list[page]->src_width;
+    int right_src_height = image_container_list[page]->src_height;
+    double right_x_aspect = (double)image_container_list[page]->aspect_raito[0];
+    double right_y_aspect = (double)image_container_list[page]->aspect_raito[1];
+
+    gint window_width = 0;
+    gint window_height = 0;
+    gtk_window_get_size((GtkWindow*)window.window, &window_width, &window_height);
+    window.width = window_width;
+    window.height = window_height;
+
+
+    int half_width = window_width / 2;
+    
+
+    int left_width = half_width;
+    int left_height = 0;
+    /*
+    if(left_src_width > half_width)
+    {
+        int diff = left_src_width - window_width;
+        left_width = left_src_width - diff;
+        printf("%d - %d = %d\n", left_src_width, diff, left_width);
+    }
+    */
+    left_height = (int)ceil((double)left_width * (left_y_aspect / left_x_aspect));
+    image_container_list[page - 1]->dst_width = left_width;
+    image_container_list[page - 1]->dst_height = left_height;
+
+    int right_width = half_width;
+    int right_height = 0;
+    /*
+    if(right_src_width > half_width)
+    {
+        int diff = right_src_width - window_width;
+        right_width = right_src_width - diff;
+    }
+    */
+    right_height = (int)ceil((double)right_width * (right_y_aspect / right_x_aspect));
+    image_container_list[page]->dst_width = right_width;
+    image_container_list[page]->dst_height = right_height;
+
+
+    image_container_list[page - 1]->dst = gdk_pixbuf_scale_simple(image_container_list[page - 1]->src, left_width, right_height, GDK_INTERP_BILINEAR);
+    image_container_list[page]->dst = gdk_pixbuf_scale_simple(image_container_list[page]->src, right_width, right_height, GDK_INTERP_BILINEAR);
+
 }
 
 int init_image_object(int startpage)
@@ -521,9 +588,11 @@ int init_image_object(int startpage)
                gdk_pixbuf_copy_area(image_container_list[0]->src, image_container_list[0]->src_width, image_container_list[0]->src_width + 1, image_container_list[0]->src_height + 1, image_container_list[0]->src_height, image_container_list[0]->src, result_width, result_height);
 
 */
+            resize_when_spread(1);
 
             set_image(&pages->left, 0);
             set_image(&pages->right, 1);
+
 
             current_page = 1;
         }
