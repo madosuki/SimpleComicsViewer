@@ -33,6 +33,8 @@ void next_image(int isForward);
 
 void resize_when_spread(int page);
 
+void scale_when_oversize(int *x, int *y, int window_width, int window_height, double w_aspect, double h_aspect, int isOverWidth);
+
 gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer data);
 
 gboolean detect_resize_window(GtkWidget *widget, GdkEvent *event, gpointer data);
@@ -46,6 +48,7 @@ typedef struct
     GtkWidget *left;
     GtkWidget *right;
     int isSingle;
+    int page_direction_right;
 } Pages;
 
 Pages *pages;
@@ -127,6 +130,8 @@ static void activate(GtkApplication* app, gpointer user_data)
 
     pages = (Pages*)malloc(sizeof(Pages));
     memset(pages, 0, sizeof(Pages));
+
+    pages->page_direction_right = TRUE;
     // pages->isSingle = TRUE;
     pages->isSingle = FALSE;
     // set image file
