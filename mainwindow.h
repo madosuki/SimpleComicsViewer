@@ -8,6 +8,9 @@
 
 #define LIST_BUFFER 1024
 
+#define DEFAULT_WINDOW_WIDTH 1024
+#define DEFAULT_WINDOW_HEIGHT 768
+
 GtkApplication *app;
 int status;
 
@@ -23,7 +26,7 @@ void set_image_container(int position);
 
 void set_image(GtkWidget **img, int position);
 
-void update_image_size(int position);
+void resize_when_single(int position);
 
 int init_image_object();
 
@@ -96,8 +99,8 @@ static void activate(GtkApplication* app, gpointer user_data)
 {
     // Window settings
     window.window = gtk_application_window_new(app);
-    window.width = 1024;
-    window.height = 768;
+    window.width = DEFAULT_WINDOW_WIDTH;
+    window.height = DEFAULT_WINDOW_HEIGHT;
     // g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(Close), NULL);
 
     // Set Window Title

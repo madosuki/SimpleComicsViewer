@@ -235,7 +235,7 @@ void next_image(int isForward)
 
             if(detail->isOdd && (current_page + 1 == detail->image_count))
             {
-                update_image_size(current_page);
+                resize_when_single(current_page);
                 if(pages->page_direction_right)
                 {
                     gtk_image_set_from_pixbuf((GtkImage*)pages->right, image_container_list[current_page]->dst);
@@ -281,7 +281,6 @@ void next_image(int isForward)
                 {
                     gtk_image_set_from_pixbuf((GtkImage*)pages->left, image_container_list[current_page]->dst);
                 }
-                // gtk_image_set_from_pixbuf((GtkImage*)pages->right, image_container_list[current_page]->dst);
 
             }
             else
@@ -321,6 +320,10 @@ gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer d
             {
                 current_page++;
             }
+            else if(pages->page_direction_right)
+            {
+                current_page -= 2;
+            }
             else
             {
                 current_page += 2;
@@ -337,10 +340,22 @@ gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer d
                     current_page = 1;
                 }
             }
+            
+            if(current_page < 0)
+            {
+                current_page = detail->image_count - 1;
+            }
 
             printf("%s\n", detail->image_path_list[current_page]);
 
-            next_image(TRUE);
+            if(pages->page_direction_right)
+            {
+                next_image(FALSE);
+            }
+            else
+            {
+                next_image(TRUE);
+            }
 
             printf("pressed right arrow key\n");
 
@@ -351,9 +366,18 @@ gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer d
             {
                 current_page--;
             }
+            else if(pages->page_direction_right)
+            {
+                current_page += 2;
+            }
             else
             {
                 current_page -= 2;
+            }
+
+            if(current_page > detail->image_count)
+            {
+                current_page = 1;
             }
 
             if(current_page < 0)
@@ -362,7 +386,15 @@ gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer d
             }
 
             printf("%d\n", current_page);
-            next_image(FALSE);
+
+            if(pages->page_direction_right)
+            {
+                next_image(TRUE);
+            }
+            else
+            {
+                next_image(FALSE);
+            }
 
             printf("pressed right left key\n");
 
@@ -439,11 +471,11 @@ void set_image_container(int position)
 
     if(pages->isSingle)
     {
-        update_image_size(position);
+        resize_when_single(position);
     }
 }
 
-void update_image_size(int position)
+void resize_when_single(int position)
 {
     gint window_width = 0;
     gint window_height = 0;
@@ -497,7 +529,7 @@ gboolean detect_resize_window(GtkWidget *widget, GdkEvent *event, gpointer data)
     {
         if(pages->isSingle)
         {
-            update_image_size(current_page);
+            resize_when_single(current_page);
 
             gtk_image_clear((GtkImage*)pages->left);
 
@@ -509,24 +541,31 @@ gboolean detect_resize_window(GtkWidget *widget, GdkEvent *event, gpointer data)
         {
             if(detail->isOdd && detail->image_count == current_page - 1)
             {
-                update_image_size(current_page);
+                resize_when_single(current_page);
                 gtk_image_clear((GtkImage*)pages->left);
                 gtk_image_set_from_pixbuf((GtkImage*)pages->left, image_container_list[current_page]->dst);
                 unref_g_object((GtkWidget*)image_container_list[current_page]->dst);
-
             }
             else
             {
-                update_image_size(current_page - 1);
-                update_image_size(current_page);
+                resize_when_single(current_page - 1);
+                resize_when_single(current_page);
 
                 resize_when_spread(current_page);
 
                 gtk_image_clear((GtkImage*)pages->left);
                 gtk_image_clear((GtkImage*)pages->right);
 
-                gtk_image_set_from_pixbuf((GtkImage*)pages->left, image_container_list[current_page - 1]->dst);
-                gtk_image_set_from_pixbuf((GtkImage*)pages->right, image_container_list[current_page]->dst);
+                if(pages->page_direction_right)
+                {
+                    gtk_image_set_from_pixbuf((GtkImage*)pages->left, image_container_list[current_page]->dst);
+                    gtk_image_set_from_pixbuf((GtkImage*)pages->right, image_container_list[current_page - 1]->dst);
+                }
+                else
+                {
+                    gtk_image_set_from_pixbuf((GtkImage*)pages->left, image_container_list[current_page - 1]->dst);
+                    gtk_image_set_from_pixbuf((GtkImage*)pages->right, image_container_list[current_page]->dst);
+                }
 
                 unref_g_object((GtkWidget*)image_container_list[current_page]->dst);
                 unref_g_object((GtkWidget*)image_container_list[current_page - 1]->dst);
