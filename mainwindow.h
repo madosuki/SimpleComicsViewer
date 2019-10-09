@@ -44,14 +44,13 @@ gboolean detect_resize_window(GtkWidget *widget, GdkEvent *event, gpointer data)
 
 void Close();
 
-GtkWidget *image;
-
 typedef struct
 {
     GtkWidget *left;
     GtkWidget *right;
     int isSingle;
     int page_direction_right;
+    int current_page;
 } Pages;
 
 Pages *pages;
