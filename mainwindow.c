@@ -656,7 +656,6 @@ int resize_when_spread(int page)
     window.width = window_width;
     window.height = window_height;
 
-
     int half_width = window_width / 2;
 
     int left_width = half_width;
@@ -689,6 +688,10 @@ int resize_when_spread(int page)
     image_container_list[page - 1]->dst = gdk_pixbuf_scale_simple(image_container_list[page - 1]->src, left_width, left_height, GDK_INTERP_BILINEAR);
     image_container_list[page]->dst = gdk_pixbuf_scale_simple(image_container_list[page]->src, right_width, right_height, GDK_INTERP_BILINEAR);
 
+    gint s_w = 0;
+    gint s_h = 0;
+    // printf("Scrolled Window Width: %d, Height%d\n", s_w, s_h);
+
     return isOverHeight;
 }
 
@@ -707,11 +710,13 @@ void set_margin_left_page(int position, int isOverHeight)
 
         printf("margin left: %d\n", margin_left);
 
-        g_object_set(pages->left, "margin_left", margin_left, NULL);
+        // g_object_set(pages->left, "margin_left", margin_left, NULL);
+        gtk_widget_set_margin_start(pages->left, (gint)margin_left);
     }
     else
     {
-        g_object_set(pages->left, "margin_left", 0, NULL);
+        // g_object_set(pages->left, "margin_left", 0, NULL);
+        gtk_widget_set_margin_start(pages->left, 0);
     }
 
 }

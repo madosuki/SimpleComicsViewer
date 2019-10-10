@@ -73,7 +73,7 @@ typedef struct
     GtkWidget *window;
     int width;
     int height;
-} window_data_t;
+} main_window_data_t;
 
 typedef struct
 {
@@ -89,9 +89,11 @@ typedef struct
 
 Image_Container_t **image_container_list;
 
-window_data_t window;
+main_window_data_t window;
 
 GtkWidget *grid;
+
+GtkWidget *scrolled_window;
 
 static void print_hello(GtkWidget *widget, gpointer data)
 {
@@ -118,31 +120,33 @@ static void activate(GtkApplication* app, gpointer user_data)
 
 
     // Create Vertical Box
-    // GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
     GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
     // add vbox to container
     // gtk_container_add(GTK_CONTAINER(vbox), hbox);
     // gtk_container_add(GTK_CONTAINER(window), vbox);
-    gtk_container_add(GTK_CONTAINER(window.window), hbox);
+    gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
+
+    gtk_container_add(GTK_CONTAINER(window.window), vbox);
+
+    GtkWidget *menubar = gtk_menu_bar_new();
+    gtk_box_pack_start(GTK_BOX(vbox), menubar, FALSE, FALSE, 0);
 
     // Initial Scroll Window
-    GtkWidget *scrolled_window = gtk_scrolled_window_new(NULL, NULL);
+    scrolled_window = gtk_scrolled_window_new(NULL, NULL);
 
     grid = gtk_grid_new();
-
-    // gtk_grid_set_row_baseline_position((GtkGrid*)grid, 0, GTK_BASELINE_POSITION_CENTER);
-    // gtk_grid_set_column_spacing((GtkGrid*)grid, 0);
-
     gtk_container_add(GTK_CONTAINER(scrolled_window), grid);
 
+    // init pages struct
     pages = (Pages*)malloc(sizeof(Pages));
     memset(pages, 0, sizeof(Pages));
 
     pages->page_direction_right = TRUE;
-    // pages->isSingle = TRUE;
     pages->isSingle = FALSE;
+
     // set image file
     if(init_image_object())
     {
@@ -189,6 +193,11 @@ static void activate(GtkApplication* app, gpointer user_data)
 
         }
     }
+
+    /*
+    GtkWidget *menubar = gtk_menu_bar_new();
+    gtk_box_pack_start(GTK_BOX(vbox), menubar, TRUE, TRUE, 0);
+    */
 
     // GtkWidget *second_scrolled_window = gtk_scrolled_window_new(NULL, NULL);
     // gtk_container_add(GTK_CONTAINER(second_scrolled_window), right);
