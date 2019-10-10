@@ -234,6 +234,7 @@ void next_image(int isForward)
             if(detail->isOdd && (pages->current_page + 1 == detail->image_count))
             {
                 resize_when_single(pages->current_page);
+
                 if(pages->page_direction_right)
                 {
                     gtk_image_set_from_pixbuf((GtkImage*)pages->right, image_container_list[pages->current_page]->dst);
@@ -245,7 +246,7 @@ void next_image(int isForward)
             }
             else
             {
-                resize_when_spread(pages->current_page);
+                int isOverHeight = resize_when_spread(pages->current_page);
 
                 if(pages->page_direction_right)
                 {
@@ -257,19 +258,22 @@ void next_image(int isForward)
                     gtk_image_set_from_pixbuf((GtkImage*)pages->left, image_container_list[pages->current_page - 1]->dst);
                     gtk_image_set_from_pixbuf((GtkImage*)pages->right, image_container_list[pages->current_page]->dst);
                 }
+
+                set_margin_left_page(pages->current_page, isOverHeight);
             }
 
         }
         else
         {
+            gtk_image_clear((GtkImage*)pages->left);
+            gtk_image_clear((GtkImage*)pages->right);
+
             if(detail->isOdd)
             {
-                gtk_image_clear((GtkImage*)pages->left);
-                gtk_image_clear((GtkImage*)pages->right);
 
                 set_image_container(pages->current_page);
 
-                resize_when_spread(pages->current_page);
+                int isOverHeight = resize_when_spread(pages->current_page);
 
                 if(pages->page_direction_right)
                 {
@@ -280,16 +284,15 @@ void next_image(int isForward)
                     gtk_image_set_from_pixbuf((GtkImage*)pages->left, image_container_list[pages->current_page]->dst);
                 }
 
+                set_margin_left_page(pages->current_page, isOverHeight);
+
             }
             else
             {
-                gtk_image_clear((GtkImage*)pages->left);
-                gtk_image_clear((GtkImage*)pages->right);
-
                 set_image_container(pages->current_page);
                 set_image_container(pages->current_page - 1);
 
-                resize_when_spread(pages->current_page);
+                int isOverHeight = resize_when_spread(pages->current_page);
 
                 if(pages->page_direction_right)
                 {
@@ -301,6 +304,9 @@ void next_image(int isForward)
                     gtk_image_set_from_pixbuf((GtkImage*)pages->right, image_container_list[pages->current_page]->dst);
                     gtk_image_set_from_pixbuf((GtkImage*)pages->left, image_container_list[pages->current_page - 1]->dst);
                 }
+
+                
+                set_margin_left_page(pages->current_page, isOverHeight);
             }
         }
 
@@ -540,16 +546,21 @@ gboolean detect_resize_window(GtkWidget *widget, GdkEvent *event, gpointer data)
             if(detail->isOdd && detail->image_count == pages->current_page - 1)
             {
                 resize_when_single(pages->current_page);
+
                 gtk_image_clear((GtkImage*)pages->left);
+                gtk_image_clear((GtkImage*)pages->right);
+
                 gtk_image_set_from_pixbuf((GtkImage*)pages->left, image_container_list[pages->current_page]->dst);
                 unref_g_object((GtkWidget*)image_container_list[pages->current_page]->dst);
             }
             else
             {
+                /*
                 resize_when_single(pages->current_page - 1);
                 resize_when_single(pages->current_page);
+                */
 
-                resize_when_spread(pages->current_page);
+                int isOverHeight = resize_when_spread(pages->current_page);
 
                 gtk_image_clear((GtkImage*)pages->left);
                 gtk_image_clear((GtkImage*)pages->right);
@@ -564,6 +575,8 @@ gboolean detect_resize_window(GtkWidget *widget, GdkEvent *event, gpointer data)
                     gtk_image_set_from_pixbuf((GtkImage*)pages->left, image_container_list[pages->current_page - 1]->dst);
                     gtk_image_set_from_pixbuf((GtkImage*)pages->right, image_container_list[pages->current_page]->dst);
                 }
+
+                set_margin_left_page(pages->current_page, isOverHeight);
 
                 unref_g_object((GtkWidget*)image_container_list[pages->current_page]->dst);
                 unref_g_object((GtkWidget*)image_container_list[pages->current_page - 1]->dst);
@@ -607,7 +620,7 @@ void scale_when_oversize(int *x, int *y, int window_width, int window_height, do
 
 }
 
-void resize_when_spread(int page)
+int resize_when_spread(int page)
 {
     int left_src_width = image_container_list[page - 1]->src_width;
     int left_src_height = image_container_list[page - 1]->src_height;
@@ -631,9 +644,11 @@ void resize_when_spread(int page)
     int left_width = half_width;
     int left_height = 0;
     left_height = (int)ceil((double)left_width * (left_y_aspect / left_x_aspect));
+    int isOverHeight = FALSE;
     if(left_height > window_height)
     {
         scale_when_oversize(&left_width, &left_height, window_width, window_height, left_x_aspect, left_y_aspect, FALSE);
+        isOverHeight = TRUE;
     }
 
     image_container_list[page - 1]->dst_width = left_width;
@@ -655,6 +670,31 @@ void resize_when_spread(int page)
 
     image_container_list[page - 1]->dst = gdk_pixbuf_scale_simple(image_container_list[page - 1]->src, left_width, left_height, GDK_INTERP_BILINEAR);
     image_container_list[page]->dst = gdk_pixbuf_scale_simple(image_container_list[page]->src, right_width, right_height, GDK_INTERP_BILINEAR);
+
+    return isOverHeight;
+}
+
+void set_margin_left_page(int position, int isOverHeight)
+{
+    gint window_width = 0;
+    gint window_height = 0;
+    gtk_window_get_size((GtkWindow*)window.window, &window_width, &window_height);
+    window.width = window_width;
+    window.height = window_height;
+
+    if(isOverHeight)
+    {
+        int mix_width = (image_container_list[position - 1]->dst_width + image_container_list[position]->dst_width);
+        int margin_left = (fmax(mix_width, window_width) - fmin(mix_width, window_width)) / 2;
+
+        printf("margin left: %d\n", margin_left);
+
+        g_object_set(pages->left, "margin_left", margin_left, NULL);
+    }
+    else
+    {
+        g_object_set(pages->left, "margin_left", 0, NULL);
+    }
 
 }
 

@@ -34,9 +34,13 @@ void unref_g_object(GtkWidget *object);
 
 void next_image(int isForward);
 
-void resize_when_spread(int page);
+// return value is TRUE or FALSE
+int resize_when_spread(int page);
 
 void scale_when_oversize(int *x, int *y, int window_width, int window_height, double w_aspect, double h_aspect, int isOverWidth);
+
+// isOverHeight is only accept TRUE or FALSE
+void set_margin_left_page(int position, int isOverHeight);
 
 gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer data);
 
@@ -128,6 +132,9 @@ static void activate(GtkApplication* app, gpointer user_data)
 
     grid = gtk_grid_new();
 
+    // gtk_grid_set_row_baseline_position((GtkGrid*)grid, 0, GTK_BASELINE_POSITION_CENTER);
+    // gtk_grid_set_column_spacing((GtkGrid*)grid, 0);
+
     gtk_container_add(GTK_CONTAINER(scrolled_window), grid);
 
     pages = (Pages*)malloc(sizeof(Pages));
@@ -148,14 +155,30 @@ static void activate(GtkApplication* app, gpointer user_data)
         }
         else
         {
-            gtk_widget_set_hexpand(pages->left, TRUE);
+            // gtk_widget_set_hexpand(pages->left, TRUE);
             gtk_widget_set_vexpand(pages->left, TRUE);
 
-            gtk_widget_set_hexpand(pages->right, TRUE);
+            // gtk_widget_set_hexpand(pages->right, TRUE);
             gtk_widget_set_vexpand(pages->right, TRUE);
 
             gtk_grid_attach(GTK_GRID(grid), pages->left, 0, 0, 1, 1);
+            /*
             gtk_grid_attach(GTK_GRID(grid), pages->right, 1, 0, 1, 1);
+            */
+
+            gtk_grid_attach_next_to(GTK_GRID(grid), pages->right, pages->left, GTK_POS_RIGHT, 1, 1);
+
+            /*
+            g_object_set(pages->left, "valign", GTK_ALIGN_CENTER, NULL);
+            g_object_set(pages->right, "valign", GTK_ALIGN_CENTER, NULL);
+            */
+
+
+            /*
+            g_object_set(pages->left, "margin-right", 0, NULL);
+            g_object_set(pages->right, "margin-left", 0, NULL);
+            */
+
             // gtk_grid_attach(GTK_GRID(grid), pages->left, 0, 0, image_container_list[0]->dst_width, image_container_list[0]->dst_height);
             // gtk_grid_attach(GTK_GRID(grid), pages->right, image_container_list[0]->dst_width, 0, image_container_list[1]->dst_width, image_container_list[1]->dst_height);
 
