@@ -318,6 +318,24 @@ void next_image(int isForward)
 gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer data)
 {
     switch(event->keyval) {
+        case GDK_KEY_Home:
+            pages->current_page = 1;
+
+            if(pages->isSingle)
+            {
+                pages->current_page = 0;
+            }
+
+            if(pages->page_direction_right)
+            {
+                next_image(FALSE);
+            }
+            else
+            {
+                next_image(TRUE);
+            }
+
+            break;
 
         case GDK_KEY_Right:
             if(pages->isSingle)
