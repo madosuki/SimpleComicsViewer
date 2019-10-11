@@ -321,14 +321,14 @@ gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer d
         case GDK_KEY_Return:
             if(window.isFullScreen)
             {
-                // gtk_window_resize(GTK_WINDOW(window.window), window.previous_width, window.previous_height);
-                
                 gtk_window_unfullscreen(GTK_WINDOW(window.window));
+                gtk_widget_show(menubar);
                 window.isFullScreen = FALSE;
             }
             else
             {
                 gtk_window_fullscreen(GTK_WINDOW(window.window));
+                gtk_widget_hide(menubar);
                 window.isFullScreen = TRUE;
             }
 

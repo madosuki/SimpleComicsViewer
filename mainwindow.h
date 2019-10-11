@@ -96,6 +96,8 @@ GtkWidget *grid;
 
 GtkWidget *scrolled_window;
 
+GtkWidget *menubar;
+
 static void print_hello(GtkWidget *widget, gpointer data)
 {
     g_print("Hello World\n");
@@ -129,15 +131,32 @@ static void activate(GtkApplication* app, gpointer user_data)
     // add vbox to container
     // gtk_container_add(GTK_CONTAINER(vbox), hbox);
     // gtk_container_add(GTK_CONTAINER(window), vbox);
-    gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
 
     gtk_container_add(GTK_CONTAINER(window.window), vbox);
 
-    GtkWidget *menubar = gtk_menu_bar_new();
+    /*
+    GMenuModel *menubar = G_MENU_MODEL(gtk_builder_get_object(builder, "menubar"));
+    gtk_application_set_menubar(GTK_APPLICATION(app), menubar);
+    g_object_unref(menubar);
+    */
+
+    // settings menubar
+    menubar = gtk_menu_bar_new();
+    // GtkWidget *menu = gtk_menu_new();
+    GtkWidget *open_file = gtk_menu_item_new_with_label("File");
+    // gtk_menu_attach(GTK_MENU(menu), open_file, 0, 0, 0, 0);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menubar), open_file);
+    // gtk_container_add(GTK_CONTAINER(window.window), menubar);
+
+    // add menubar
     gtk_box_pack_start(GTK_BOX(vbox), menubar, FALSE, FALSE, 0);
+
+    // add page area
+    gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
 
     // Initial Scroll Window
     scrolled_window = gtk_scrolled_window_new(NULL, NULL);
+    gtk_box_pack_end(GTK_BOX(hbox), scrolled_window, TRUE, TRUE, 0);
 
     grid = gtk_grid_new();
     gtk_container_add(GTK_CONTAINER(scrolled_window), grid);
@@ -168,44 +187,21 @@ static void activate(GtkApplication* app, gpointer user_data)
             gtk_widget_set_vexpand(pages->right, TRUE);
 
             gtk_grid_attach(GTK_GRID(grid), pages->left, 0, 0, 1, 1);
-            /*
-            gtk_grid_attach(GTK_GRID(grid), pages->right, 1, 0, 1, 1);
-            */
+            // gtk_grid_attach(GTK_GRID(grid), pages->right, 1, 0, 1, 1);
 
             gtk_grid_attach_next_to(GTK_GRID(grid), pages->right, pages->left, GTK_POS_RIGHT, 1, 1);
 
-            /*
-            g_object_set(pages->left, "valign", GTK_ALIGN_CENTER, NULL);
-            g_object_set(pages->right, "valign", GTK_ALIGN_CENTER, NULL);
-            */
-
-
-            /*
-            g_object_set(pages->left, "margin-right", 0, NULL);
-            g_object_set(pages->right, "margin-left", 0, NULL);
-            */
+            // g_object_set(pages->left, "valign", GTK_ALIGN_CENTER, NULL);
+            // g_object_set(pages->right, "valign", GTK_ALIGN_CENTER, NULL);
 
             // gtk_grid_attach(GTK_GRID(grid), pages->left, 0, 0, image_container_list[0]->dst_width, image_container_list[0]->dst_height);
             // gtk_grid_attach(GTK_GRID(grid), pages->right, image_container_list[0]->dst_width, 0, image_container_list[1]->dst_width, image_container_list[1]->dst_height);
 
-            /*
-            gtk_container_add(GTK_CONTAINER(scrolled_window), pages->left);
-            gtk_container_add(GTK_CONTAINER(scrolled_window), pages->right);
-            */
 
         }
     }
-
-    /*
-    GtkWidget *menubar = gtk_menu_bar_new();
-    gtk_box_pack_start(GTK_BOX(vbox), menubar, TRUE, TRUE, 0);
-    */
-
-    // GtkWidget *second_scrolled_window = gtk_scrolled_window_new(NULL, NULL);
-    // gtk_container_add(GTK_CONTAINER(second_scrolled_window), right);
-
     // concatenate between vbox and scroll window.
-    gtk_box_pack_start(GTK_BOX(hbox), scrolled_window, TRUE, TRUE, 0);
+
     // gtk_box_pack_start(GTK_BOX(hbox), second_scrolled_window, TRUE, TRUE, 0);
 
     /*
