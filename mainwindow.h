@@ -12,6 +12,7 @@
 #define DEFAULT_WINDOW_HEIGHT 768
 
 GtkApplication *app;
+
 int status;
 
 void free_array_with_alloced(void **list, const int size);
@@ -88,15 +89,29 @@ typedef struct
     double *aspect_raito;
 } Image_Container_t;
 
+typedef struct
+{
+    GtkWidget *scrolled_window;
+    gint width;
+    gint height;
+} DrawingArea_t;
+
 Image_Container_t **image_container_list;
 
 main_window_data_t window;
 
+DrawingArea_t draw_area;
+
 GtkWidget *grid;
 
-GtkWidget *scrolled_window;
-
 GtkWidget *menubar;
+
+static void get_widget_size(GtkWidget *widget, GtkAllocation *allocation, void *data)
+{
+    // printf("width: %d, height: %d\n", allocation->width, allocation->height);
+    draw_area.width = allocation->width;
+    draw_area.height = allocation->height;
+}
 
 static void print_hello(GtkWidget *widget, gpointer data)
 {
@@ -155,11 +170,13 @@ static void activate(GtkApplication* app, gpointer user_data)
     gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
 
     // Initial Scroll Window
-    scrolled_window = gtk_scrolled_window_new(NULL, NULL);
-    gtk_box_pack_end(GTK_BOX(hbox), scrolled_window, TRUE, TRUE, 0);
+    draw_area.scrolled_window = gtk_scrolled_window_new(NULL, NULL);
+    draw_area.width = 0;
+    draw_area.height = 0;
+    gtk_box_pack_end(GTK_BOX(hbox), draw_area.scrolled_window, TRUE, TRUE, 0);
 
     grid = gtk_grid_new();
-    gtk_container_add(GTK_CONTAINER(scrolled_window), grid);
+    gtk_container_add(GTK_CONTAINER(draw_area.scrolled_window), grid);
 
     // init pages struct
     pages = (Pages*)malloc(sizeof(Pages));
@@ -176,7 +193,7 @@ static void activate(GtkApplication* app, gpointer user_data)
             gtk_widget_set_hexpand(pages->left, TRUE);
             gtk_grid_attach(GTK_GRID(grid), pages->left, 0, 0, 1, 1);
             // gtk_grid_attach(GTK_GRID(grid), pages->left, 1, 0, image_container_list[0]->dst_width, image_container_list[0]->dst_height);
-            // gtk_container_add(GTK_CONTAINER(scrolled_window), pages->left);
+            // gtk_container_add(GTK_CONTAINER(scroll_window), pages->left);
         }
         else
         {
@@ -200,9 +217,11 @@ static void activate(GtkApplication* app, gpointer user_data)
 
         }
     }
+
+    // kg_signal_connect(draw_area.scrolled_window, "size-allocate", G_CALLBACK(get_widget_size), NULL);
     // concatenate between vbox and scroll window.
 
-    // gtk_box_pack_start(GTK_BOX(hbox), second_scrolled_window, TRUE, TRUE, 0);
+    // gtk_box_pack_start(GTK_BOX(hbox), second_scroll_window, TRUE, TRUE, 0);
 
     /*
     // Create Button box

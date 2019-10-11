@@ -318,7 +318,7 @@ void next_image(int isForward)
 gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer data)
 {
     switch(event->keyval) {
-        case GDK_KEY_Return:
+        case GDK_KEY_F:
             if(window.isFullScreen)
             {
                 gtk_window_unfullscreen(GTK_WINDOW(window.window));
@@ -673,6 +673,14 @@ int resize_when_spread(int page)
     window.height = window_height;
 
     int half_width = window_width / 2;
+    /*
+    if(draw_area.width > 0)
+    {
+        half_width = draw_area.width / 2;
+        window_width = draw_area.width;
+        window_height = draw_area.height;
+    }
+    */
 
     int left_width = half_width;
     int left_height = 0;
