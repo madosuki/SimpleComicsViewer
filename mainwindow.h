@@ -73,6 +73,7 @@ typedef struct
     GtkWidget *window;
     int width;
     int height;
+    int isFullScreen;
 } main_window_data_t;
 
 typedef struct
@@ -106,6 +107,7 @@ static void activate(GtkApplication* app, gpointer user_data)
     window.window = gtk_application_window_new(app);
     window.width = DEFAULT_WINDOW_WIDTH;
     window.height = DEFAULT_WINDOW_HEIGHT;
+    window.isFullScreen = FALSE;
     // g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(Close), NULL);
 
     // Set Window Title

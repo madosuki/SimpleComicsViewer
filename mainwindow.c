@@ -318,6 +318,22 @@ void next_image(int isForward)
 gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer data)
 {
     switch(event->keyval) {
+        case GDK_KEY_Return:
+            if(window.isFullScreen)
+            {
+                // gtk_window_resize(GTK_WINDOW(window.window), window.previous_width, window.previous_height);
+                
+                gtk_window_unfullscreen(GTK_WINDOW(window.window));
+                window.isFullScreen = FALSE;
+            }
+            else
+            {
+                gtk_window_fullscreen(GTK_WINDOW(window.window));
+                window.isFullScreen = TRUE;
+            }
+
+            break;
+
         case GDK_KEY_Home:
             pages->current_page = 1;
 
@@ -688,25 +704,23 @@ int resize_when_spread(int page)
     image_container_list[page - 1]->dst = gdk_pixbuf_scale_simple(image_container_list[page - 1]->src, left_width, left_height, GDK_INTERP_BILINEAR);
     image_container_list[page]->dst = gdk_pixbuf_scale_simple(image_container_list[page]->src, right_width, right_height, GDK_INTERP_BILINEAR);
 
-    gint s_w = 0;
-    gint s_h = 0;
-    // printf("Scrolled Window Width: %d, Height%d\n", s_w, s_h);
-
     return isOverHeight;
 }
 
 void set_margin_left_page(int position, int isOverHeight)
 {
+    /*
     gint window_width = 0;
     gint window_height = 0;
     gtk_window_get_size((GtkWindow*)window.window, &window_width, &window_height);
     window.width = window_width;
     window.height = window_height;
+    */
 
     if(isOverHeight)
     {
         int mix_width = (image_container_list[position - 1]->dst_width + image_container_list[position]->dst_width);
-        int margin_left = (fmax(mix_width, window_width) - fmin(mix_width, window_width)) / 2;
+        int margin_left = (fmax(mix_width, window.width) - fmin(mix_width, window.width)) / 2;
 
         printf("margin left: %d\n", margin_left);
 
