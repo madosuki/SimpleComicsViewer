@@ -34,7 +34,7 @@ int get_image_file_count(struct dirent **src, const int size, int *dst)
             int fd = open(src[i]->d_name, O_RDONLY);
             if(fd < 0)
             {
-                printf("Load Error\n");
+                printf("Load Error: %s\n", src[i]->d_name);
             }
             else
             {
