@@ -31,74 +31,85 @@ int get_image_file_count(struct dirent **src, const int size, int *dst)
     {
         if(count < LIST_BUFFER)
         {
-            FILE *file = fopen(src[i]->d_name, "rb");
-            if(file != NULL)
+            int fd = open(src[i]->d_name, O_RDONLY);
+            if(fd < 0)
             {
-                fseek(file, 0, SEEK_END);
-                long file_length = ftell(file);
-                rewind(file);
-
-                printf("%s, File Size: %ld\n", src[i]->d_name, file_length);
-
-                char *buffer;
-                if(file_length > 8)
+                printf("Load Error\n");
+            }
+            else
+            {
+                FILE *file = fdopen(fd, "rb");
+                if(file != NULL)
                 {
-                    buffer = (char*)calloc(8, 1);
-                    fread(buffer, 1, png_sig_size, file);
+                    struct stat stat_buf;
+                    fstat(fd, &stat_buf);
 
-                    int isImageFile = 0;
-                    int sig_count = 0;
-                    if(buffer[0] == png_sig[0])
+                    long file_length = stat_buf.st_size;
+
+                    printf("%s, File Size: %ld\n", src[i]->d_name, file_length);
+
+                    char *buffer;
+                    if(file_length > 8)
                     {
-                        for(int j = 0; j < png_sig_size; ++j)
+                        buffer = (char*)calloc(8, 1);
+                        fread(buffer, 1, png_sig_size, file);
+
+                        int isImageFile = 0;
+                        int sig_count = 0;
+                        if(buffer[0] == png_sig[0])
                         {
-                            if(buffer[j] == png_sig[j])
+                            for(int j = 0; j < png_sig_size; ++j)
                             {
-                                sig_count++;
+                                if(buffer[j] == png_sig[j])
+                                {
+                                    sig_count++;
+                                }
                             }
                         }
-                    }
-                    else if(buffer[0] == jpg_sig[0])
-                    {
-
-                        for(int j = 0; j < jpg_sig_size; ++j)
+                        else if(buffer[0] == jpg_sig[0])
                         {
-                            if(buffer[j] == jpg_sig[j])
+
+                            for(int j = 0; j < jpg_sig_size; ++j)
                             {
-                                sig_count++;
+                                if(buffer[j] == jpg_sig[j])
+                                {
+                                    sig_count++;
+                                }
                             }
                         }
-                    }
 
-                    free(buffer);
+                        free(buffer);
 
-                    switch(sig_count)
-                    {
-                        case 8:
-                            isImageFile = 1;
-                            break;
-                        case 4:
-                            isImageFile = 2;
-                            break;
-                        default:
-                            break;
-                    }
-
-                    if(isImageFile == 1 || isImageFile == 2)
-                    {
-
-                        number_list[count - 1] = i;
-                        count++;
-                        int *tmp = (int*)realloc(number_list, sizeof(int) * count);
-                        if(tmp != NULL)
+                        switch(sig_count)
                         {
-                            number_list = tmp;
+                            case 8:
+                                isImageFile = 1;
+                                break;
+                            case 4:
+                                isImageFile = 2;
+                                break;
+                            default:
+                                break;
                         }
+
+                        if(isImageFile == 1 || isImageFile == 2)
+                        {
+
+                            number_list[count - 1] = i;
+                            count++;
+                            int *tmp = (int*)realloc(number_list, sizeof(int) * count);
+                            if(tmp != NULL)
+                            {
+                                number_list = tmp;
+                            }
+                        }
+
                     }
 
+                    close(fd);
+
+                    fclose(file);
                 }
-
-                fclose(file);
             }
         }
 
@@ -305,7 +316,7 @@ void next_image(int isForward)
                     gtk_image_set_from_pixbuf((GtkImage*)pages->left, image_container_list[pages->current_page - 1]->dst);
                 }
 
-                
+
                 set_margin_left_page(pages->current_page, isOverHeight);
             }
         }
@@ -378,7 +389,7 @@ gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer d
                     pages->current_page = 1;
                 }
             }
-            
+
             if(pages->current_page < 0)
             {
                 pages->current_page = detail->image_count - 1;
@@ -543,13 +554,13 @@ void resize_when_single(int position)
     }
 
     /*
-    if(width > window_width)
-    {
-        int diff = width - window_width;
-        width = width - diff;
-        height = (int)ceil((double)width * (h_aspect / w_aspect));
-    }
-    */
+       if(width > window_width)
+       {
+       int diff = width - window_width;
+       width = width - diff;
+       height = (int)ceil((double)width * (h_aspect / w_aspect));
+       }
+       */
 
 
     image_container_list[position]->dst = gdk_pixbuf_scale_simple(image_container_list[position]->src, width, height, GDK_INTERP_BILINEAR);
@@ -590,9 +601,9 @@ gboolean detect_resize_window(GtkWidget *widget, GdkEvent *event, gpointer data)
             else
             {
                 /*
-                resize_when_single(pages->current_page - 1);
-                resize_when_single(pages->current_page);
-                */
+                   resize_when_single(pages->current_page - 1);
+                   resize_when_single(pages->current_page);
+                   */
 
                 int isOverHeight = resize_when_spread(pages->current_page);
 
@@ -674,13 +685,13 @@ int resize_when_spread(int page)
 
     int half_width = window_width / 2;
     /*
-    if(draw_area.width > 0)
-    {
-        half_width = draw_area.width / 2;
-        window_width = draw_area.width;
-        window_height = draw_area.height;
-    }
-    */
+       if(draw_area.width > 0)
+       {
+       half_width = draw_area.width / 2;
+       window_width = draw_area.width;
+       window_height = draw_area.height;
+       }
+       */
 
     int left_width = half_width;
     int left_height = 0;
@@ -718,12 +729,12 @@ int resize_when_spread(int page)
 void set_margin_left_page(int position, int isOverHeight)
 {
     /*
-    gint window_width = 0;
-    gint window_height = 0;
-    gtk_window_get_size((GtkWindow*)window.window, &window_width, &window_height);
-    window.width = window_width;
-    window.height = window_height;
-    */
+       gint window_width = 0;
+       gint window_height = 0;
+       gtk_window_get_size((GtkWindow*)window.window, &window_width, &window_height);
+       window.width = window_width;
+       window.height = window_height;
+       */
 
     if(isOverHeight)
     {

@@ -4,6 +4,10 @@
 #include <gtk/gtk.h>
 #include <dirent.h>
 #include <math.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
 #include "utils.h"
 
 #define LIST_BUFFER 1024
@@ -108,7 +112,6 @@ GtkWidget *menubar;
 
 static void get_widget_size(GtkWidget *widget, GtkAllocation *allocation, void *data)
 {
-    // printf("width: %d, height: %d\n", allocation->width, allocation->height);
     draw_area.width = allocation->width;
     draw_area.height = allocation->height;
 }
