@@ -22,7 +22,7 @@ int status;
 
 void free_array_with_alloced(void **list, const int size);
 
-int get_image_file_count(struct dirent **src, const int size, int *dst);
+int get_image_file_count_from_directory(struct dirent **src, const int size, int *dst);
 
 int create_image_path_list(char **image_path_list);
 
@@ -104,6 +104,8 @@ typedef struct
 } DrawingArea_t;
 
 Image_Container_t **image_container_list;
+
+uncompress_data_set_t *uncompressed_file_list;
 
 main_window_data_t window;
 
@@ -193,9 +195,9 @@ static void activate(GtkApplication* app, gpointer user_data)
     pages->page_direction_right = TRUE;
     pages->isSingle = FALSE;
 
-    isCompressFile = FALSE;
+    isCompressFile = TRUE;
 
-    set_image_from_compressed_file("./ubunchu01_ja.zip");
+    // set_image_from_compressed_file("./tmp.zip");
 
     // set image file
     if(init_image_object())

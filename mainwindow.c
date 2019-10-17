@@ -23,20 +23,34 @@ void free_array_with_alloced(void **list, const int size)
 
 void set_image_from_compressed_file(const char *file_name)
 {
-    uncompress_data_set_t *list = (uncompress_data_set_t*)calloc(sizeof(uncompress_data_set_t), sizeof(uncompress_data_set_t));
-    int ret = load_from_zip(file_name, list);
-    printf("\ncompressed file load now\nsize: %d\n", list->size);
+    uncompress_data_set_t *tmp_list = (uncompress_data_set_t*)calloc(sizeof(uncompress_data_set_t), sizeof(uncompress_data_set_t));
+    // uncompress_data_set_t tmp_list;
+    int ret = load_from_zip(file_name, tmp_list);
+    // printf("\ncompressed file load now\nsize: %d\n", tmp_list->size);
     if(ret) {
-        for(int i = 0; i < list->size; i++) {
-            printf("%s\n", list->uncompress_data_list[i]->file_name);
+        for(int i = 0; i < tmp_list->size; i++) {
+            printf("file name: %s, size: %d\n", tmp_list->uncompress_data_list[i]->file_name, tmp_list->uncompress_data_list[i]->file_size);
         }
     }
-    printf("end\n\n");
 
-    FreeUnCompressDataSet(list);
+    detail = (DirectoryDetail_t*)calloc(sizeof(DirectoryDetail_t), sizeof(DirectoryDetail_t));
+    detail->image_count = tmp_list->size;
+
+    if(detail->image_count % 2)
+    {
+        detail->isOdd = TRUE;
+    }
+    else
+    {
+        detail->isOdd = FALSE;
+    }
+
+    uncompressed_file_list = tmp_list;
+
+    // FreeUnCompressDataSet(uncompressed_file_list);
 }
 
-int get_image_file_count(struct dirent **src, const int size, int *dst)
+int get_image_file_count_from_directory(struct dirent **src, const int size, int *dst)
 {
     int *number_list = (int*)malloc(sizeof(int) * LIST_BUFFER);
     memset(number_list, 0, sizeof(int) * LIST_BUFFER);
@@ -157,7 +171,7 @@ int create_image_path_list(char **image_path_list)
     int *number_list = (int*)malloc(sizeof(int) * LIST_BUFFER);
     memset(number_list, 0, sizeof(int) * LIST_BUFFER);
 
-    int count = get_image_file_count(file_list, r, number_list);
+    int count = get_image_file_count_from_directory(file_list, r, number_list);
 
     printf("count: %d, r: %d\n", count, r);
 
@@ -506,6 +520,8 @@ void Close()
         free(image_container_list);
     }
 
+    FreeUnCompressDataSet(uncompressed_file_list);
+
     free(detail);
 
     free(pages);
@@ -522,9 +538,31 @@ void set_image_container(int position)
         memset(image_container_list[position], 0, sizeof(Image_Container_t));
 
         image_container_list[position]->err = NULL;
-        image_container_list[position]->src = gdk_pixbuf_new_from_file(detail->image_path_list[position], &image_container_list[position]->err);
-        image_container_list[position]->src_height = gdk_pixbuf_get_height(image_container_list[position]->src);
+
+        if(!isCompressFile) {
+            printf("gehahahah\n");
+            image_container_list[position]->src = gdk_pixbuf_new_from_file(detail->image_path_list[position], &image_container_list[position]->err);
+        }
+        else {
+            // printf("uncompressd load mode\n%d\n", uncompressed_file_list->uncompress_data_list[position]->file_size);
+
+            GdkPixbufLoader *loader = gdk_pixbuf_loader_new();
+            gboolean check = gdk_pixbuf_loader_write(loader, uncompressed_file_list->uncompress_data_list[position]->data, uncompressed_file_list->uncompress_data_list[position]->file_size, NULL);
+            if(!check) {
+                printf("GdkPixbufLoader write error\n");
+            }
+
+            // memcpy(image_container_list[position]->src, gdk_pixbuf_loader_get_pixbuf(loader), uncompressed_file_list->uncompress_data_list[position]->file_size);
+            image_container_list[position]->src = gdk_pixbuf_loader_get_pixbuf(loader);
+            
+        }
+
+        if(image_container_list[position]->src == NULL) {
+            printf("empty!\n");
+        }
+
         image_container_list[position]->src_width = gdk_pixbuf_get_width(image_container_list[position]->src);
+        image_container_list[position]->src_height = gdk_pixbuf_get_height(image_container_list[position]->src);
 
         int width = image_container_list[position]->src_width;
         int height = image_container_list[position]->src_height;
@@ -773,7 +811,12 @@ int init_image_object(int startpage)
 {
     pages->current_page = 0;
     // set image file path
-    set_image_path_list();
+
+    if(isCompressFile) {
+        set_image_from_compressed_file("tmp.zip");
+    } else {
+        set_image_path_list();
+    }
 
     if(detail->image_count > 0)
     {
@@ -787,7 +830,7 @@ int init_image_object(int startpage)
         }
         else
         {
-            printf("%s\n%s\n", detail->image_path_list[0], detail->image_path_list[1]);
+            // printf("%s\n%s\n", detail->image_path_list[0], detail->image_path_list[1]);
             set_image_container(0);
             set_image_container(1);
 

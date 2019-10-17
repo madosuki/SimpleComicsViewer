@@ -87,7 +87,6 @@ void set_central_headers(zip_central_header_t **headers, int central_offset, int
 
         uint32_t uncompress_size;
         fread(&uncompress_size, 1, 4, fp);
-        // printf("zip compress size: %d\n", *(uint32_t*)&uncompress_size);
         tmp->uncompress_size = uncompress_size;
 
         total_uncompress_file_size += uncompress_size;
@@ -124,7 +123,8 @@ void set_central_headers(zip_central_header_t **headers, int central_offset, int
         if(file_name_length > 0) {
             uint8_t *file_name = (uint8_t*)calloc(file_name_length, 1);
             fread(file_name, 1, file_name_length, fp);
-            // printf("file name: %s\n", file_name);
+            printf("\nfile name: %s\n", file_name);
+            printf("zip uncompress size: %d, compress_size %d\n\n", uncompress_size, compress_size);
 
             tmp->file_name = (uint8_t*)calloc(file_name_length, 1);
             memcpy(tmp->file_name, file_name, file_name_length);
@@ -401,13 +401,10 @@ int load_from_zip(const char *file_name, uncompress_data_set_t *data_set)
         // set file name length offset
         fseek(fp, local_header_offset + 26, SEEK_SET);
 
-        printf("seek now first\n");
-
         uint16_t file_name_length;
         fread(&file_name_length, 1, 2, fp);
         uint16_t extra_field_length;
         fread(&extra_field_length, 1, 2, fp);
-
 
         uint8_t *tmp_file_name = (uint8_t*)calloc(file_name_length, 1);
         if(tmp_file_name == NULL) {
@@ -590,6 +587,8 @@ int load_from_zip(const char *file_name, uncompress_data_set_t *data_set)
 
                 data_set->uncompress_data_list[position]->data = (uint8_t*)calloc(headers[i]->uncompress_size, 1);
                 memcpy(data_set->uncompress_data_list[position]->data, out, headers[i]->uncompress_size);
+
+                data_set->uncompress_data_list[position]->file_size = headers[i]->uncompress_size;
                 
                 position++;
 

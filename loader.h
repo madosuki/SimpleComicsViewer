@@ -58,7 +58,7 @@ typedef struct {
 typedef struct {
     uint8_t *data;
     uint8_t *file_name;
-    uint16_t file_size;
+    uint32_t file_size;
 } uncompress_data_t;
 
 typedef struct {
