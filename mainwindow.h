@@ -9,6 +9,7 @@
 #include <fcntl.h>
 
 #include "utils.h"
+#include "loader.h"
 
 #define LIST_BUFFER 1024
 
@@ -26,6 +27,8 @@ int get_image_file_count(struct dirent **src, const int size, int *dst);
 int create_image_path_list(char **image_path_list);
 
 void set_image_path_list();
+
+void set_image_from_compressed_file(const char* file_name);
 
 void set_image_container(int position);
 
@@ -110,6 +113,8 @@ GtkWidget *grid;
 
 GtkWidget *menubar;
 
+int isCompressFile;
+
 static void get_widget_size(GtkWidget *widget, GtkAllocation *allocation, void *data)
 {
     draw_area.width = allocation->width;
@@ -187,6 +192,10 @@ static void activate(GtkApplication* app, gpointer user_data)
 
     pages->page_direction_right = TRUE;
     pages->isSingle = FALSE;
+
+    isCompressFile = FALSE;
+
+    // set_image_from_compressed_file("./ubunchu01_ja.zip");
 
     // set image file
     if(init_image_object())

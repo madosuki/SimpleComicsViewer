@@ -21,6 +21,21 @@ void free_array_with_alloced(void **list, const int size)
 
 }
 
+void set_image_from_compressed_file(const char *file_name)
+{
+    uncompress_data_set_t *list = (uncompress_data_set_t*)calloc(sizeof(uncompress_data_set_t), sizeof(uncompress_data_set_t));
+    int ret = load_from_zip(file_name, list);
+    printf("\ncompressed file load now\nsize: %d\n", list->size);
+    if(ret) {
+        for(int i = 0; i < list->size; i++) {
+            printf("%s\n", list->uncompress_data_list[i]->file_name);
+        }
+    }
+    printf("end\n\n");
+
+    FreeUnCompressDataSet(list);
+}
+
 int get_image_file_count(struct dirent **src, const int size, int *dst)
 {
     int *number_list = (int*)malloc(sizeof(int) * LIST_BUFFER);
@@ -48,10 +63,10 @@ int get_image_file_count(struct dirent **src, const int size, int *dst)
 
                     printf("%s, File Size: %ld\n", src[i]->d_name, file_length);
 
-                    char *buffer;
+                    unsigned char *buffer;
                     if(file_length > 8)
                     {
-                        buffer = (char*)calloc(8, 1);
+                        buffer = (unsigned char*)calloc(8, 1);
                         fread(buffer, 1, png_sig_size, file);
 
                         int isImageFile = 0;
@@ -759,6 +774,7 @@ int init_image_object(int startpage)
     pages->current_page = 0;
     // set image file path
     set_image_path_list();
+
     if(detail->image_count > 0)
     {
         image_container_list = (Image_Container_t**)calloc(detail->image_count, sizeof(Image_Container_t*));
