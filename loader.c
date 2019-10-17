@@ -408,12 +408,20 @@ int load_from_zip(const char *file_name, uncompress_data_set_t *data_set)
         uint16_t extra_field_length;
         fread(&extra_field_length, 1, 2, fp);
 
-        data_set->uncompress_data_list[i] = (uncompress_data_t*)calloc(sizeof(uncompress_data_t), sizeof(uncompress_data_t));
 
-        data_set->uncompress_data_list[i]->file_name = (uint8_t*)calloc(file_name_length, 1);
-        fread(data_set->uncompress_data_list[i]->file_name, 1, file_name_length, fp);
+        uint8_t *tmp_file_name = (uint8_t*)calloc(file_name_length, 1);
+        if(tmp_file_name == NULL) {
+            free(tmp_file_name);
+            tmp_file_name = NULL;
 
-        printf("%s\n", data_set->uncompress_data_list[i]->file_name);
+            close(fd);
+            fclose(fp);
+
+            FreeCentralHeaders(headers, cd_num_on_disk);
+
+            return 0;
+        }
+        fread(tmp_file_name, 1, file_name_length, fp);
 
         fseek(fp, extra_field_length, SEEK_CUR);
 
@@ -426,6 +434,11 @@ int load_from_zip(const char *file_name, uncompress_data_set_t *data_set)
 
         uint8_t *body = (uint8_t*)calloc(headers[i]->compress_size, 1);
         if(body == NULL) {
+
+            free(tmp_file_name);
+            tmp_file_name = NULL;
+
+
             free(body);
             body = NULL;
             printf("allocate error from body\n");
@@ -444,6 +457,11 @@ int load_from_zip(const char *file_name, uncompress_data_set_t *data_set)
         fread(body, 1, headers[i]->compress_size, fp);
         if(ferror(fp)) {
             printf("file error\n");
+
+            free(tmp_file_name);
+            tmp_file_name = NULL;
+
+
             free(body);
             body = NULL;
 
@@ -464,6 +482,9 @@ int load_from_zip(const char *file_name, uncompress_data_set_t *data_set)
         strm.avail_out = headers[i]->uncompress_size;
         uint8_t *out = (uint8_t*)calloc(headers[i]->uncompress_size, 1);
         if(out == NULL) {
+            free(tmp_file_name);
+            tmp_file_name = NULL;
+
             free(body);
             body = NULL;
 
@@ -492,6 +513,9 @@ int load_from_zip(const char *file_name, uncompress_data_set_t *data_set)
                 printf("Z_NEED_DICT\n");
                 inflateEnd(&strm);
 
+                free(tmp_file_name);
+                tmp_file_name = NULL;
+
                 free(body);
                 body = NULL;
 
@@ -514,6 +538,9 @@ int load_from_zip(const char *file_name, uncompress_data_set_t *data_set)
                 free(out);
                 out = NULL;
 
+                free(tmp_file_name);
+                tmp_file_name = NULL;
+
                 free(body);
                 body = NULL;
 
@@ -534,6 +561,9 @@ int load_from_zip(const char *file_name, uncompress_data_set_t *data_set)
                 free(out);
                 out = NULL;
 
+                free(tmp_file_name);
+                tmp_file_name = NULL;
+
                 free(body);
                 body = NULL;
 
@@ -551,25 +581,30 @@ int load_from_zip(const char *file_name, uncompress_data_set_t *data_set)
 
         int check = detect_image(out, headers[i]->uncompress_size);
 
-        /*
-           if(check == UTILS_PNG || check == UTILS_JPG) {
-           data_set->uncompress_data_list[position]->data = (uint8_t*)calloc(headers[i]->uncompress_size, 1);
-           memcpy(data_set->uncompress_data_list[position]->data, out, headers[i]->uncompress_size);
-           position++;
-           data_set->size = position;
-           }
-           */
+        if(check == UTILS_PNG || check == UTILS_JPG) {
+            data_set->uncompress_data_list[position] = (uncompress_data_t*)calloc(sizeof(uncompress_data_t), sizeof(uncompress_data_t));
+            if(data_set->uncompress_data_list[position] != NULL) {
 
-        data_set->uncompress_data_list[position]->data = (uint8_t*)calloc(headers[i]->uncompress_size, 1);
-        memcpy(data_set->uncompress_data_list[position]->data, out, headers[i]->uncompress_size);
-        position++;
-        data_set->size = position;
+                data_set->uncompress_data_list[position]->file_name = (uint8_t*)calloc(file_name_length, 1);
+                memcpy(data_set->uncompress_data_list[position]->file_name, tmp_file_name, file_name_length);
+
+                data_set->uncompress_data_list[position]->data = (uint8_t*)calloc(headers[i]->uncompress_size, 1);
+                memcpy(data_set->uncompress_data_list[position]->data, out, headers[i]->uncompress_size);
+                
+                position++;
+
+                data_set->size = position;
+            }
+        }
 
 
         free(out);
         out = NULL;
 
         inflateEnd(&strm);
+
+        free(tmp_file_name);
+        tmp_file_name = NULL;
 
         free(body);
         body = NULL;

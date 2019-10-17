@@ -195,7 +195,7 @@ static void activate(GtkApplication* app, gpointer user_data)
 
     isCompressFile = FALSE;
 
-    // set_image_from_compressed_file("./ubunchu01_ja.zip");
+    set_image_from_compressed_file("./ubunchu01_ja.zip");
 
     // set image file
     if(init_image_object())
