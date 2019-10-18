@@ -254,6 +254,7 @@ void next_image(int isForward)
     {
         if(isForward)
         {
+            // printf("current page %d\n", pages->current_page);
             set_image_container(pages->current_page);
             if(pages->current_page - 1 < detail->image_count)
             {
@@ -424,7 +425,7 @@ gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer d
                 pages->current_page = detail->image_count - 1;
             }
 
-            printf("%s\n", detail->image_path_list[pages->current_page]);
+            // printf("%s\n", detail->image_path_list[pages->current_page]);
 
             if(pages->page_direction_right)
             {
@@ -463,7 +464,7 @@ gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer d
                 pages->current_page = detail->image_count - 1;
             }
 
-            printf("%d\n", pages->current_page);
+            printf("current_page: %d\n", pages->current_page);
 
             if(pages->page_direction_right)
             {
