@@ -167,12 +167,28 @@ static void activate(GtkApplication* app, gpointer user_data)
 
     // settings menubar
     menubar = gtk_menu_bar_new();
-    // GtkWidget *menu = gtk_menu_new();
-    GtkWidget *open_file = gtk_menu_item_new_with_label("File");
-    GtkWidget *help = gtk_menu_item_new_with_label("Help");
 
-    gtk_menu_shell_append(GTK_MENU_SHELL(menubar), open_file);
-    gtk_menu_shell_append(GTK_MENU_SHELL(menubar), help);
+    // File Menu
+    GtkWidget *file_menu = gtk_menu_new();
+    GtkWidget *file_menu_item = gtk_menu_item_new_with_label("File");
+    gtk_menu_item_set_submenu(GTK_MENU_ITEM(file_menu_item), file_menu);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menubar), file_menu_item);
+
+    GtkWidget *file_menu_load = gtk_menu_item_new_with_label("Load");
+    gtk_menu_shell_append(GTK_MENU_SHELL(file_menu), file_menu_load);
+
+    // Help Menu
+    GtkWidget *help_menu = gtk_menu_new();
+    GtkWidget *help_menu_item = gtk_menu_item_new_with_label("Help");
+    gtk_menu_item_set_submenu(GTK_MENU_ITEM(help_menu_item), help_menu);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menubar), help_menu_item);
+
+    GtkWidget *help_menu_about = gtk_menu_item_new_with_label("About");
+    gtk_menu_shell_append(GTK_MENU_SHELL(help_menu), help_menu_about);
+
+
+    // gtk_menu_attach(GTK_MENU(help), about, 0, 1, 0, 1);
+
     // gtk_container_add(GTK_CONTAINER(window.window), menubar);
 
     // add menubar
