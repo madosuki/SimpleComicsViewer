@@ -169,8 +169,10 @@ static void activate(GtkApplication* app, gpointer user_data)
     menubar = gtk_menu_bar_new();
     // GtkWidget *menu = gtk_menu_new();
     GtkWidget *open_file = gtk_menu_item_new_with_label("File");
-    // gtk_menu_attach(GTK_MENU(menu), open_file, 0, 0, 0, 0);
+    GtkWidget *help = gtk_menu_item_new_with_label("Help");
+
     gtk_menu_shell_append(GTK_MENU_SHELL(menubar), open_file);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menubar), help);
     // gtk_container_add(GTK_CONTAINER(window.window), menubar);
 
     // add menubar
