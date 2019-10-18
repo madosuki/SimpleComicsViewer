@@ -359,7 +359,7 @@ void next_image(int isForward)
 gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer data)
 {
     switch(event->keyval) {
-        case GDK_KEY_F:
+        case GDK_KEY_f:
             if(window.isFullScreen)
             {
                 gtk_window_unfullscreen(GTK_WINDOW(window.window));
