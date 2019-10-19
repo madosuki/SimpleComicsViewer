@@ -490,9 +490,11 @@ void FreeImageContainer()
                     g_object_unref(image_container_list[i]->src);
                 }
 
+                /*
                 if(image_container_list[i]->dst != NULL) {
                     g_object_unref(image_container_list[i]->dst);
                 }
+                */
 
                 free(image_container_list[i]);
                 image_container_list[i] = NULL;
@@ -600,8 +602,7 @@ void resize_when_single(int position)
        printf("%f : %f\n", w_aspect, h_aspect);
        */
 
-    if(height > window_height)
-    {
+    if(height > window_height) {
         int diff = height - window_height;
         height = height - diff;
         int result = (int)ceil((double)height * (w_aspect / h_aspect));
@@ -637,10 +638,8 @@ gboolean detect_resize_window(GtkWidget *widget, GdkEvent *event, gpointer data)
         gint height = 0;
         gtk_window_get_size((GtkWindow*)window.window, &width, &height);
 
-        if(width != window.width || height != window.height)
-        {
-            if(pages->isSingle)
-            {
+        if(width != window.width || height != window.height) {
+            if(pages->isSingle) {
                 resize_when_single(pages->current_page);
 
                 gtk_image_clear((GtkImage*)pages->left);
@@ -648,11 +647,9 @@ gboolean detect_resize_window(GtkWidget *widget, GdkEvent *event, gpointer data)
                 gtk_image_set_from_pixbuf((GtkImage*)pages->left, image_container_list[pages->current_page]->dst);
 
                 unref_g_object((GtkWidget*)image_container_list[pages->current_page]->dst);
-            }
-            else
-            {
-                if(detail->isOdd && detail->image_count == pages->current_page - 1)
-                {
+
+            } else {
+                if(detail->isOdd && detail->image_count == pages->current_page - 1) {
                     resize_when_single(pages->current_page);
 
                     gtk_image_clear((GtkImage*)pages->left);
@@ -660,9 +657,8 @@ gboolean detect_resize_window(GtkWidget *widget, GdkEvent *event, gpointer data)
 
                     gtk_image_set_from_pixbuf((GtkImage*)pages->left, image_container_list[pages->current_page]->dst);
                     unref_g_object((GtkWidget*)image_container_list[pages->current_page]->dst);
-                }
-                else
-                {
+
+                } else {
                     /*
                        resize_when_single(pages->current_page - 1);
                        resize_when_single(pages->current_page);
@@ -673,21 +669,20 @@ gboolean detect_resize_window(GtkWidget *widget, GdkEvent *event, gpointer data)
                     gtk_image_clear((GtkImage*)pages->left);
                     gtk_image_clear((GtkImage*)pages->right);
 
-                    if(pages->page_direction_right)
-                    {
+                    if(pages->page_direction_right) {
                         gtk_image_set_from_pixbuf((GtkImage*)pages->left, image_container_list[pages->current_page]->dst);
                         gtk_image_set_from_pixbuf((GtkImage*)pages->right, image_container_list[pages->current_page - 1]->dst);
-                    }
-                    else
-                    {
+                    } else {
                         gtk_image_set_from_pixbuf((GtkImage*)pages->left, image_container_list[pages->current_page - 1]->dst);
                         gtk_image_set_from_pixbuf((GtkImage*)pages->right, image_container_list[pages->current_page]->dst);
                     }
 
                     set_margin_left_page(pages->current_page, isOverHeight);
 
+
                     unref_g_object((GtkWidget*)image_container_list[pages->current_page]->dst);
                     unref_g_object((GtkWidget*)image_container_list[pages->current_page - 1]->dst);
+
 
                 }
             }
@@ -748,6 +743,7 @@ int resize_when_spread(int page)
     window.height = window_height;
 
     int half_width = window_width / 2;
+
     /*
        if(draw_area.width > 0)
        {
@@ -851,6 +847,8 @@ int init_image_object(const char *file_name, int startpage)
         {
             set_image_container(0);
 
+            resize_when_single(0);
+
             set_image(&pages->left, 0);
         }
         else
@@ -948,8 +946,7 @@ void FullScreen()
 
 void UpdateGrid()
 {
-    if(pages->isSingle)
-    {
+    if(pages->isSingle) {
         if(!isFirstLoad) {
             gtk_grid_remove_column(GTK_GRID(grid), 0);
         }
@@ -957,9 +954,9 @@ void UpdateGrid()
         gtk_widget_set_hexpand(pages->left, TRUE);
         gtk_grid_attach(GTK_GRID(grid), pages->left, 0, 0, 1, 1);
 
-    }
-    else
-    {
+        gtk_widget_show(pages->left);
+
+    } else {
         if(!isFirstLoad) {
             gtk_grid_remove_column(GTK_GRID(grid), 0);
             gtk_grid_remove_column(GTK_GRID(grid), 0);
