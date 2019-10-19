@@ -87,6 +87,7 @@ typedef struct
     int width;
     int height;
     int isFullScreen;
+    int isClose;
 } main_window_data_t;
 
 typedef struct
@@ -108,6 +109,15 @@ typedef struct
     gint height;
 } DrawingArea_t;
 
+typedef struct
+{
+    GtkWidget *body;
+    GtkWidget *root;
+    GtkWidget *load;
+    GtkWidget *quit;
+} file_menu_t; 
+
+
 Image_Container_t **image_container_list;
 
 uncompress_data_set_t *uncompressed_file_list;
@@ -118,8 +128,17 @@ DrawingArea_t draw_area;
 
 GtkWidget *grid;
 
+file_menu_t file_menu_struct;
 
 int isCompressFile;
+
+static void CloseWindow()
+{
+    Close();
+    gtk_window_close(GTK_WINDOW(window.window));
+
+    printf("CloseWindow\n");
+}
 
 static void get_widget_size(GtkWidget *widget, GtkAllocation *allocation, void *data)
 {
@@ -139,6 +158,7 @@ static void activate(GtkApplication* app, gpointer user_data)
     window.width = DEFAULT_WINDOW_WIDTH;
     window.height = DEFAULT_WINDOW_HEIGHT;
     window.isFullScreen = FALSE;
+    window.isClose = FALSE;
     // g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(Close), NULL);
 
     // Set Window Title
@@ -151,7 +171,6 @@ static void activate(GtkApplication* app, gpointer user_data)
 
     g_signal_connect(G_OBJECT(window.window), "configure-event", G_CALLBACK(detect_resize_window), NULL);
 
-
     // Create Vertical Box
     GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
@@ -162,12 +181,6 @@ static void activate(GtkApplication* app, gpointer user_data)
     // gtk_container_add(GTK_CONTAINER(window), vbox);
 
     gtk_container_add(GTK_CONTAINER(window.window), vbox);
-
-    /*
-    GMenuModel *menubar = G_MENU_MODEL(gtk_builder_get_object(builder, "menubar"));
-    gtk_application_set_menubar(GTK_APPLICATION(app), menubar);
-    g_object_unref(menubar);
-    */
 
     // settings menubar
     window.menubar = create_menu_bar();

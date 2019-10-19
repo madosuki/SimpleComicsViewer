@@ -479,46 +479,46 @@ gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer d
 
 void Close()
 {
-    if(detail->image_path_list != NULL) 
-    {                                                                                
-        free_array_with_alloced((void**)detail->image_path_list, detail->image_count);    
-    }                                                                                
-    else                                                                             
-    {                                                                                
-        free(detail->image_path_list);                                                    
-    }                                                                                
+    if(!window.isClose) {
+        if(detail->image_path_list != NULL) 
+        {                                                                                
+            free_array_with_alloced((void**)detail->image_path_list, detail->image_count);    
+        }                                                                                
 
-
-    if(image_container_list != NULL)
-    {
-        for(int i = 0; i < detail->image_count; i++)
+        if(image_container_list != NULL)
         {
-            if(image_container_list[i] != NULL)
+            for(int i = 0; i < detail->image_count; i++)
             {
-                free(image_container_list[i]->aspect_raito);
-                image_container_list[i]->aspect_raito = NULL;
-
-                if(image_container_list[i]->src != NULL)
+                if(image_container_list[i] != NULL)
                 {
-                    g_object_unref(image_container_list[i]->src);
+                    free(image_container_list[i]->aspect_raito);
+                    image_container_list[i]->aspect_raito = NULL;
+
+                    if(image_container_list[i]->src != NULL)
+                    {
+                        g_object_unref(image_container_list[i]->src);
+                    }
                 }
             }
+
+            free_array_with_alloced((void**)image_container_list, detail->image_count);
         }
 
-        free_array_with_alloced((void**)image_container_list, detail->image_count);
+        FreeUnCompressDataSet(uncompressed_file_list);
+
+        if(detail != NULL) {
+            free(detail);
+            detail = NULL;
+        }
+
+        if(pages != NULL) {
+            free(pages);
+            pages = NULL;
+        }
+
+        window.isClose = TRUE;
+        printf("Closed\n");
     }
-    else
-    {
-        free(image_container_list);
-    }
-
-    FreeUnCompressDataSet(uncompressed_file_list);
-
-    free(detail);
-
-    free(pages);
-
-    printf("Closed\n");
 }
 
 
@@ -871,22 +871,26 @@ GtkWidget *create_menu_bar()
     GtkWidget *menubar = gtk_menu_bar_new();
 
     // File Menu
-    GtkWidget *file_menu = gtk_menu_new();
-    GtkWidget *file_menu_item = gtk_menu_item_new_with_label("File");
-    gtk_menu_item_set_submenu(GTK_MENU_ITEM(file_menu_item), file_menu);
-    gtk_menu_shell_append(GTK_MENU_SHELL(menubar), file_menu_item);
+    file_menu_struct.body = gtk_menu_new();
+    file_menu_struct.root = gtk_menu_item_new_with_label("File");
+    gtk_menu_item_set_submenu(GTK_MENU_ITEM(file_menu_struct.root), file_menu_struct.body);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menubar), file_menu_struct.root);
 
-    GtkWidget *file_menu_load = gtk_menu_item_new_with_label("Load");
-    gtk_menu_shell_append(GTK_MENU_SHELL(file_menu), file_menu_load);
+    file_menu_struct.load = gtk_menu_item_new_with_label("Load");
+    gtk_menu_shell_append(GTK_MENU_SHELL(file_menu_struct.body), file_menu_struct.load);
+
+    file_menu_struct.quit = gtk_menu_item_new_with_label("Quit");
+    gtk_menu_shell_append(GTK_MENU_SHELL(file_menu_struct.body), file_menu_struct.quit);
+    g_signal_connect(G_OBJECT(file_menu_struct.quit), "activate", G_CALLBACK(CloseWindow), NULL);
 
     // Help Menu
-    GtkWidget *help_menu = gtk_menu_new();
-    GtkWidget *help_menu_item = gtk_menu_item_new_with_label("Help");
-    gtk_menu_item_set_submenu(GTK_MENU_ITEM(help_menu_item), help_menu);
-    gtk_menu_shell_append(GTK_MENU_SHELL(menubar), help_menu_item);
+    GtkWidget *help_menu_body = gtk_menu_new();
+    GtkWidget *help_menu_root = gtk_menu_item_new_with_label("Help");
+    gtk_menu_item_set_submenu(GTK_MENU_ITEM(help_menu_root), help_menu_body);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menubar), help_menu_root);
 
     GtkWidget *help_menu_about = gtk_menu_item_new_with_label("About");
-    gtk_menu_shell_append(GTK_MENU_SHELL(help_menu), help_menu_about);
+    gtk_menu_shell_append(GTK_MENU_SHELL(help_menu_body), help_menu_about);
 
     return menubar;
 }
