@@ -918,13 +918,13 @@ GtkWidget *create_menu_bar()
     g_signal_connect(G_OBJECT(file_menu_struct.quit), "activate", G_CALLBACK(CloseWindow), NULL);
 
     // Help Menu
-    GtkWidget *help_menu_body = gtk_menu_new();
-    GtkWidget *help_menu_root = gtk_menu_item_new_with_label("Help");
-    gtk_menu_item_set_submenu(GTK_MENU_ITEM(help_menu_root), help_menu_body);
-    gtk_menu_shell_append(GTK_MENU_SHELL(menubar), help_menu_root);
+    help_menu_struct.body = gtk_menu_new();
+    help_menu_struct.root = gtk_menu_item_new_with_label("Help");
+    gtk_menu_item_set_submenu(GTK_MENU_ITEM(help_menu_struct.root), help_menu_struct.body);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menubar), help_menu_struct.root);
 
-    GtkWidget *help_menu_about = gtk_menu_item_new_with_label("About");
-    gtk_menu_shell_append(GTK_MENU_SHELL(help_menu_body), help_menu_about);
+    help_menu_struct.about = gtk_menu_item_new_with_label("About");
+    gtk_menu_shell_append(GTK_MENU_SHELL(help_menu_struct.body), help_menu_struct.about);
 
     return menubar;
 }

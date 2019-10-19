@@ -119,6 +119,13 @@ typedef struct
     GtkWidget *quit;
 } file_menu_t; 
 
+typedef struct
+{
+    GtkWidget *body;
+    GtkWidget *root;
+    GtkWidget *about;
+} help_menu_t;
+
 
 Image_Container_t **image_container_list;
 
@@ -131,6 +138,8 @@ DrawingArea_t draw_area;
 GtkWidget *grid;
 
 file_menu_t file_menu_struct;
+
+help_menu_t help_menu_struct;
 
 int isCompressFile;
 
