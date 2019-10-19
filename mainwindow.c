@@ -477,6 +477,34 @@ gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer d
     return FALSE;
 }
 
+
+void FreeImageContainer()
+{
+    if(image_container_list != NULL) {
+        for(int i = 0; i < detail->image_count; i++) {
+            if(image_container_list[i] != NULL) {
+                free(image_container_list[i]->aspect_raito);
+                image_container_list[i]->aspect_raito = NULL;
+
+                if(image_container_list[i]->src != NULL) {
+                    g_object_unref(image_container_list[i]->src);
+                }
+
+                if(image_container_list[i]->dst != NULL) {
+                    g_object_unref(image_container_list[i]->dst);
+                }
+
+                free(image_container_list[i]);
+                image_container_list[i] = NULL;
+            }
+        }
+
+        free(image_container_list);
+        image_container_list = NULL;
+    }
+
+}
+
 void Close()
 {
     if(!window.isClose) {
@@ -485,24 +513,7 @@ void Close()
             free_array_with_alloced((void**)detail->image_path_list, detail->image_count);    
         }                                                                                
 
-        if(image_container_list != NULL)
-        {
-            for(int i = 0; i < detail->image_count; i++)
-            {
-                if(image_container_list[i] != NULL)
-                {
-                    free(image_container_list[i]->aspect_raito);
-                    image_container_list[i]->aspect_raito = NULL;
-
-                    if(image_container_list[i]->src != NULL)
-                    {
-                        g_object_unref(image_container_list[i]->src);
-                    }
-                }
-            }
-
-            free_array_with_alloced((void**)image_container_list, detail->image_count);
-        }
+        FreeImageContainer();
 
         FreeUnCompressDataSet(uncompressed_file_list);
 
@@ -607,6 +618,12 @@ void resize_when_single(int position)
        }
        */
 
+    /*
+       if(image_container_list[position]->dst != NULL) {
+       unref_g_object((GtkWidget*)image_container_list[position]->dst);
+       }
+       */
+
 
     image_container_list[position]->dst = gdk_pixbuf_scale_simple(image_container_list[position]->src, width, height, GDK_INTERP_BILINEAR);
     image_container_list[position]->dst_width = width;
@@ -615,66 +632,68 @@ void resize_when_single(int position)
 
 gboolean detect_resize_window(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
-    gint width = 0;
-    gint height = 0;
-    gtk_window_get_size((GtkWindow*)window.window, &width, &height);
+    if(!isFirstLoad) {
+        gint width = 0;
+        gint height = 0;
+        gtk_window_get_size((GtkWindow*)window.window, &width, &height);
 
-    if(width != window.width || height != window.height)
-    {
-        if(pages->isSingle)
+        if(width != window.width || height != window.height)
         {
-            resize_when_single(pages->current_page);
-
-            gtk_image_clear((GtkImage*)pages->left);
-
-            gtk_image_set_from_pixbuf((GtkImage*)pages->left, image_container_list[pages->current_page]->dst);
-
-            unref_g_object((GtkWidget*)image_container_list[pages->current_page]->dst);
-        }
-        else
-        {
-            if(detail->isOdd && detail->image_count == pages->current_page - 1)
+            if(pages->isSingle)
             {
                 resize_when_single(pages->current_page);
 
                 gtk_image_clear((GtkImage*)pages->left);
-                gtk_image_clear((GtkImage*)pages->right);
 
                 gtk_image_set_from_pixbuf((GtkImage*)pages->left, image_container_list[pages->current_page]->dst);
+
                 unref_g_object((GtkWidget*)image_container_list[pages->current_page]->dst);
             }
             else
             {
-                /*
-                   resize_when_single(pages->current_page - 1);
-                   resize_when_single(pages->current_page);
-                   */
-
-                int isOverHeight = resize_when_spread(pages->current_page);
-
-                gtk_image_clear((GtkImage*)pages->left);
-                gtk_image_clear((GtkImage*)pages->right);
-
-                if(pages->page_direction_right)
+                if(detail->isOdd && detail->image_count == pages->current_page - 1)
                 {
+                    resize_when_single(pages->current_page);
+
+                    gtk_image_clear((GtkImage*)pages->left);
+                    gtk_image_clear((GtkImage*)pages->right);
+
                     gtk_image_set_from_pixbuf((GtkImage*)pages->left, image_container_list[pages->current_page]->dst);
-                    gtk_image_set_from_pixbuf((GtkImage*)pages->right, image_container_list[pages->current_page - 1]->dst);
+                    unref_g_object((GtkWidget*)image_container_list[pages->current_page]->dst);
                 }
                 else
                 {
-                    gtk_image_set_from_pixbuf((GtkImage*)pages->left, image_container_list[pages->current_page - 1]->dst);
-                    gtk_image_set_from_pixbuf((GtkImage*)pages->right, image_container_list[pages->current_page]->dst);
+                    /*
+                       resize_when_single(pages->current_page - 1);
+                       resize_when_single(pages->current_page);
+                       */
+
+                    int isOverHeight = resize_when_spread(pages->current_page);
+
+                    gtk_image_clear((GtkImage*)pages->left);
+                    gtk_image_clear((GtkImage*)pages->right);
+
+                    if(pages->page_direction_right)
+                    {
+                        gtk_image_set_from_pixbuf((GtkImage*)pages->left, image_container_list[pages->current_page]->dst);
+                        gtk_image_set_from_pixbuf((GtkImage*)pages->right, image_container_list[pages->current_page - 1]->dst);
+                    }
+                    else
+                    {
+                        gtk_image_set_from_pixbuf((GtkImage*)pages->left, image_container_list[pages->current_page - 1]->dst);
+                        gtk_image_set_from_pixbuf((GtkImage*)pages->right, image_container_list[pages->current_page]->dst);
+                    }
+
+                    set_margin_left_page(pages->current_page, isOverHeight);
+
+                    unref_g_object((GtkWidget*)image_container_list[pages->current_page]->dst);
+                    unref_g_object((GtkWidget*)image_container_list[pages->current_page - 1]->dst);
+
                 }
-
-                set_margin_left_page(pages->current_page, isOverHeight);
-
-                unref_g_object((GtkWidget*)image_container_list[pages->current_page]->dst);
-                unref_g_object((GtkWidget*)image_container_list[pages->current_page - 1]->dst);
-
             }
-        }
 
-        return TRUE;
+            return TRUE;
+        }
     }
 
 
@@ -765,6 +784,16 @@ int resize_when_spread(int page)
     image_container_list[page]->dst_width = right_width;
     image_container_list[page]->dst_height = right_height;
 
+    /*
+       if(image_container_list[page - 1]->dst != NULL) {
+       unref_g_object((GtkWidget*)image_container_list[page - 1]->dst);
+       }
+
+       if(image_container_list[page]->dst != NULL) {
+       unref_g_object((GtkWidget*)image_container_list[page]->dst);
+       }
+       */
+
     image_container_list[page - 1]->dst = gdk_pixbuf_scale_simple(image_container_list[page - 1]->src, left_width, left_height, GDK_INTERP_BILINEAR);
     image_container_list[page]->dst = gdk_pixbuf_scale_simple(image_container_list[page]->src, right_width, right_height, GDK_INTERP_BILINEAR);
 
@@ -799,15 +828,19 @@ void set_margin_left_page(int position, int isOverHeight)
 
 }
 
-int init_image_object(int startpage)
+int init_image_object(const char *file_name, int startpage)
 {
     pages->current_page = 0;
     // set image file path
 
     if(isCompressFile) {
-        set_image_from_compressed_file("tmp.zip");
+        set_image_from_compressed_file(file_name);
     } else {
         set_image_path_list();
+    }
+
+    if(!isFirstLoad) {
+        FreeImageContainer();
     }
 
     if(detail->image_count > 0)
@@ -878,6 +911,7 @@ GtkWidget *create_menu_bar()
 
     file_menu_struct.load = gtk_menu_item_new_with_label("Load");
     gtk_menu_shell_append(GTK_MENU_SHELL(file_menu_struct.body), file_menu_struct.load);
+    g_signal_connect(G_OBJECT(file_menu_struct.load), "activate", G_CALLBACK(OpenFile), NULL);
 
     file_menu_struct.quit = gtk_menu_item_new_with_label("Quit");
     gtk_menu_shell_append(GTK_MENU_SHELL(file_menu_struct.body), file_menu_struct.quit);
@@ -910,4 +944,46 @@ void FullScreen()
         window.isFullScreen = TRUE;
     }
 
+}
+
+void UpdateGrid()
+{
+    if(pages->isSingle)
+    {
+        if(!isFirstLoad) {
+            gtk_grid_remove_column(GTK_GRID(grid), 0);
+        }
+
+        gtk_widget_set_hexpand(pages->left, TRUE);
+        gtk_grid_attach(GTK_GRID(grid), pages->left, 0, 0, 1, 1);
+
+    }
+    else
+    {
+        if(!isFirstLoad) {
+            gtk_grid_remove_column(GTK_GRID(grid), 0);
+            gtk_grid_remove_column(GTK_GRID(grid), 0);
+        }
+
+        // gtk_widget_set_hexpand(pages->left, TRUE);
+        gtk_widget_set_vexpand(pages->left, TRUE);
+
+        // gtk_widget_set_hexpand(pages->right, TRUE);
+        gtk_widget_set_vexpand(pages->right, TRUE);
+
+        gtk_grid_attach(GTK_GRID(grid), pages->left, 0, 0, 1, 1);
+
+        gtk_grid_attach_next_to(GTK_GRID(grid), pages->right, pages->left, GTK_POS_RIGHT, 1, 1);
+
+        // gtk_grid_attach(GTK_GRID(grid), pages->right, 1, 0, 1, 1);
+
+        gtk_widget_show(pages->left);
+        gtk_widget_show(pages->right);
+
+
+    }
+
+    if(isFirstLoad) {
+        isFirstLoad = FALSE;
+    }
 }

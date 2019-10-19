@@ -60,6 +60,8 @@ void Close();
 
 void FullScreen();
 
+void UpdateGrid();
+
 typedef struct
 {
     GtkWidget *left;
@@ -132,6 +134,33 @@ file_menu_t file_menu_struct;
 
 int isCompressFile;
 
+int isFirstLoad;
+
+static void OpenFile()
+{
+    GtkFileChooserAction action = GTK_FILE_CHOOSER_ACTION_OPEN;
+
+    GtkWidget *dialog = gtk_file_chooser_dialog_new("Select Open File", GTK_WINDOW(window.window), action, "Cancel", GTK_RESPONSE_CANCEL, "Open", GTK_RESPONSE_ACCEPT, NULL);
+
+    gint res = gtk_dialog_run(GTK_DIALOG(dialog));
+
+    if(res == GTK_RESPONSE_ACCEPT) {
+        GtkFileChooser *chooser = GTK_FILE_CHOOSER(dialog);
+        char *file_name = gtk_file_chooser_get_filename(chooser);
+
+        if(init_image_object(file_name, 0)) {
+            UpdateGrid();
+        } else {
+            printf("init image error\n");
+        }
+
+        g_free(file_name);
+
+    }
+
+    gtk_widget_destroy(dialog);
+}
+
 static void CloseWindow()
 {
     Close();
@@ -170,6 +199,8 @@ static void activate(GtkApplication* app, gpointer user_data)
     g_signal_connect(G_OBJECT(window.window), "key-press-event", G_CALLBACK(my_key_press_function), NULL);
 
     g_signal_connect(G_OBJECT(window.window), "configure-event", G_CALLBACK(detect_resize_window), NULL);
+
+    isFirstLoad = TRUE;
 
     // Create Vertical Box
     GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -215,6 +246,7 @@ static void activate(GtkApplication* app, gpointer user_data)
 
     // set_image_from_compressed_file("./tmp.zip");
 
+    /*
     // set image file
     if(init_image_object())
     {
@@ -247,6 +279,7 @@ static void activate(GtkApplication* app, gpointer user_data)
 
         }
     }
+    */
 
     // kg_signal_connect(draw_area.scrolled_window, "size-allocate", G_CALLBACK(get_widget_size), NULL);
     // concatenate between vbox and scroll window.
