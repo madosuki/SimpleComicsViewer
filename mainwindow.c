@@ -21,6 +21,7 @@ void free_array_with_alloced(void **list, const int size)
 
 }
 
+
 void set_image_from_compressed_file(const char *file_name)
 {
     uncompress_data_set_t *tmp_list = (uncompress_data_set_t*)calloc(sizeof(uncompress_data_set_t), sizeof(uncompress_data_set_t));
@@ -360,18 +361,8 @@ gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer d
 {
     switch(event->keyval) {
         case GDK_KEY_f:
-            if(window.isFullScreen)
-            {
-                gtk_window_unfullscreen(GTK_WINDOW(window.window));
-                gtk_widget_show(menubar);
-                window.isFullScreen = FALSE;
-            }
-            else
-            {
-                gtk_window_fullscreen(GTK_WINDOW(window.window));
-                gtk_widget_hide(menubar);
-                window.isFullScreen = TRUE;
-            }
+
+            FullScreen();
 
             break;
 
@@ -555,7 +546,7 @@ void set_image_container(int position)
 
             // memcpy(image_container_list[position]->src, gdk_pixbuf_loader_get_pixbuf(loader), uncompressed_file_list->uncompress_data_list[position]->file_size);
             image_container_list[position]->src = gdk_pixbuf_loader_get_pixbuf(loader);
-            
+
         }
 
         if(image_container_list[position]->src == NULL) {
@@ -871,4 +862,48 @@ void unref_g_object(GtkWidget *object)
     {
         g_object_unref(object);
     }
+}
+
+GtkWidget *create_menu_bar()
+{
+
+    // settings menubar
+    GtkWidget *menubar = gtk_menu_bar_new();
+
+    // File Menu
+    GtkWidget *file_menu = gtk_menu_new();
+    GtkWidget *file_menu_item = gtk_menu_item_new_with_label("File");
+    gtk_menu_item_set_submenu(GTK_MENU_ITEM(file_menu_item), file_menu);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menubar), file_menu_item);
+
+    GtkWidget *file_menu_load = gtk_menu_item_new_with_label("Load");
+    gtk_menu_shell_append(GTK_MENU_SHELL(file_menu), file_menu_load);
+
+    // Help Menu
+    GtkWidget *help_menu = gtk_menu_new();
+    GtkWidget *help_menu_item = gtk_menu_item_new_with_label("Help");
+    gtk_menu_item_set_submenu(GTK_MENU_ITEM(help_menu_item), help_menu);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menubar), help_menu_item);
+
+    GtkWidget *help_menu_about = gtk_menu_item_new_with_label("About");
+    gtk_menu_shell_append(GTK_MENU_SHELL(help_menu), help_menu_about);
+
+    return menubar;
+}
+
+void FullScreen()
+{
+    if(window.isFullScreen)
+    {
+        gtk_window_unfullscreen(GTK_WINDOW(window.window));
+        gtk_widget_show(window.menubar);
+        window.isFullScreen = FALSE;
+    }
+    else
+    {
+        gtk_window_fullscreen(GTK_WINDOW(window.window));
+        gtk_widget_hide(window.menubar);
+        window.isFullScreen = TRUE;
+    }
+
 }
