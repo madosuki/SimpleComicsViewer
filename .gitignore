@@ -66,3 +66,5 @@ simple_comics_viewer
 .gdb_history
 
 compile_commands.json
+
+*.txt
