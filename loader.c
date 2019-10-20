@@ -637,15 +637,12 @@ int load_from_zip(const char *file_name, uncompress_data_set_t *data_set)
 void FreeUnCompressDataSet(uncompress_data_set_t *data)
 {
     if(data != NULL) {
-        printf("null check through\n");
 
         if(data->uncompress_data_list != NULL) {
             printf("desuzo\n");
 
             for(int i = 0; i < data->size; i++) {
                 if(data->uncompress_data_list[i] != NULL) {
-
-                    printf("loop now %d\n", i);
 
                     if(data->uncompress_data_list[i]->data != NULL) {
                         free(data->uncompress_data_list[i]->data);
@@ -670,4 +667,5 @@ void FreeUnCompressDataSet(uncompress_data_set_t *data)
         free(data);
         data = NULL;
     }
+
 }

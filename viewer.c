@@ -30,6 +30,7 @@ int set_image_from_compressed_file(const char *file_name)
     // printf("\ncompressed file load now\nsize: %d\n", tmp_list->size);
     
     if(!ret) {
+        uncompressed_file_list = NULL;
         return FALSE;
     }
 
@@ -388,6 +389,10 @@ void next_image(int isForward)
 
 gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer data)
 {
+    if(image_container_list == NULL) {
+        return FALSE;
+    }
+
     switch(event->keyval) {
         case GDK_KEY_f:
 
@@ -872,7 +877,12 @@ int init_image_object(const char *file_name, int startpage)
         FreeUnCompressDataSet(uncompressed_file_list);
 
         FreeImageContainer();
+
         detail->image_count = 0;
+
+        gtk_image_clear((GtkImage*)pages->left);
+        gtk_image_clear((GtkImage*)pages->right);
+
         // pages->current_page = 0;
     }
 
@@ -886,6 +896,8 @@ int init_image_object(const char *file_name, int startpage)
     } else {
         set_image_path_list();
     }
+
+
 
     if(detail->image_count > 0)
     {
