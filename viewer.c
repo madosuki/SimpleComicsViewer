@@ -393,13 +393,17 @@ gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer d
         return FALSE;
     }
 
+    GdkModifierType consumed;
+    const int ALL_ACCESS_MASK = GDK_CONTROL_MASK | GDK_SHIFT_MASK | GDK_MOD1_MASK;
+
+    GdkKeymap *keymap = gdk_keymap_get_for_display(gdk_display_get_default());
+    guint keyval;
+    gdk_keymap_translate_keyboard_state(keymap, event->hardware_keycode, event->state, event->group, &keyval, NULL, NULL, &consumed);
+
+    int isCtrl = (event->state & ~consumed & ALL_ACCESS_MASK) == GDK_CONTROL_MASK; 
+    int isAlt = (event->state & ~consumed & ALL_ACCESS_MASK) == GDK_MOD1_MASK; 
+
     switch(event->keyval) {
-        case GDK_KEY_f:
-
-            FullScreen();
-
-            break;
-
         case GDK_KEY_Home:
             pages->current_page = 1;
 
@@ -423,7 +427,11 @@ gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer d
             break;
     }
 
-    if(event->keyval == GDK_KEY_Right || event->keyval == GDK_KEY_l) {
+    if(keyval == GDK_KEY_Return && isAlt) {
+        FullScreen();
+    }
+
+    if((keyval == GDK_KEY_f && isCtrl) || event->keyval == GDK_KEY_Right || event->keyval == GDK_KEY_l) {
         if(pages->isSingle)
         {
             pages->current_page++;
@@ -470,7 +478,7 @@ gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer d
         return TRUE;
     }
 
-    if(event->keyval == GDK_KEY_Left || event->keyval == GDK_KEY_h) {
+    if((keyval == GDK_KEY_b && isCtrl) || event->keyval == GDK_KEY_Left || event->keyval == GDK_KEY_h) {
         if(pages->isSingle)
         {
             pages->current_page--;
