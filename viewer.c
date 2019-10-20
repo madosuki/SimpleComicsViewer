@@ -28,7 +28,7 @@ int set_image_from_compressed_file(const char *file_name)
     uncompressed_file_list = (uncompress_data_set_t*)calloc(sizeof(uncompress_data_set_t), sizeof(uncompress_data_set_t));
     int ret = load_from_zip(file_name, uncompressed_file_list);
     // printf("\ncompressed file load now\nsize: %d\n", tmp_list->size);
-    
+
     if(!ret) {
         uncompressed_file_list = NULL;
         return FALSE;
@@ -419,93 +419,96 @@ gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer d
 
             break;
 
-        case GDK_KEY_Right:
+        default:
+            break;
+    }
+
+    if(event->keyval == GDK_KEY_Right || event->keyval == GDK_KEY_l) {
+        if(pages->isSingle)
+        {
+            pages->current_page++;
+        }
+        else if(pages->page_direction_right)
+        {
+            pages->current_page -= 2;
+        }
+        else
+        {
+            pages->current_page += 2;
+        }
+
+        if(pages->current_page >= detail->image_count)
+        {
             if(pages->isSingle)
             {
-                pages->current_page++;
-            }
-            else if(pages->page_direction_right)
-            {
-                pages->current_page -= 2;
+                pages->current_page = 0;
             }
             else
-            {
-                pages->current_page += 2;
-            }
-
-            if(pages->current_page >= detail->image_count)
-            {
-                if(pages->isSingle)
-                {
-                    pages->current_page = 0;
-                }
-                else
-                {
-                    pages->current_page = 1;
-                }
-            }
-
-            if(pages->current_page < 0)
-            {
-                pages->current_page = detail->image_count - 1;
-            }
-
-            // printf("%s\n", detail->image_path_list[pages->current_page]);
-
-            if(pages->page_direction_right)
-            {
-                next_image(FALSE);
-            }
-            else
-            {
-                next_image(TRUE);
-            }
-
-            printf("pressed right arrow key\n");
-
-            return TRUE;
-
-        case GDK_KEY_Left:
-            if(pages->isSingle)
-            {
-                pages->current_page--;
-            }
-            else if(pages->page_direction_right)
-            {
-                pages->current_page += 2;
-            }
-            else
-            {
-                pages->current_page -= 2;
-            }
-
-            if(pages->current_page > detail->image_count)
             {
                 pages->current_page = 1;
             }
+        }
 
-            if(pages->current_page < 0)
-            {
-                pages->current_page = detail->image_count - 1;
-            }
+        if(pages->current_page < 0)
+        {
+            pages->current_page = detail->image_count - 1;
+        }
 
-            printf("current_page: %d\n", pages->current_page);
+        // printf("%s\n", detail->image_path_list[pages->current_page]);
 
-            if(pages->page_direction_right)
-            {
-                next_image(TRUE);
-            }
-            else
-            {
-                next_image(FALSE);
-            }
+        if(pages->page_direction_right)
+        {
+            next_image(FALSE);
+        }
+        else
+        {
+            next_image(TRUE);
+        }
 
-            printf("pressed right left key\n");
+        printf("pressed right arrow key\n");
 
-            return TRUE;
+        return TRUE;
+    }
 
-        default:
-            break;
+    if(event->keyval == GDK_KEY_Left || event->keyval == GDK_KEY_h) {
+        if(pages->isSingle)
+        {
+            pages->current_page--;
+        }
+        else if(pages->page_direction_right)
+        {
+            pages->current_page += 2;
+        }
+        else
+        {
+            pages->current_page -= 2;
+        }
+
+        if(pages->current_page > detail->image_count)
+        {
+            pages->current_page = 1;
+        }
+
+        if(pages->current_page < 0)
+        {
+            pages->current_page = detail->image_count - 1;
+        }
+
+        printf("current_page: %d\n", pages->current_page);
+
+        if(pages->page_direction_right)
+        {
+            next_image(TRUE);
+        }
+        else
+        {
+            next_image(FALSE);
+        }
+
+        printf("pressed right left key\n");
+
+        return TRUE;
+
     }
 
     return FALSE;
