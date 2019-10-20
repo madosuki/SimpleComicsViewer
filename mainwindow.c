@@ -246,19 +246,23 @@ void set_image_path_list()
 
 void unref_dst()
 {
-    if(pages->isSingle) {
-        if(image_container_list[pages->current_page]->dst != NULL) {
-            g_object_unref(G_OBJECT(image_container_list[pages->current_page]->dst));
-        }
-    } else {
-        if(image_container_list[pages->current_page]->dst != NULL) {
-            g_object_unref(G_OBJECT(image_container_list[pages->current_page]->dst));
-        }
+    printf("unref_dst\n");
+    if(image_container_list[pages->current_page] != NULL) {
+        if(pages->isSingle) {
+            if(image_container_list[pages->current_page]->dst != NULL) {
+                g_object_unref(G_OBJECT(image_container_list[pages->current_page]->dst));
+            }
+        } else {
+            if(image_container_list[pages->current_page]->dst != NULL) {
+                g_object_unref(G_OBJECT(image_container_list[pages->current_page]->dst));
+            }
 
-        if(image_container_list[pages->current_page - 1]->dst != NULL) {
-            g_object_unref(G_OBJECT(image_container_list[pages->current_page - 1]->dst));
+            if(image_container_list[pages->current_page - 1]->dst != NULL) {
+                g_object_unref(G_OBJECT(image_container_list[pages->current_page - 1]->dst));
+            }
         }
     }
+    printf("end\n");
 }
 
 void next_image(int isForward)
@@ -338,7 +342,7 @@ void next_image(int isForward)
 
             // g_object_unref(G_OBJECT(image_container_list[pages->current_page]->dst));
             // g_object_unref(G_OBJECT(image_container_list[pages->current_page - 1]->dst));
-            
+
             if(detail->isOdd) {
 
                 set_image_container(pages->current_page);
@@ -579,7 +583,6 @@ void set_image_container(int position)
         else {
             // printf("uncompressd load mode\n%d\n", uncompressed_file_list->uncompress_data_list[position]->file_size);
 
-            GError *err;
             GdkPixbufLoader *loader = gdk_pixbuf_loader_new();
             gboolean check = gdk_pixbuf_loader_write(loader, uncompressed_file_list->uncompress_data_list[position]->data, uncompressed_file_list->uncompress_data_list[position]->file_size, NULL);
             if(!check) {
@@ -589,8 +592,11 @@ void set_image_container(int position)
             // memcpy(image_container_list[position]->src, gdk_pixbuf_loader_get_pixbuf(loader), uncompressed_file_list->uncompress_data_list[position]->file_size);
             image_container_list[position]->src = gdk_pixbuf_loader_get_pixbuf(loader);
 
+            GError *err;
             if(loader != NULL) {
-                gdk_pixbuf_loader_close(loader, &err);
+                printf("loader close begin\n");
+                gdk_pixbuf_loader_close(loader, NULL);
+                printf("loader close end\n");
             }
 
         }
