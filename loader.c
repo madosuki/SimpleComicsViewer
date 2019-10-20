@@ -639,7 +639,6 @@ void FreeUnCompressDataSet(uncompress_data_set_t *data)
     if(data != NULL) {
 
         if(data->uncompress_data_list != NULL) {
-            printf("desuzo\n");
 
             for(int i = 0; i < data->size; i++) {
                 if(data->uncompress_data_list[i] != NULL) {
