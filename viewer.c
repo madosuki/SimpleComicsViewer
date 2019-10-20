@@ -22,16 +22,19 @@ void free_array_with_alloced(void **list, const int size)
 }
 
 
-void set_image_from_compressed_file(const char *file_name)
+int set_image_from_compressed_file(const char *file_name)
 {
     // uncompress_data_set_t *tmp_list = (uncompress_data_set_t*)calloc(sizeof(uncompress_data_set_t), sizeof(uncompress_data_set_t));
     uncompressed_file_list = (uncompress_data_set_t*)calloc(sizeof(uncompress_data_set_t), sizeof(uncompress_data_set_t));
     int ret = load_from_zip(file_name, uncompressed_file_list);
     // printf("\ncompressed file load now\nsize: %d\n", tmp_list->size);
-    if(ret) {
-        for(int i = 0; i < uncompressed_file_list->size; i++) {
-            printf("file name: %s, size: %d\n", uncompressed_file_list->uncompress_data_list[i]->file_name, uncompressed_file_list->uncompress_data_list[i]->file_size);
-        }
+    
+    if(!ret) {
+        return FALSE;
+    }
+
+    for(int i = 0; i < uncompressed_file_list->size; i++) {
+        printf("file name: %s, size: %d\n", uncompressed_file_list->uncompress_data_list[i]->file_name, uncompressed_file_list->uncompress_data_list[i]->file_size);
     }
 
     if(detail == NULL) {
@@ -49,9 +52,7 @@ void set_image_from_compressed_file(const char *file_name)
         detail->isOdd = FALSE;
     }
 
-    // uncompressed_file_list = tmp_list;
-
-    // FreeUnCompressDataSet(uncompressed_file_list);
+    return TRUE;
 }
 
 int get_image_file_count_from_directory(struct dirent **src, const int size, int *dst)
@@ -550,6 +551,7 @@ void Close()
 
         printf("free uncompressed_file_list\n");
         FreeUnCompressDataSet(uncompressed_file_list);
+        printf("end\n");
 
         if(detail != NULL) {
             free(detail);
@@ -876,7 +878,11 @@ int init_image_object(const char *file_name, int startpage)
 
 
     if(isCompressFile) {
-        set_image_from_compressed_file(file_name);
+
+        if(!set_image_from_compressed_file(file_name)) {
+            return FALSE;
+        }
+
     } else {
         set_image_path_list();
     }

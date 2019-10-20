@@ -25,7 +25,7 @@ int create_image_path_list(char **image_path_list);
 
 void set_image_path_list();
 
-void set_image_from_compressed_file(const char* file_name);
+int set_image_from_compressed_file(const char* file_name);
 
 void set_image_container(int position);
 
@@ -134,7 +134,6 @@ typedef struct
     GtkWidget *root;
     GtkWidget *about;
 } help_menu_t;
-
 
 main_window_data_t window;
 

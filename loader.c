@@ -420,6 +420,8 @@ int load_from_zip(const char *file_name, uncompress_data_set_t *data_set)
         }
         fread(tmp_file_name, 1, file_name_length, fp);
 
+        printf("target file: %s\n", tmp_file_name);
+
         fseek(fp, extra_field_length, SEEK_CUR);
 
         z_stream strm;
@@ -516,8 +518,10 @@ int load_from_zip(const char *file_name, uncompress_data_set_t *data_set)
                 free(body);
                 body = NULL;
 
-                free(out);
-                out = NULL;
+                if(out != NULL) {
+                    free(out);
+                    out = NULL;
+                }
 
                 FreeCentralHeaders(headers, cd_num_on_disk);
 
@@ -528,12 +532,16 @@ int load_from_zip(const char *file_name, uncompress_data_set_t *data_set)
                 close(fd);
 
                 return 0;
+
             case Z_DATA_ERROR:
                 printf("Z_DATA_ERROR\n");
+
                 inflateEnd(&strm);
 
-                free(out);
-                out = NULL;
+                if(out != NULL) {
+                    free(out);
+                    out = NULL;
+                }
 
                 free(tmp_file_name);
                 tmp_file_name = NULL;
@@ -541,9 +549,9 @@ int load_from_zip(const char *file_name, uncompress_data_set_t *data_set)
                 free(body);
                 body = NULL;
 
-                FreeUnCompressDataSet(data_set);FreeCentralHeaders(headers, cd_num_on_disk);
-
                 FreeUnCompressDataSet(data_set);
+                
+                FreeCentralHeaders(headers, cd_num_on_disk);
 
 
                 fclose(fp);
@@ -551,12 +559,15 @@ int load_from_zip(const char *file_name, uncompress_data_set_t *data_set)
                 close(fd);
 
                 return 0;
+
             case Z_MEM_ERROR:
                 printf("Z_MEM_ERROR\n");
                 inflateEnd(&strm);
 
-                free(out);
-                out = NULL;
+                if(out != NULL) {
+                    free(out);
+                    out = NULL;
+                }
 
                 free(tmp_file_name);
                 tmp_file_name = NULL;
@@ -597,8 +608,10 @@ int load_from_zip(const char *file_name, uncompress_data_set_t *data_set)
         }
 
 
-        free(out);
-        out = NULL;
+        if(out != NULL) {
+            free(out);
+            out = NULL;
+        }
 
         inflateEnd(&strm);
 
@@ -624,10 +637,16 @@ int load_from_zip(const char *file_name, uncompress_data_set_t *data_set)
 void FreeUnCompressDataSet(uncompress_data_set_t *data)
 {
     if(data != NULL) {
+        printf("null check through\n");
+
         if(data->uncompress_data_list != NULL) {
+            printf("desuzo\n");
 
             for(int i = 0; i < data->size; i++) {
                 if(data->uncompress_data_list[i] != NULL) {
+
+                    printf("loop now %d\n", i);
+
                     if(data->uncompress_data_list[i]->data != NULL) {
                         free(data->uncompress_data_list[i]->data);
                         data->uncompress_data_list[i]->data = NULL;
