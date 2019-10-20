@@ -38,8 +38,6 @@ void resize_when_single(int position);
 
 int init_image_object();
 
-void unref_g_object(GtkWidget *object);
-
 void next_image(int isForward);
 
 // return value is TRUE or FALSE

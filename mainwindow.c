@@ -24,18 +24,21 @@ void free_array_with_alloced(void **list, const int size)
 
 void set_image_from_compressed_file(const char *file_name)
 {
-    uncompress_data_set_t *tmp_list = (uncompress_data_set_t*)calloc(sizeof(uncompress_data_set_t), sizeof(uncompress_data_set_t));
-    // uncompress_data_set_t tmp_list;
-    int ret = load_from_zip(file_name, tmp_list);
+    // uncompress_data_set_t *tmp_list = (uncompress_data_set_t*)calloc(sizeof(uncompress_data_set_t), sizeof(uncompress_data_set_t));
+    uncompressed_file_list = (uncompress_data_set_t*)calloc(sizeof(uncompress_data_set_t), sizeof(uncompress_data_set_t));
+    int ret = load_from_zip(file_name, uncompressed_file_list);
     // printf("\ncompressed file load now\nsize: %d\n", tmp_list->size);
     if(ret) {
-        for(int i = 0; i < tmp_list->size; i++) {
-            printf("file name: %s, size: %d\n", tmp_list->uncompress_data_list[i]->file_name, tmp_list->uncompress_data_list[i]->file_size);
+        for(int i = 0; i < uncompressed_file_list->size; i++) {
+            printf("file name: %s, size: %d\n", uncompressed_file_list->uncompress_data_list[i]->file_name, uncompressed_file_list->uncompress_data_list[i]->file_size);
         }
     }
 
-    detail = (DirectoryDetail_t*)calloc(sizeof(DirectoryDetail_t), sizeof(DirectoryDetail_t));
-    detail->image_count = tmp_list->size;
+    if(detail == NULL) {
+        detail = (DirectoryDetail_t*)calloc(sizeof(DirectoryDetail_t), sizeof(DirectoryDetail_t));
+    }
+
+    detail->image_count = uncompressed_file_list->size;
 
     if(detail->image_count % 2)
     {
@@ -46,7 +49,7 @@ void set_image_from_compressed_file(const char *file_name)
         detail->isOdd = FALSE;
     }
 
-    uncompressed_file_list = tmp_list;
+    // uncompressed_file_list = tmp_list;
 
     // FreeUnCompressDataSet(uncompressed_file_list);
 }
@@ -241,15 +244,35 @@ void set_image_path_list()
 
 }
 
+void unref_dst()
+{
+    if(pages->isSingle) {
+        if(image_container_list[pages->current_page]->dst != NULL) {
+            g_object_unref(G_OBJECT(image_container_list[pages->current_page]->dst));
+        }
+    } else {
+        if(image_container_list[pages->current_page]->dst != NULL) {
+            g_object_unref(G_OBJECT(image_container_list[pages->current_page]->dst));
+        }
+
+        if(image_container_list[pages->current_page - 1]->dst != NULL) {
+            g_object_unref(G_OBJECT(image_container_list[pages->current_page - 1]->dst));
+        }
+    }
+}
+
 void next_image(int isForward)
 {
     if(pages->isSingle)
     {
+        unref_dst();
+
         set_image_container(pages->current_page);
 
         gtk_image_clear((GtkImage*)pages->left);
 
         gtk_image_set_from_pixbuf((GtkImage*)pages->left, image_container_list[pages->current_page]->dst);    
+
     }
     else
     {
@@ -257,10 +280,11 @@ void next_image(int isForward)
         {
             // printf("current page %d\n", pages->current_page);
             set_image_container(pages->current_page);
+            // g_object_unref(G_OBJECT(image_container_list[pages->current_page]->dst));
             if(pages->current_page - 1 < detail->image_count)
             {
                 set_image_container(pages->current_page - 1);
-
+                // g_object_unref(G_OBJECT(image_container_list[pages->current_page - 1]->dst));
             }
 
             gtk_image_clear((GtkImage*)pages->left);
@@ -275,6 +299,8 @@ void next_image(int isForward)
 
             if(detail->isOdd && (pages->current_page + 1 == detail->image_count))
             {
+                unref_dst();
+
                 resize_when_single(pages->current_page);
 
                 if(pages->page_direction_right)
@@ -288,6 +314,8 @@ void next_image(int isForward)
             }
             else
             {
+                unref_dst();
+
                 int isOverHeight = resize_when_spread(pages->current_page);
 
                 if(pages->page_direction_right)
@@ -304,45 +332,41 @@ void next_image(int isForward)
                 set_margin_left_page(pages->current_page, isOverHeight);
             }
 
-        }
-        else
-        {
+        } else {
             gtk_image_clear((GtkImage*)pages->left);
             gtk_image_clear((GtkImage*)pages->right);
 
-            if(detail->isOdd)
-            {
+            // g_object_unref(G_OBJECT(image_container_list[pages->current_page]->dst));
+            // g_object_unref(G_OBJECT(image_container_list[pages->current_page - 1]->dst));
+            
+            if(detail->isOdd) {
 
                 set_image_container(pages->current_page);
 
+                unref_dst();
+
                 int isOverHeight = resize_when_spread(pages->current_page);
 
-                if(pages->page_direction_right)
-                {
+                if(pages->page_direction_right) {
                     gtk_image_set_from_pixbuf((GtkImage*)pages->right, image_container_list[pages->current_page]->dst);
-                }
-                else
-                {
+                } else {
                     gtk_image_set_from_pixbuf((GtkImage*)pages->left, image_container_list[pages->current_page]->dst);
                 }
 
                 set_margin_left_page(pages->current_page, isOverHeight);
 
-            }
-            else
-            {
+            } else {
                 set_image_container(pages->current_page);
                 set_image_container(pages->current_page - 1);
 
+                unref_dst();
+
                 int isOverHeight = resize_when_spread(pages->current_page);
 
-                if(pages->page_direction_right)
-                {
+                if(pages->page_direction_right) {
                     gtk_image_set_from_pixbuf((GtkImage*)pages->right, image_container_list[pages->current_page - 1]->dst);
                     gtk_image_set_from_pixbuf((GtkImage*)pages->left, image_container_list[pages->current_page]->dst);
-                }
-                else
-                {
+                } else {
                     gtk_image_set_from_pixbuf((GtkImage*)pages->right, image_container_list[pages->current_page]->dst);
                     gtk_image_set_from_pixbuf((GtkImage*)pages->left, image_container_list[pages->current_page - 1]->dst);
                 }
@@ -483,18 +507,19 @@ void FreeImageContainer()
     if(image_container_list != NULL) {
         for(int i = 0; i < detail->image_count; i++) {
             if(image_container_list[i] != NULL) {
-                free(image_container_list[i]->aspect_raito);
-                image_container_list[i]->aspect_raito = NULL;
 
-                if(image_container_list[i]->src != NULL) {
-                    g_object_unref(image_container_list[i]->src);
+                if(image_container_list[i]->aspect_raito != NULL) {
+                    free(image_container_list[i]->aspect_raito);
+                    image_container_list[i]->aspect_raito = NULL;
                 }
 
-                /*
+                if(image_container_list[i]->src != NULL) {
+                    g_object_unref(G_OBJECT(image_container_list[i]->src));
+                }
+
                 if(image_container_list[i]->dst != NULL) {
                     g_object_unref(image_container_list[i]->dst);
                 }
-                */
 
                 free(image_container_list[i]);
                 image_container_list[i] = NULL;
@@ -510,13 +535,16 @@ void FreeImageContainer()
 void Close()
 {
     if(!window.isClose) {
-        if(detail->image_path_list != NULL) 
+        printf("free image_path_list\n");
+        if(detail != NULL && detail->image_path_list != NULL) 
         {                                                                                
             free_array_with_alloced((void**)detail->image_path_list, detail->image_count);    
         }                                                                                
 
+        printf("free image_container_list\n");
         FreeImageContainer();
 
+        printf("free uncompressed_file_list\n");
         FreeUnCompressDataSet(uncompressed_file_list);
 
         if(detail != NULL) {
@@ -551,6 +579,7 @@ void set_image_container(int position)
         else {
             // printf("uncompressd load mode\n%d\n", uncompressed_file_list->uncompress_data_list[position]->file_size);
 
+            GError *err;
             GdkPixbufLoader *loader = gdk_pixbuf_loader_new();
             gboolean check = gdk_pixbuf_loader_write(loader, uncompressed_file_list->uncompress_data_list[position]->data, uncompressed_file_list->uncompress_data_list[position]->file_size, NULL);
             if(!check) {
@@ -559,6 +588,10 @@ void set_image_container(int position)
 
             // memcpy(image_container_list[position]->src, gdk_pixbuf_loader_get_pixbuf(loader), uncompressed_file_list->uncompress_data_list[position]->file_size);
             image_container_list[position]->src = gdk_pixbuf_loader_get_pixbuf(loader);
+
+            if(loader != NULL) {
+                gdk_pixbuf_loader_close(loader, &err);
+            }
 
         }
 
@@ -621,7 +654,7 @@ void resize_when_single(int position)
 
     /*
        if(image_container_list[position]->dst != NULL) {
-       unref_g_object((GtkWidget*)image_container_list[position]->dst);
+       g_object_unref((GtkWidget*)image_container_list[position]->dst);
        }
        */
 
@@ -640,29 +673,36 @@ gboolean detect_resize_window(GtkWidget *widget, GdkEvent *event, gpointer data)
 
         if(width != window.width || height != window.height) {
             if(pages->isSingle) {
+
+                unref_dst();
+
                 resize_when_single(pages->current_page);
 
                 gtk_image_clear((GtkImage*)pages->left);
 
                 gtk_image_set_from_pixbuf((GtkImage*)pages->left, image_container_list[pages->current_page]->dst);
 
-                unref_g_object((GtkWidget*)image_container_list[pages->current_page]->dst);
 
             } else {
                 if(detail->isOdd && detail->image_count == pages->current_page - 1) {
+
+                    unref_dst();
+
                     resize_when_single(pages->current_page);
 
                     gtk_image_clear((GtkImage*)pages->left);
                     gtk_image_clear((GtkImage*)pages->right);
 
                     gtk_image_set_from_pixbuf((GtkImage*)pages->left, image_container_list[pages->current_page]->dst);
-                    unref_g_object((GtkWidget*)image_container_list[pages->current_page]->dst);
+                    // g_object_unref(G_OBJECT(image_container_list[pages->current_page]->dst));
 
                 } else {
                     /*
                        resize_when_single(pages->current_page - 1);
                        resize_when_single(pages->current_page);
                        */
+
+                    unref_dst();
 
                     int isOverHeight = resize_when_spread(pages->current_page);
 
@@ -680,8 +720,8 @@ gboolean detect_resize_window(GtkWidget *widget, GdkEvent *event, gpointer data)
                     set_margin_left_page(pages->current_page, isOverHeight);
 
 
-                    unref_g_object((GtkWidget*)image_container_list[pages->current_page]->dst);
-                    unref_g_object((GtkWidget*)image_container_list[pages->current_page - 1]->dst);
+                    // g_object_unref(G_OBJECT(image_container_list[pages->current_page]->dst));
+                    // g_object_unref(G_OBJECT(image_container_list[pages->current_page - 1]->dst));
 
 
                 }
@@ -780,16 +820,6 @@ int resize_when_spread(int page)
     image_container_list[page]->dst_width = right_width;
     image_container_list[page]->dst_height = right_height;
 
-    /*
-       if(image_container_list[page - 1]->dst != NULL) {
-       unref_g_object((GtkWidget*)image_container_list[page - 1]->dst);
-       }
-
-       if(image_container_list[page]->dst != NULL) {
-       unref_g_object((GtkWidget*)image_container_list[page]->dst);
-       }
-       */
-
     image_container_list[page - 1]->dst = gdk_pixbuf_scale_simple(image_container_list[page - 1]->src, left_width, left_height, GDK_INTERP_BILINEAR);
     image_container_list[page]->dst = gdk_pixbuf_scale_simple(image_container_list[page]->src, right_width, right_height, GDK_INTERP_BILINEAR);
 
@@ -828,15 +858,21 @@ int init_image_object(const char *file_name, int startpage)
 {
     pages->current_page = 0;
     // set image file path
+    if(!isFirstLoad) {
+        free_array_with_alloced((void**)detail->image_path_list, detail->image_count);    
+
+        FreeUnCompressDataSet(uncompressed_file_list);
+
+        FreeImageContainer();
+        detail->image_count = 0;
+        // pages->current_page = 0;
+    }
+
 
     if(isCompressFile) {
         set_image_from_compressed_file(file_name);
     } else {
         set_image_path_list();
-    }
-
-    if(!isFirstLoad) {
-        FreeImageContainer();
     }
 
     if(detail->image_count > 0)
@@ -887,13 +923,6 @@ int init_image_object(const char *file_name, int startpage)
     return FALSE;
 }
 
-void unref_g_object(GtkWidget *object)
-{
-    if(object != NULL)
-    {
-        g_object_unref(object);
-    }
-}
 
 GtkWidget *create_menu_bar()
 {
