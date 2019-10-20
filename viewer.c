@@ -1,4 +1,4 @@
-#include "mainwindow.h"
+#include "viewer.h"
 
 void free_array_with_alloced(void **list, const int size)
 {
