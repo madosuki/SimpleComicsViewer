@@ -389,9 +389,6 @@ void next_image(int isForward)
 
 gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer data)
 {
-    if(image_container_list == NULL) {
-        return FALSE;
-    }
 
     GdkModifierType consumed;
     const int ALL_ACCESS_MASK = GDK_CONTROL_MASK | GDK_SHIFT_MASK | GDK_MOD1_MASK;
@@ -402,6 +399,14 @@ gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer d
 
     int isCtrl = (event->state & ~consumed & ALL_ACCESS_MASK) == GDK_CONTROL_MASK; 
     int isAlt = (event->state & ~consumed & ALL_ACCESS_MASK) == GDK_MOD1_MASK; 
+
+    if(keyval == GDK_KEY_o && isCtrl) {
+        OpenFile();
+    }                                      
+
+    if(image_container_list == NULL) {
+        return FALSE;
+    }
 
     switch(event->keyval) {
         case GDK_KEY_Home:
@@ -430,6 +435,7 @@ gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer d
     if(keyval == GDK_KEY_Return && isAlt) {
         FullScreen();
     }
+
 
     if((keyval == GDK_KEY_f && isCtrl) || event->keyval == GDK_KEY_Right || event->keyval == GDK_KEY_l) {
         if(pages->isSingle)
