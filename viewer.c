@@ -248,29 +248,31 @@ void set_image_path_list()
 
 void unref_dst()
 {
-    printf("unref_dst\n");
+    printf("unref_dst start\n");
     if(image_container_list[pages->current_page] != NULL) {
         if(pages->isSingle) {
-            if(image_container_list[pages->current_page]->dst != NULL) {
-                g_object_unref(G_OBJECT(image_container_list[pages->current_page]->dst));
-            }
-        } else {
+
             if(image_container_list[pages->current_page]->dst != NULL) {
                 g_object_unref(G_OBJECT(image_container_list[pages->current_page]->dst));
             }
 
-            if(image_container_list[pages->current_page - 1]->dst != NULL) {
+        } else {
+
+            if(image_container_list[pages->current_page]->dst != NULL) {
+                g_object_unref(G_OBJECT(image_container_list[pages->current_page]->dst));
+            }
+
+            if(image_container_list[pages->current_page - 1] != NULL && image_container_list[pages->current_page - 1]->dst != NULL) {
                 g_object_unref(G_OBJECT(image_container_list[pages->current_page - 1]->dst));
             }
         }
     }
-    printf("end\n");
+    printf("unref_dst end\n");
 }
 
 void next_image(int isForward)
 {
-    if(pages->isSingle)
-    {
+    if(pages->isSingle) {
         unref_dst();
 
         set_image_container(pages->current_page);
@@ -279,50 +281,47 @@ void next_image(int isForward)
 
         gtk_image_set_from_pixbuf((GtkImage*)pages->left, image_container_list[pages->current_page]->dst);    
 
-    }
-    else
-    {
-        if(isForward)
-        {
-            set_image_container(pages->current_page);
-            // g_object_unref(G_OBJECT(image_container_list[pages->current_page]->dst));
-            if(pages->current_page - 1 < detail->image_count)
-            {
-                set_image_container(pages->current_page - 1);
-                // g_object_unref(G_OBJECT(image_container_list[pages->current_page - 1]->dst));
-            }
+    } else {
+        if(isForward) {
 
-            gtk_image_clear(GTK_IMAGE(pages->right));
+            set_image_container(pages->current_page);
+            set_image_container(pages->current_page - 1);
+
+            if(pages->right != NULL) {
+                gtk_image_clear(GTK_IMAGE(pages->right));
+            }
 
             if(pages->left != NULL) {
                 gtk_image_clear(GTK_IMAGE(pages->left));
             }
 
-            /*
-               if(pages->right != NULL)
-               {
-               gtk_image_clear((GtkImage*)pages->right);
-               }
-               */
 
-            if(detail->isOdd && (pages->current_page + 1 == detail->image_count))
-            {
+            if(detail->isOdd && (pages->current_page == detail->image_count - 1)) {
+
+                printf("isForward and isOdd and FinalPage\n%d %d\n", pages->current_page, detail->image_count);
+
                 unref_dst();
 
-                resize_when_single(pages->current_page);
+                printf("final page start\n");
 
-                if(pages->page_direction_right)
-                {
+                // resize_when_single(pages->current_page);
+                
+                int isOverHeight = resize_when_spread(pages->current_page);
+
+                printf("end\n");
+
+                if(pages->page_direction_right) {
                     gtk_image_set_from_pixbuf(GTK_IMAGE(pages->right), image_container_list[pages->current_page]->dst);
-                }
-                else
-                {
+                } else {
                     gtk_image_set_from_pixbuf(GTK_IMAGE(pages->left), image_container_list[pages->current_page]->dst);
                 }
-            }
-            else
-            {
 
+                set_margin_left_page(pages->current_page, isOverHeight);
+
+            } else {
+
+
+                printf("isForward and not isOdd\n");
                 unref_dst();
 
                 int isOverHeight = resize_when_spread(pages->current_page);
@@ -342,31 +341,36 @@ void next_image(int isForward)
             }
 
         } else {
-            gtk_image_clear(GTK_IMAGE(pages->left));
-            gtk_image_clear(GTK_IMAGE(pages->right));
+            if(pages->left != NULL) {
+                gtk_image_clear(GTK_IMAGE(pages->left));
+            }
+
+            if(pages->right != NULL) {
+                gtk_image_clear(GTK_IMAGE(pages->right));
+            }
+
+            set_image_container(pages->current_page);
+            set_image_container(pages->current_page - 1);
 
             // g_object_unref(G_OBJECT(image_container_list[pages->current_page]->dst));
             // g_object_unref(G_OBJECT(image_container_list[pages->current_page - 1]->dst));
 
-            if(detail->isOdd) {
-
-                set_image_container(pages->current_page);
+            if(detail->isOdd && pages->current_page == detail->image_count - 1) {
 
                 unref_dst();
 
                 int isOverHeight = resize_when_spread(pages->current_page);
+                // resize_when_single(pages->current_page);
 
                 if(pages->page_direction_right) {
-                    gtk_image_set_from_pixbuf((GtkImage*)pages->right, image_container_list[pages->current_page]->dst);
+                    gtk_image_set_from_pixbuf(GTK_IMAGE(pages->right), image_container_list[pages->current_page]->dst);
                 } else {
-                    gtk_image_set_from_pixbuf((GtkImage*)pages->left, image_container_list[pages->current_page]->dst);
+                    gtk_image_set_from_pixbuf(GTK_IMAGE(pages->left), image_container_list[pages->current_page]->dst);
                 }
 
                 set_margin_left_page(pages->current_page, isOverHeight);
 
             } else {
-                set_image_container(pages->current_page);
-                set_image_container(pages->current_page - 1);
 
                 unref_dst();
 
@@ -512,9 +516,13 @@ gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer d
             pages->current_page -= 2;
         }
 
-        if(pages->current_page > detail->image_count)
+        if(pages->current_page >= detail->image_count)
         {
-            pages->current_page = 1;
+            if(pages->isSingle) {
+                pages->current_page = 0;
+            } else {
+                pages->current_page = 1;
+            }
         }
 
         if(pages->current_page < 0)
