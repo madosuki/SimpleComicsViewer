@@ -17,6 +17,9 @@
 
 int status;
 
+void move_right();
+void move_left();
+
 void free_array_with_alloced(void **list, const int size);
 
 int get_image_file_count_from_directory(struct dirent **src, const int size, int *dst);
@@ -43,7 +46,7 @@ int resize_when_spread(int page);
 void scale_when_oversize(int *x, int *y, int window_width, int window_height, double w_aspect, double h_aspect, int isOverWidth);
 
 // isOverHeight is only accept TRUE or FALSE
-void set_margin_left_page(int position, int isOverHeight);
+void set_margin_left_page(int position, int isOverHeight, int isFinalPage);
 
 gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer data);
 
@@ -64,6 +67,7 @@ typedef struct
     int isSingle;
     int page_direction_right;
     int current_page;
+    int isFinalPage;
 } Pages;
 
 Pages *pages;
@@ -248,6 +252,7 @@ static void activate(GtkApplication* app, gpointer user_data)
 
     pages->page_direction_right = TRUE;
     pages->isSingle = FALSE;
+    pages->isFinalPage = FALSE;
 
     isCompressFile = TRUE;
 

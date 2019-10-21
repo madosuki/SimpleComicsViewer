@@ -298,25 +298,22 @@ void next_image(int isForward)
 
             if(detail->isOdd && (pages->current_page == detail->image_count - 1)) {
 
-                printf("isForward and isOdd and FinalPage\n%d %d\n", pages->current_page, detail->image_count);
-
                 unref_dst();
 
-                printf("final page start\n");
-
                 // resize_when_single(pages->current_page);
-                
+
                 int isOverHeight = resize_when_spread(pages->current_page);
 
-                printf("end\n");
-
                 if(pages->page_direction_right) {
+
                     gtk_image_set_from_pixbuf(GTK_IMAGE(pages->right), image_container_list[pages->current_page]->dst);
+
                 } else {
+
                     gtk_image_set_from_pixbuf(GTK_IMAGE(pages->left), image_container_list[pages->current_page]->dst);
                 }
 
-                set_margin_left_page(pages->current_page, isOverHeight);
+                // set_margin_left_page(pages->current_page, isOverHeight, TRUE);
 
             } else {
 
@@ -337,7 +334,7 @@ void next_image(int isForward)
                     gtk_image_set_from_pixbuf(GTK_IMAGE(pages->right), image_container_list[pages->current_page]->dst);
                 }
 
-                set_margin_left_page(pages->current_page, isOverHeight);
+                set_margin_left_page(pages->current_page, isOverHeight, FALSE);
             }
 
         } else {
@@ -368,7 +365,7 @@ void next_image(int isForward)
                     gtk_image_set_from_pixbuf(GTK_IMAGE(pages->left), image_container_list[pages->current_page]->dst);
                 }
 
-                set_margin_left_page(pages->current_page, isOverHeight);
+                // set_margin_left_page(pages->current_page, isOverHeight, TRUE);
 
             } else {
 
@@ -385,7 +382,7 @@ void next_image(int isForward)
                 }
 
 
-                set_margin_left_page(pages->current_page, isOverHeight);
+                set_margin_left_page(pages->current_page, isOverHeight, FALSE);
             }
         }
 
@@ -456,46 +453,8 @@ gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer d
 
 
     if((keyval == GDK_KEY_f && isCtrl) || event->keyval == GDK_KEY_Right || event->keyval == GDK_KEY_l) {
-        if(pages->isSingle)
-        {
-            pages->current_page++;
-        }
-        else if(pages->page_direction_right)
-        {
-            pages->current_page -= 2;
-        }
-        else
-        {
-            pages->current_page += 2;
-        }
 
-        if(pages->current_page >= detail->image_count)
-        {
-            if(pages->isSingle)
-            {
-                pages->current_page = 0;
-            }
-            else
-            {
-                pages->current_page = 1;
-            }
-        }
-
-        if(pages->current_page < 0)
-        {
-            pages->current_page = detail->image_count - 1;
-        }
-
-        // printf("%s\n", detail->image_path_list[pages->current_page]);
-
-        if(pages->page_direction_right)
-        {
-            next_image(FALSE);
-        }
-        else
-        {
-            next_image(TRUE);
-        }
+        move_left();
 
         printf("pressed right arrow key\n");
 
@@ -503,43 +462,8 @@ gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer d
     }
 
     if((keyval == GDK_KEY_b && isCtrl) || event->keyval == GDK_KEY_Left || event->keyval == GDK_KEY_h) {
-        if(pages->isSingle)
-        {
-            pages->current_page--;
-        }
-        else if(pages->page_direction_right)
-        {
-            pages->current_page += 2;
-        }
-        else
-        {
-            pages->current_page -= 2;
-        }
 
-        if(pages->current_page >= detail->image_count)
-        {
-            if(pages->isSingle) {
-                pages->current_page = 0;
-            } else {
-                pages->current_page = 1;
-            }
-        }
-
-        if(pages->current_page < 0)
-        {
-            pages->current_page = detail->image_count - 1;
-        }
-
-        printf("current_page: %d\n", pages->current_page);
-
-        if(pages->page_direction_right)
-        {
-            next_image(TRUE);
-        }
-        else
-        {
-            next_image(FALSE);
-        }
+        move_right();
 
         printf("pressed right left key\n");
 
@@ -769,7 +693,7 @@ gboolean detect_resize_window(GtkWidget *widget, GdkEvent *event, gpointer data)
                         gtk_image_set_from_pixbuf((GtkImage*)pages->right, image_container_list[pages->current_page]->dst);
                     }
 
-                    set_margin_left_page(pages->current_page, isOverHeight);
+                    set_margin_left_page(pages->current_page, isOverHeight, FALSE);
 
 
                     // g_object_unref(G_OBJECT(image_container_list[pages->current_page]->dst));
@@ -878,7 +802,7 @@ int resize_when_spread(int page)
     return isOverHeight;
 }
 
-void set_margin_left_page(int position, int isOverHeight)
+void set_margin_left_page(int position, int isOverHeight, int isFinalPage)
 {
     /*
        gint window_width = 0;
@@ -888,20 +812,27 @@ void set_margin_left_page(int position, int isOverHeight)
        window.height = window_height;
        */
 
-    if(isOverHeight)
-    {
+    if(isOverHeight) {
         int mix_width = (image_container_list[position - 1]->dst_width + image_container_list[position]->dst_width);
         int margin_left = (fmax(mix_width, window.width) - fmin(mix_width, window.width)) / 2;
 
         printf("margin left: %d\n", margin_left);
 
         // g_object_set(pages->left, "margin_left", margin_left, NULL);
-        gtk_widget_set_margin_start(pages->left, (gint)margin_left);
-    }
-    else
-    {
+
+        if(isFinalPage) {
+            gtk_widget_set_margin_start(pages->right, image_container_list[position]->dst_width);
+        } else {
+            gtk_widget_set_margin_start(pages->left, (gint)margin_left);
+        }
+    } else {
         // g_object_set(pages->left, "margin_left", 0, NULL);
-        gtk_widget_set_margin_start(pages->left, 0);
+
+        if(isFinalPage) {
+            gtk_widget_set_margin_start(pages->right, 0);
+        } else {
+            gtk_widget_set_margin_start(pages->left, 0);
+        }
     }
 
 }
@@ -1124,3 +1055,91 @@ GtkWidget *create_menu_bar()
     return menubar;
 }
 
+
+void move_left()
+{
+    if(pages->isSingle) {
+        pages->current_page++;
+    } else if(pages->page_direction_right) {
+
+        if(detail->isOdd && pages->current_page == detail->image_count - 1)  {
+            pages->current_page--;
+        } else {
+            pages->current_page -= 2;
+        }
+
+    } else {
+
+        if(detail->isOdd && pages->current_page == detail->image_count - 1) {
+            pages->current_page = 0;
+        } else {
+            pages->current_page += 2;
+        }
+
+    }
+
+    if(pages->current_page >= detail->image_count) {
+        if(pages->isSingle) {
+            pages->current_page = 0;
+        } else {
+            pages->current_page = 1;
+        }
+    }
+
+    if(pages->current_page < 0) {
+        pages->current_page = detail->image_count - 1;
+    }
+
+    // printf("%s\n", detail->image_path_list[pages->current_page]);
+
+    if(pages->page_direction_right) {
+        next_image(FALSE);
+    } else {
+        next_image(TRUE);
+    }
+
+}
+
+
+void move_right()
+{
+    if(pages->isSingle) {
+        pages->current_page--;
+    } else if(pages->page_direction_right) {
+
+        pages->current_page += 2;
+
+        if(pages->current_page == detail->image_count) {
+            pages->current_page--;
+        }
+
+    } else {
+
+        if(detail->isOdd && pages->current_page == detail->image_count - 1) {
+            pages->current_page--;
+        } else {
+            pages->current_page -= 2;
+        }
+    }
+
+    if(pages->current_page >= detail->image_count) {
+        if(pages->isSingle) {
+            pages->current_page = 0;
+        } else {
+            pages->current_page = 1;
+        }
+    }
+
+    if(pages->current_page < 0) {
+        pages->current_page = detail->image_count - 1;
+    }
+
+    printf("current_page: %d\n", pages->current_page);
+
+    if(pages->page_direction_right) {
+        next_image(TRUE);
+    } else {
+        next_image(FALSE);
+    }
+
+}
