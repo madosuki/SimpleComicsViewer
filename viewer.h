@@ -55,6 +55,8 @@ void FullScreen();
 
 void UpdateGrid();
 
+void UpdatePage();
+
 typedef struct
 {
     GtkWidget *left;

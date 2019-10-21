@@ -284,7 +284,6 @@ void next_image(int isForward)
     {
         if(isForward)
         {
-            // printf("current page %d\n", pages->current_page);
             set_image_container(pages->current_page);
             // g_object_unref(G_OBJECT(image_container_list[pages->current_page]->dst));
             if(pages->current_page - 1 < detail->image_count)
@@ -293,8 +292,11 @@ void next_image(int isForward)
                 // g_object_unref(G_OBJECT(image_container_list[pages->current_page - 1]->dst));
             }
 
-            gtk_image_clear((GtkImage*)pages->left);
-            gtk_image_clear((GtkImage*)pages->right);
+            gtk_image_clear(GTK_IMAGE(pages->right));
+
+            if(pages->left != NULL) {
+                gtk_image_clear(GTK_IMAGE(pages->left));
+            }
 
             /*
                if(pages->right != NULL)
@@ -311,36 +313,37 @@ void next_image(int isForward)
 
                 if(pages->page_direction_right)
                 {
-                    gtk_image_set_from_pixbuf((GtkImage*)pages->right, image_container_list[pages->current_page]->dst);
+                    gtk_image_set_from_pixbuf(GTK_IMAGE(pages->right), image_container_list[pages->current_page]->dst);
                 }
                 else
                 {
-                    gtk_image_set_from_pixbuf((GtkImage*)pages->left, image_container_list[pages->current_page]->dst);
+                    gtk_image_set_from_pixbuf(GTK_IMAGE(pages->left), image_container_list[pages->current_page]->dst);
                 }
             }
             else
             {
+
                 unref_dst();
 
                 int isOverHeight = resize_when_spread(pages->current_page);
 
                 if(pages->page_direction_right)
                 {
-                    gtk_image_set_from_pixbuf((GtkImage*)pages->right, image_container_list[pages->current_page - 1]->dst);
-                    gtk_image_set_from_pixbuf((GtkImage*)pages->left, image_container_list[pages->current_page]->dst);
+                    gtk_image_set_from_pixbuf(GTK_IMAGE(pages->right), image_container_list[pages->current_page - 1]->dst);
+                    gtk_image_set_from_pixbuf(GTK_IMAGE(pages->left), image_container_list[pages->current_page]->dst);
                 }
                 else
                 {
-                    gtk_image_set_from_pixbuf((GtkImage*)pages->left, image_container_list[pages->current_page - 1]->dst);
-                    gtk_image_set_from_pixbuf((GtkImage*)pages->right, image_container_list[pages->current_page]->dst);
+                    gtk_image_set_from_pixbuf(GTK_IMAGE(pages->left), image_container_list[pages->current_page - 1]->dst);
+                    gtk_image_set_from_pixbuf(GTK_IMAGE(pages->right), image_container_list[pages->current_page]->dst);
                 }
 
                 set_margin_left_page(pages->current_page, isOverHeight);
             }
 
         } else {
-            gtk_image_clear((GtkImage*)pages->left);
-            gtk_image_clear((GtkImage*)pages->right);
+            gtk_image_clear(GTK_IMAGE(pages->left));
+            gtk_image_clear(GTK_IMAGE(pages->right));
 
             // g_object_unref(G_OBJECT(image_container_list[pages->current_page]->dst));
             // g_object_unref(G_OBJECT(image_container_list[pages->current_page - 1]->dst));
@@ -991,6 +994,53 @@ void FullScreen()
         window.isFullScreen = TRUE;
     }
 
+}
+
+void UpdatePage()
+{
+
+    if(!isFirstLoad) {
+        if(pages->isSingle) {
+            if(detail->isOdd && pages->current_page == (detail->image_count - 1)) {
+
+                gtk_image_clear(GTK_IMAGE(pages->right));
+
+            } else if(pages->left != NULL && pages->right != NULL) {
+
+                gtk_image_clear(GTK_IMAGE(pages->left));
+                gtk_image_clear(GTK_IMAGE(pages->right));
+
+            }
+
+            pages->current_page -= 1;
+
+            if(pages->current_page < 0) {
+                pages->current_page = 0;
+            }
+
+            resize_when_single(pages->current_page);
+
+            set_image(&pages->left, pages->current_page);
+
+            UpdateGrid();
+
+        } else {
+            gtk_image_clear(GTK_IMAGE(pages->left));
+
+            pages->current_page += 1;
+
+            if(pages->current_page > detail->image_count - 1) {
+                pages->current_page = detail->image_count - 1;
+            }
+
+            resize_when_spread(pages->current_page);
+
+            set_image(&pages->left, pages->current_page);
+            set_image(&pages->right, pages->current_page - 1);
+
+            UpdateGrid();
+        }
+    }
 }
 
 void UpdateGrid()
