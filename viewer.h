@@ -22,13 +22,13 @@ void move_left();
 
 void free_array_with_alloced(void **list, const int size);
 
-int get_image_file_count_from_directory(struct dirent **src, const int size, int *dst);
+int get_image_file_count_from_directory(struct dirent **src, const int size, int *dst, const char *dirname);
 
-int create_image_path_list(char **image_path_list);
+int create_image_path_list(char **image_path_list, const char *dirname);
 
-void set_image_path_list();
+void set_image_path_list(const char *dirname);
 
-int set_image_from_compressed_file(const char* file_name);
+int set_image_from_compressed_file(const char *file_name);
 
 void set_image_container(int position);
 
@@ -158,6 +158,32 @@ static void OpenFile()
     if(res == GTK_RESPONSE_ACCEPT) {
         GtkFileChooser *chooser = GTK_FILE_CHOOSER(dialog);
         char *file_name = gtk_file_chooser_get_filename(chooser);
+        if(file_name == NULL) {
+            goto end;
+        }
+
+        uint8_t flag = detect_compress_file(file_name);
+        printf("%d\n", flag);
+        if((flag & UTILS_ZIP)) {
+            isCompressFile = TRUE;
+        } else {
+            int check = detect_image_from_file(file_name);
+
+            if(check) {
+                char *tmp = get_directory_path_from_filename(file_name);
+                if(tmp != NULL) {
+                    g_free(file_name);
+
+                    file_name = tmp;
+
+                    printf("%s\n", file_name);
+                }
+            }
+
+            isCompressFile = FALSE;
+        }
+
+        printf("select file: %s\n", file_name);
 
         if(init_image_object(file_name, 0)) {
             UpdateGrid();
@@ -168,6 +194,8 @@ static void OpenFile()
         g_free(file_name);
 
     }
+
+end:
 
     gtk_widget_destroy(dialog);
 }

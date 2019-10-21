@@ -11,6 +11,8 @@ const unsigned char zlib_no_compression_or_low_sig[2] = {120, 1};
 const unsigned char zlib_default_compression_sig[2] = {120, 156};
 const unsigned char zlib_best_compression_sig[2] = {120, 218};
 
+const uint8_t compress_headers_flag = UTILS_ZIP;
+
 int mygcd(int x, int y)
 {
   int tmp = x % y;
@@ -74,4 +76,111 @@ int detect_image(uint8_t *buf, int size)
     }
 
     return 0;
+}
+
+int detect_image_from_file(const char *file_name)
+{
+    FILE *fp;
+
+    int fd = open(file_name, O_RDONLY);
+    if(fd < 0) {
+        printf("File Destructor Open Error\n");
+        return 0;
+    }
+
+    fp = fdopen(fd, "rb");
+    if (fp == NULL) {
+        printf("fdopen Error\n");
+        close(fd);
+        return 0;
+    }
+
+    struct stat stbuf;
+    fstat(fd, &stbuf);
+
+    long file_size = stbuf.st_size;
+    if(file_size < 4) {
+        fclose(fp);
+        close(fd);
+        return 0;
+    }
+
+    uint32_t sig;
+    fread(&sig, 1, 4, fp);
+
+    if(sig == *(uint32_t*)&jpg_sig || sig == *(uint32_t*)&png_sig) {
+        return 1;
+    }
+
+    fclose(fp);
+
+    close(fd);
+
+    return 0;
+}
+
+uint8_t detect_compress_file(const char *file_name)
+{
+    FILE *fp;
+
+    int fd = open(file_name, O_RDONLY);
+    if(fd < 0) {
+        printf("File Destructor Open Error\n");
+        return 0;
+    }
+
+    fp = fdopen(fd, "rb");
+    if (fp == NULL) {
+        printf("fdopen Error\n");
+        close(fd);
+        return 0;
+    }
+
+    struct stat stbuf;
+    fstat(fd, &stbuf);
+
+    long file_size = stbuf.st_size;
+    if(file_size < 4) {
+        fclose(fp);
+        close(fd);
+        return 0;
+    }
+
+    uint32_t sig;
+    fread(&sig, 1, 4, fp);
+
+    if(sig == 67324752)
+    {
+        fclose(fp);
+        close(fd);
+
+        return UTILS_ZIP;
+    }
+
+    fclose(fp);
+    close(fd);
+
+    return 0;
+}
+
+char *get_directory_path_from_filename(const char *file_name)
+{
+    int size = strlen(file_name) + 1;
+
+
+    int count = 0;
+    for(int i = size; i >= 0; i--) {
+        if(file_name[i] == '/') {
+            break;
+        }
+
+        count++;
+    }
+
+    char *tmp_name = (char*)calloc((size - count) + 1, 1);
+    if(tmp_name != NULL) {
+        strncpy(tmp_name, file_name, size - count);
+    }
+
+    return tmp_name;
 }

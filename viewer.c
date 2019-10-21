@@ -56,155 +56,109 @@ int set_image_from_compressed_file(const char *file_name)
     return TRUE;
 }
 
-int get_image_file_count_from_directory(struct dirent **src, const int size, int *dst)
+int get_image_file_count_from_directory(struct dirent **src, const int size, int *dst, const char *dirname)
 {
     int *number_list = (int*)malloc(sizeof(int) * LIST_BUFFER);
     memset(number_list, 0, sizeof(int) * LIST_BUFFER);
 
+    int dirname_length = strlen(dirname) + 1;
+
     int count = 1;
-    for(int i = 0; i < size; ++i)
-    {
-        if(count < LIST_BUFFER)
-        {
-            int fd = open(src[i]->d_name, O_RDONLY);
-            if(fd < 0)
-            {
-                printf("Load Error: %s\n", src[i]->d_name);
+    for(int i = 0; i < size; ++i) {
+
+        if(count < LIST_BUFFER) {
+
+            int src_length = strlen(src[i]->d_name) + 1;
+            char *final_path = (char*)calloc(dirname_length + src_length + 1, 1);
+            if(final_path == NULL) {
+                free(final_path);
+                break;
             }
-            else
-            {
-                FILE *file = fdopen(fd, "rb");
-                if(file != NULL)
-                {
-                    struct stat stat_buf;
-                    fstat(fd, &stat_buf);
 
-                    long file_length = stat_buf.st_size;
+            strncat(final_path, dirname, dirname_length);
+            char slash[1] = "/";
+            strncat(final_path, slash, 1);
+            strncat(final_path, src[i]->d_name, src_length);
 
-                    printf("%s, File Size: %ld\n", src[i]->d_name, file_length);
+            printf("%s\n", final_path);
 
-                    unsigned char *buffer;
-                    if(file_length > 8)
-                    {
-                        buffer = (unsigned char*)calloc(8, 1);
-                        fread(buffer, 1, png_sig_size, file);
-
-                        int isImageFile = 0;
-                        int sig_count = 0;
-                        if(buffer[0] == png_sig[0])
-                        {
-                            for(int j = 0; j < png_sig_size; ++j)
-                            {
-                                if(buffer[j] == png_sig[j])
-                                {
-                                    sig_count++;
-                                }
-                            }
-                        }
-                        else if(buffer[0] == jpg_sig[0])
-                        {
-
-                            for(int j = 0; j < jpg_sig_size; ++j)
-                            {
-                                if(buffer[j] == jpg_sig[j])
-                                {
-                                    sig_count++;
-                                }
-                            }
-                        }
-
-                        free(buffer);
-
-                        switch(sig_count)
-                        {
-                            case 8:
-                                isImageFile = 1;
-                                break;
-                            case 4:
-                                isImageFile = 2;
-                                break;
-                            default:
-                                break;
-                        }
-
-                        if(isImageFile == 1 || isImageFile == 2)
-                        {
-
-                            number_list[count - 1] = i;
-                            count++;
-                            int *tmp = (int*)realloc(number_list, sizeof(int) * count);
-                            if(tmp != NULL)
-                            {
-                                number_list = tmp;
-                            }
-                        }
-
-                    }
-
-                    close(fd);
-
-                    fclose(file);
+            if(detect_image_from_file(final_path)) {
+                number_list[count - 1] = i;
+                count++;
+                int *tmp = (int*)realloc(number_list, sizeof(int) * count);
+                if(tmp != NULL) {
+                    number_list = tmp;
                 }
             }
+
         }
 
     }
 
+
     int *tmp = (int*)realloc(dst, sizeof(int) * count);
-    if(tmp != NULL)
-    {
+    if(tmp != NULL) {
         dst = tmp;
         memset(dst, 0, sizeof(int) * count);
         memcpy(dst, number_list, sizeof(int) * count);
-    }
-    else
-    {
+    } else {
         free(tmp);
     }
-
 
     free(number_list);
 
     return count - 1;
 }
 
-int create_image_path_list(char **image_path_list)
+int create_image_path_list(char **image_path_list, const char *dirname)
 {
     struct dirent **file_list;
 
-    int r = scandir("./", &file_list, NULL, alphasort);
+    printf("target directory: %s\n", dirname);
+
+    int r = scandir(dirname, &file_list, NULL, alphasort);
 
     int *number_list = (int*)malloc(sizeof(int) * LIST_BUFFER);
     memset(number_list, 0, sizeof(int) * LIST_BUFFER);
 
-    int count = get_image_file_count_from_directory(file_list, r, number_list);
+    int count = get_image_file_count_from_directory(file_list, r, number_list, dirname);
 
     printf("count: %d, r: %d\n", count, r);
 
-    if(count < LIST_BUFFER)
-    {
+    if(count < LIST_BUFFER) {
         size_t image_path_list_size = sizeof(char*) * count;
         char **tmp = (char**)realloc(image_path_list, image_path_list_size);
 
-        if(tmp != NULL)
-        {
+        if(tmp != NULL) {
             image_path_list = tmp;
 
             // memset(image_list, 0, image_list_size);
 
-            for(int i = 0; i < count; ++i)
-            {
+            for(int i = 0; i < count; ++i) {
                 const int target = number_list[i];
-                const size_t length = strlen(file_list[target]->d_name);
+
+                int dirname_length = strlen(dirname) + 1;
+                const size_t target_length = strlen(file_list[target]->d_name) + 1;
+
+                const size_t final_length = dirname_length + target_length + 1;
+                char *final_path = (char*)calloc(final_length, 1);
+                if(final_path == NULL) {
+                    free(final_path);
+                    break;
+                }
+
+                strncat(final_path, dirname, dirname_length);
+                char slash[1] = "/";
+                strncat(final_path, slash, 1);
+                strncat(final_path, file_list[target]->d_name, target_length);
+
                 printf("%s\n", file_list[target]->d_name);
 
-                image_path_list[i] = (char*)calloc(length + 1, 1);
+                image_path_list[i] = (char*)calloc(dirname_length + target_length + 1, 1);
 
-                strncpy(image_path_list[i], file_list[target]->d_name, length);
+                strncpy(image_path_list[i], final_path, final_length);
             }
-        }
-        else
-        {
+        } else {
             free(tmp);
         }
     }
@@ -216,31 +170,22 @@ int create_image_path_list(char **image_path_list)
     return count;
 }
 
-void set_image_path_list()
+void set_image_path_list(const char *dirname)
 {
     detail = (DirectoryDetail_t*)malloc(sizeof(DirectoryDetail_t));
-    if(detail != NULL)
-    {
+    if(detail != NULL) {
         memset(detail, 0, sizeof(DirectoryDetail_t));
         detail->image_path_list = (char**)malloc(LIST_BUFFER);
-        if(detail->image_path_list != NULL)
-        {
+        if(detail->image_path_list != NULL) {
             printf("Not NULL from detail->image_list\n");
-            detail->image_count = create_image_path_list(detail->image_path_list);
+            detail->image_count = create_image_path_list(detail->image_path_list, dirname);
+            printf("end\n");
 
-            if(detail->image_count % 2)
-            {
+            if(detail->image_count % 2) {
                 detail->isOdd = TRUE;
-            }
-            else
-            {
+            } else {
                 detail->isOdd = FALSE;
             }
-        }
-        else
-        {
-            printf("Failed malloc to detail->image_list\n");
-            free(detail->image_path_list);
         }
     }
 
@@ -539,8 +484,7 @@ void Close()
 
 void set_image_container(int position)
 {
-    if(image_container_list[position] == NULL)
-    {
+    if(image_container_list[position] == NULL) {
         image_container_list[position] = malloc(sizeof(Image_Container_t));
         memset(image_container_list[position], 0, sizeof(Image_Container_t));
 
@@ -548,9 +492,12 @@ void set_image_container(int position)
 
         if(!isCompressFile) {
             printf("gehahahah\n");
-            image_container_list[position]->src = gdk_pixbuf_new_from_file(detail->image_path_list[position], &image_container_list[position]->err);
-        }
-        else {
+
+            if(detail->image_path_list[position] != NULL) {
+                image_container_list[position]->src = gdk_pixbuf_new_from_file(detail->image_path_list[position], &image_container_list[position]->err);
+            }
+
+        } else {
             // printf("uncompressd load mode\n%d\n", uncompressed_file_list->uncompress_data_list[position]->file_size);
 
             GdkPixbufLoader *loader = gdk_pixbuf_loader_new();
@@ -843,10 +790,13 @@ int init_image_object(const char *file_name, int startpage)
     // set image file path
     if(!isFirstLoad) {
         free_array_with_alloced((void**)detail->image_path_list, detail->image_count);    
+        detail->image_path_list = NULL;
 
         FreeUnCompressDataSet(uncompressed_file_list);
+        uncompressed_file_list = NULL;
 
         FreeImageContainer();
+        image_container_list = NULL;
 
         detail->image_count = 0;
 
@@ -864,7 +814,7 @@ int init_image_object(const char *file_name, int startpage)
         }
 
     } else {
-        set_image_path_list();
+        set_image_path_list(file_name);
     }
 
 
