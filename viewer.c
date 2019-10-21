@@ -402,7 +402,16 @@ gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer d
 
     if(keyval == GDK_KEY_o && isCtrl) {
         OpenFile();
-    }                                      
+
+        return TRUE;
+    }
+
+    if(keyval == GDK_KEY_q && isCtrl) {
+
+        CloseWindow();
+
+        return TRUE;
+    }
 
     if(image_container_list == NULL) {
         return FALSE;
@@ -426,7 +435,7 @@ gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer d
                 next_image(TRUE);
             }
 
-            break;
+            return TRUE;
 
         default:
             break;
@@ -434,6 +443,8 @@ gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer d
 
     if(keyval == GDK_KEY_Return && isAlt) {
         FullScreen();
+
+        return TRUE;
     }
 
 
