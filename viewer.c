@@ -91,6 +91,8 @@ int get_image_file_count_from_directory(struct dirent **src, const int size, int
                 }
             }
 
+            free(final_path);
+
         }
 
     }
@@ -157,6 +159,8 @@ int create_image_path_list(char **image_path_list, const char *dirname)
                 image_path_list[i] = (char*)calloc(dirname_length + target_length + 1, 1);
 
                 strncpy(image_path_list[i], final_path, final_length);
+
+                free(final_path);
             }
         } else {
             free(tmp);
