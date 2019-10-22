@@ -393,6 +393,7 @@ int load_from_zip(const char *file_name, uncompress_data_set_t *data_set)
     }
     printf("data set allocate done\n");
 
+
     int i = 0;
     int position = 0;
     while(i < cd_num_on_disk) {
@@ -475,10 +476,7 @@ int load_from_zip(const char *file_name, uncompress_data_set_t *data_set)
             return 0;
         }
 
-        strm.avail_in = headers[i]->compress_size;
-        strm.next_in = body;
 
-        strm.avail_out = headers[i]->uncompress_size;
         uint8_t *out = (uint8_t*)calloc(headers[i]->uncompress_size, 1);
         if(out == NULL) {
             free(tmp_file_name);
@@ -502,89 +500,100 @@ int load_from_zip(const char *file_name, uncompress_data_set_t *data_set)
             return 0;
         }
 
-        strm.next_out = out;
+        if(headers[i]->compress_method == COMPRESS_METHOD_DEFLATE) {
 
-        int ret = inflateInit2(&strm, -MAX_WBITS);
+            strm.avail_in = headers[i]->compress_size;
+            strm.next_in = body;
+            strm.avail_out = headers[i]->uncompress_size;
+            strm.next_out = out;
 
-        ret = inflate(&strm, Z_NO_FLUSH);
-        switch(ret) {
-            case Z_NEED_DICT:
-                printf("Z_NEED_DICT\n");
-                inflateEnd(&strm);
+            int ret = inflateInit2(&strm, -MAX_WBITS);
 
-                free(tmp_file_name);
-                tmp_file_name = NULL;
+            ret = inflate(&strm, Z_NO_FLUSH);
+            switch(ret) {
+                case Z_NEED_DICT:
+                    printf("Z_NEED_DICT\n");
+                    inflateEnd(&strm);
 
-                free(body);
-                body = NULL;
+                    free(tmp_file_name);
+                    tmp_file_name = NULL;
 
-                if(out != NULL) {
-                    free(out);
-                    out = NULL;
-                }
+                    free(body);
+                    body = NULL;
 
-                FreeCentralHeaders(headers, cd_num_on_disk);
+                    if(out != NULL) {
+                        free(out);
+                        out = NULL;
+                    }
 
-                FreeUnCompressDataSet(data_set);
+                    FreeCentralHeaders(headers, cd_num_on_disk);
 
-                fclose(fp);
+                    FreeUnCompressDataSet(data_set);
 
-                close(fd);
+                    fclose(fp);
 
-                return 0;
+                    close(fd);
 
-            case Z_DATA_ERROR:
-                printf("Z_DATA_ERROR\n");
+                    return 0;
 
-                inflateEnd(&strm);
+                case Z_DATA_ERROR:
+                    printf("%s\n", body);
 
-                if(out != NULL) {
-                    free(out);
-                    out = NULL;
-                }
+                    inflateEnd(&strm);
 
-                free(tmp_file_name);
-                tmp_file_name = NULL;
+                    if(out != NULL) {
+                        free(out);
+                        out = NULL;
+                    }
 
-                free(body);
-                body = NULL;
+                    free(tmp_file_name);
+                    tmp_file_name = NULL;
 
-                FreeUnCompressDataSet(data_set);
-                
-                FreeCentralHeaders(headers, cd_num_on_disk);
+                    free(body);
+                    body = NULL;
 
+                    FreeUnCompressDataSet(data_set);
 
-                fclose(fp);
-
-                close(fd);
-
-                return 0;
-
-            case Z_MEM_ERROR:
-                printf("Z_MEM_ERROR\n");
-                inflateEnd(&strm);
-
-                if(out != NULL) {
-                    free(out);
-                    out = NULL;
-                }
-
-                free(tmp_file_name);
-                tmp_file_name = NULL;
-
-                free(body);
-                body = NULL;
-
-                FreeCentralHeaders(headers, cd_num_on_disk);
-
-                FreeUnCompressDataSet(data_set);
+                    FreeCentralHeaders(headers, cd_num_on_disk);
 
 
-                fclose(fp);
+                    fclose(fp);
 
-                close(fd);
+                    close(fd);
 
-                return 0;
+                    return 0;
+
+                case Z_MEM_ERROR:
+                    printf("Z_MEM_ERROR\n");
+                    inflateEnd(&strm);
+
+                    if(out != NULL) {
+                        free(out);
+                        out = NULL;
+                    }
+
+                    free(tmp_file_name);
+                    tmp_file_name = NULL;
+
+                    free(body);
+                    body = NULL;
+
+                    FreeCentralHeaders(headers, cd_num_on_disk);
+
+                    FreeUnCompressDataSet(data_set);
+
+
+                    fclose(fp);
+
+                    close(fd);
+
+                    return 0;
+            }
+        } else {
+            memcpy(out, body, headers[i]->uncompress_size);
+
+            free(body);
+            body = NULL;
         }
 
         int check = detect_image(out, headers[i]->uncompress_size);
@@ -600,7 +609,7 @@ int load_from_zip(const char *file_name, uncompress_data_set_t *data_set)
                 memcpy(data_set->uncompress_data_list[position]->data, out, headers[i]->uncompress_size);
 
                 data_set->uncompress_data_list[position]->file_size = headers[i]->uncompress_size;
-                
+
                 position++;
 
                 data_set->size = position;
