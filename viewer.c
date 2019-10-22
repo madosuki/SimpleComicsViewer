@@ -724,7 +724,7 @@ int init_image_object(const char *file_name, int startpage)
     {
         image_container_list = (Image_Container_t**)calloc(detail->image_count, sizeof(Image_Container_t*));
 
-        if(pages->isSingle)
+        if(pages->isSingle || detail->image_count == 1)
         {
             set_image_container(0);
 
