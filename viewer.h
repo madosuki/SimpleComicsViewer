@@ -52,13 +52,14 @@ gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer d
 
 gboolean detect_resize_window(GtkWidget *widget, GdkEvent *event, gpointer data);
 
+
 void Close();
 
-void FullScreen();
+void fullscreen();
 
-void UpdateGrid();
+void update_grid();
 
-void UpdatePage();
+void update_page(int isSingleChange);
 
 typedef struct
 {
@@ -138,6 +139,13 @@ typedef struct
 {
     GtkWidget *body;
     GtkWidget *root;
+    GtkWidget *page_direction;
+} view_menu_t;
+
+typedef struct
+{
+    GtkWidget *body;
+    GtkWidget *root;
     GtkWidget *about;
 } help_menu_t;
 
@@ -145,7 +153,27 @@ main_window_data_t window;
 
 file_menu_t file_menu_struct;
 
+view_menu_t view_menu_struct;
+
 help_menu_t help_menu_struct;
+
+
+static void change_direction()
+{
+    if(pages->left != NULL) {
+
+        printf("change direction now\n");
+
+        if(pages->page_direction_right) {
+            pages->page_direction_right = FALSE;
+        } else {
+            pages->page_direction_right = TRUE;
+        }
+
+        update_page(FALSE);
+
+    }
+}
 
 static void OpenFile()
 {
@@ -186,7 +214,7 @@ static void OpenFile()
         printf("select file: %s\n", file_name);
 
         if(init_image_object(file_name, 0)) {
-            UpdateGrid();
+            update_grid();
         } else {
             printf("init image error\n");
         }

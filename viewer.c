@@ -21,7 +21,6 @@ void free_array_with_alloced(void **list, const int size)
 
 }
 
-
 int set_image_from_compressed_file(const char *file_name)
 {
     // uncompress_data_set_t *tmp_list = (uncompress_data_set_t*)calloc(sizeof(uncompress_data_set_t), sizeof(uncompress_data_set_t));
@@ -231,110 +230,8 @@ void next_image(int isForward)
         gtk_image_set_from_pixbuf((GtkImage*)pages->left, image_container_list[pages->current_page]->dst);    
 
     } else {
-        if(isForward) {
 
-            set_image_container(pages->current_page);
-            set_image_container(pages->current_page - 1);
-
-            if(pages->right != NULL) {
-                gtk_image_clear(GTK_IMAGE(pages->right));
-            }
-
-            if(pages->left != NULL) {
-                gtk_image_clear(GTK_IMAGE(pages->left));
-            }
-
-
-            if(detail->isOdd && (pages->current_page == detail->image_count - 1)) {
-
-                unref_dst();
-
-                // resize_when_single(pages->current_page);
-
-                int isOverHeight = resize_when_spread(pages->current_page);
-
-                if(pages->page_direction_right) {
-
-                    gtk_image_set_from_pixbuf(GTK_IMAGE(pages->right), image_container_list[pages->current_page]->dst);
-
-                } else {
-
-                    gtk_image_set_from_pixbuf(GTK_IMAGE(pages->left), image_container_list[pages->current_page]->dst);
-                }
-
-                // set_margin_left_page(pages->current_page, isOverHeight, TRUE);
-
-            } else {
-
-
-                printf("isForward and not isOdd\n");
-                unref_dst();
-
-                int isOverHeight = resize_when_spread(pages->current_page);
-
-                if(pages->page_direction_right)
-                {
-                    gtk_image_set_from_pixbuf(GTK_IMAGE(pages->right), image_container_list[pages->current_page - 1]->dst);
-                    gtk_image_set_from_pixbuf(GTK_IMAGE(pages->left), image_container_list[pages->current_page]->dst);
-                }
-                else
-                {
-                    gtk_image_set_from_pixbuf(GTK_IMAGE(pages->left), image_container_list[pages->current_page - 1]->dst);
-                    gtk_image_set_from_pixbuf(GTK_IMAGE(pages->right), image_container_list[pages->current_page]->dst);
-                }
-
-                set_margin_left_page(pages->current_page, isOverHeight, FALSE);
-            }
-
-        } else {
-            if(pages->left != NULL) {
-                gtk_image_clear(GTK_IMAGE(pages->left));
-            }
-
-            if(pages->right != NULL) {
-                gtk_image_clear(GTK_IMAGE(pages->right));
-            }
-
-            set_image_container(pages->current_page);
-            set_image_container(pages->current_page - 1);
-
-            // g_object_unref(G_OBJECT(image_container_list[pages->current_page]->dst));
-            // g_object_unref(G_OBJECT(image_container_list[pages->current_page - 1]->dst));
-
-            if(detail->isOdd && pages->current_page == detail->image_count - 1) {
-
-                unref_dst();
-
-                int isOverHeight = resize_when_spread(pages->current_page);
-                // resize_when_single(pages->current_page);
-
-                if(pages->page_direction_right) {
-                    gtk_image_set_from_pixbuf(GTK_IMAGE(pages->right), image_container_list[pages->current_page]->dst);
-                } else {
-                    gtk_image_set_from_pixbuf(GTK_IMAGE(pages->left), image_container_list[pages->current_page]->dst);
-                }
-
-                // set_margin_left_page(pages->current_page, isOverHeight, TRUE);
-
-            } else {
-
-                unref_dst();
-
-                int isOverHeight = resize_when_spread(pages->current_page);
-
-                if(pages->page_direction_right) {
-                    gtk_image_set_from_pixbuf((GtkImage*)pages->right, image_container_list[pages->current_page - 1]->dst);
-                    gtk_image_set_from_pixbuf((GtkImage*)pages->left, image_container_list[pages->current_page]->dst);
-                } else {
-                    gtk_image_set_from_pixbuf((GtkImage*)pages->right, image_container_list[pages->current_page]->dst);
-                    gtk_image_set_from_pixbuf((GtkImage*)pages->left, image_container_list[pages->current_page - 1]->dst);
-                }
-
-
-                set_margin_left_page(pages->current_page, isOverHeight, FALSE);
-            }
-        }
-
+        update_page(FALSE);
 
     }
 
@@ -395,7 +292,7 @@ gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer d
     }
 
     if(keyval == GDK_KEY_Return && isAlt) {
-        FullScreen();
+        fullscreen();
 
         return TRUE;
     }
@@ -872,7 +769,7 @@ int init_image_object(const char *file_name, int startpage)
 }
 
 
-void FullScreen()
+void fullscreen()
 {
     if(window.isFullScreen)
     {
@@ -889,54 +786,117 @@ void FullScreen()
 
 }
 
-void UpdatePage()
+void update_page(int isSingleChange)
 {
-
     if(!isFirstLoad) {
-        if(pages->isSingle) {
-            if(detail->isOdd && pages->current_page == (detail->image_count - 1)) {
 
-                gtk_image_clear(GTK_IMAGE(pages->right));
+        if(isSingleChange) {
 
-            } else if(pages->left != NULL && pages->right != NULL) {
+            if(pages->isSingle) {
+
+                if(detail->isOdd && pages->current_page == (detail->image_count - 1)) {
+
+                    gtk_image_clear(GTK_IMAGE(pages->right));
+
+                } else if(pages->left != NULL && pages->right != NULL) {
+
+                    gtk_image_clear(GTK_IMAGE(pages->left));
+                    gtk_image_clear(GTK_IMAGE(pages->right));
+
+                }
+
+                pages->current_page -= 1;
+
+                if(pages->current_page < 0) {
+                    pages->current_page = 0;
+                }
+
+                resize_when_single(pages->current_page);
+
+                set_image(&pages->left, pages->current_page);
+
+                update_grid();
+
+            } else {
 
                 gtk_image_clear(GTK_IMAGE(pages->left));
-                gtk_image_clear(GTK_IMAGE(pages->right));
 
+                pages->current_page += 1;
+
+                if(pages->current_page > detail->image_count - 1) {
+                    pages->current_page = detail->image_count - 1;
+                }
+
+                resize_when_spread(pages->current_page);
+
+                if(pages->current_page == detail->image_count - 1) {
+                    set_image(&pages->right, pages->current_page);
+                } else {
+                    set_image(&pages->left, pages->current_page);
+                    set_image(&pages->right, pages->current_page - 1);
+                }
+
+                update_grid();
             }
-
-            pages->current_page -= 1;
-
-            if(pages->current_page < 0) {
-                pages->current_page = 0;
-            }
-
-            resize_when_single(pages->current_page);
-
-            set_image(&pages->left, pages->current_page);
-
-            UpdateGrid();
-
         } else {
-            gtk_image_clear(GTK_IMAGE(pages->left));
 
-            pages->current_page += 1;
+            set_image_container(pages->current_page);
+            set_image_container(pages->current_page - 1);
 
-            if(pages->current_page > detail->image_count - 1) {
-                pages->current_page = detail->image_count - 1;
+            if(pages->right != NULL) {
+                gtk_image_clear(GTK_IMAGE(pages->right));
             }
 
-            resize_when_spread(pages->current_page);
+            if(pages->left != NULL) {
+                gtk_image_clear(GTK_IMAGE(pages->left));
+            }
 
-            set_image(&pages->left, pages->current_page);
-            set_image(&pages->right, pages->current_page - 1);
 
-            UpdateGrid();
+            if(detail->isOdd && (pages->current_page == detail->image_count - 1)) {
+
+                unref_dst();
+
+                // resize_when_single(pages->current_page);
+
+                int isOverHeight = resize_when_spread(pages->current_page);
+
+                if(pages->page_direction_right) {
+
+                    gtk_image_set_from_pixbuf(GTK_IMAGE(pages->right), image_container_list[pages->current_page]->dst);
+
+                } else {
+
+                    gtk_image_set_from_pixbuf(GTK_IMAGE(pages->left), image_container_list[pages->current_page]->dst);
+                }
+
+                // set_margin_left_page(pages->current_page, isOverHeight, TRUE);
+
+            } else {
+
+
+                unref_dst();
+
+                int isOverHeight = resize_when_spread(pages->current_page);
+
+                if(pages->page_direction_right)
+                {
+                    gtk_image_set_from_pixbuf(GTK_IMAGE(pages->right), image_container_list[pages->current_page - 1]->dst);
+                    gtk_image_set_from_pixbuf(GTK_IMAGE(pages->left), image_container_list[pages->current_page]->dst);
+                }
+                else
+                {
+                    gtk_image_set_from_pixbuf(GTK_IMAGE(pages->left), image_container_list[pages->current_page - 1]->dst);
+                    gtk_image_set_from_pixbuf(GTK_IMAGE(pages->right), image_container_list[pages->current_page]->dst);
+                }
+
+                set_margin_left_page(pages->current_page, isOverHeight, FALSE);
+            }
+
         }
     }
 }
 
-void UpdateGrid()
+void update_grid()
 {
     if(pages->isSingle) {
         if(!isFirstLoad) {
@@ -949,6 +909,9 @@ void UpdateGrid()
         gtk_widget_show(pages->left);
 
     } else {
+
+        printf("update_grid spread\n");
+
         if(!isFirstLoad) {
             gtk_grid_remove_column(GTK_GRID(grid), 0);
             gtk_grid_remove_column(GTK_GRID(grid), 0);
@@ -996,6 +959,17 @@ GtkWidget *create_menu_bar()
     file_menu_struct.quit = gtk_menu_item_new_with_label("Quit");
     gtk_menu_shell_append(GTK_MENU_SHELL(file_menu_struct.body), file_menu_struct.quit);
     g_signal_connect(G_OBJECT(file_menu_struct.quit), "activate", G_CALLBACK(CloseWindow), NULL);
+
+    // View Menu
+    view_menu_struct.body = gtk_menu_new();
+    view_menu_struct.root = gtk_menu_item_new_with_label("View");
+    gtk_menu_item_set_submenu(GTK_MENU_ITEM(view_menu_struct.root), view_menu_struct.body);
+    gtk_menu_shell_append(GTK_MENU_SHELL(menubar), view_menu_struct.root);
+
+    view_menu_struct.page_direction = gtk_menu_item_new_with_label("Change Page Dpirection");
+    gtk_menu_shell_append(GTK_MENU_SHELL(view_menu_struct.body), view_menu_struct.page_direction);
+    g_signal_connect(G_OBJECT(view_menu_struct.page_direction), "activate", G_CALLBACK(change_direction), NULL);
+
 
     // Help Menu
     help_menu_struct.body = gtk_menu_new();
