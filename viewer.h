@@ -40,6 +40,8 @@ int init_image_object();
 
 void next_image(int isForward);
 
+void free_image_container();
+
 // return value is TRUE or FALSE
 int resize_when_spread(int page);
 
@@ -53,7 +55,7 @@ gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer d
 gboolean detect_resize_window(GtkWidget *widget, GdkEvent *event, gpointer data);
 
 
-void Close();
+void close_variables();
 
 void fullscreen();
 
@@ -175,7 +177,7 @@ static void change_direction()
     }
 }
 
-static void OpenFile()
+static void open_file_on_menu()
 {
     GtkFileChooserAction action = GTK_FILE_CHOOSER_ACTION_OPEN;
 
@@ -230,7 +232,7 @@ end:
 
 static void CloseWindow()
 {
-    Close();
+    close_variables();
     gtk_window_close(GTK_WINDOW(window.window));
 
     printf("CloseWindow\n");

@@ -251,7 +251,7 @@ gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer d
     int isAlt = (event->state & ~consumed & ALL_ACCESS_MASK) == GDK_MOD1_MASK; 
 
     if(keyval == GDK_KEY_o && isCtrl) {
-        OpenFile();
+        open_file_on_menu();
 
         return TRUE;
     }
@@ -321,7 +321,7 @@ gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer d
 }
 
 
-void FreeImageContainer()
+void free_image_container()
 {
     if(image_container_list != NULL) {
         for(int i = 0; i < detail->image_count; i++) {
@@ -351,7 +351,7 @@ void FreeImageContainer()
 
 }
 
-void Close()
+void close_variables()
 {
     if(!window.isClose) {
         printf("free image_path_list\n");
@@ -361,10 +361,10 @@ void Close()
         }                                                                                
 
         printf("free image_container_list\n");
-        FreeImageContainer();
+        free_image_container();
 
         printf("free uncompressed_file_list\n");
-        FreeUnCompressDataSet(uncompressed_file_list);
+        free_uncompress_data_set(uncompressed_file_list);
         printf("end\n");
 
         if(detail != NULL) {
@@ -693,10 +693,10 @@ int init_image_object(const char *file_name, int startpage)
         free_array_with_alloced((void**)detail->image_path_list, detail->image_count);    
         detail->image_path_list = NULL;
 
-        FreeUnCompressDataSet(uncompressed_file_list);
+        free_uncompress_data_set(uncompressed_file_list);
         uncompressed_file_list = NULL;
 
-        FreeImageContainer();
+        free_image_container();
         image_container_list = NULL;
 
         detail->image_count = 0;
@@ -954,7 +954,7 @@ GtkWidget *create_menu_bar()
 
     file_menu_struct.load = gtk_menu_item_new_with_label("Load");
     gtk_menu_shell_append(GTK_MENU_SHELL(file_menu_struct.body), file_menu_struct.load);
-    g_signal_connect(G_OBJECT(file_menu_struct.load), "activate", G_CALLBACK(OpenFile), NULL);
+    g_signal_connect(G_OBJECT(file_menu_struct.load), "activate", G_CALLBACK(open_file_on_menu), NULL);
 
     file_menu_struct.quit = gtk_menu_item_new_with_label("Quit");
     gtk_menu_shell_append(GTK_MENU_SHELL(file_menu_struct.body), file_menu_struct.quit);
