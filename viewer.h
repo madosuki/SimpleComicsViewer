@@ -142,6 +142,7 @@ typedef struct
     GtkWidget *body;
     GtkWidget *root;
     GtkWidget *page_direction;
+    GtkWidget *set_single_mode;
 } view_menu_t;
 
 typedef struct
@@ -158,6 +159,15 @@ file_menu_t file_menu_struct;
 view_menu_t view_menu_struct;
 
 help_menu_t help_menu_struct;
+
+static void change_single()
+{
+    if(pages != NULL && !pages->isSingle) {
+        pages->isSingle = TRUE;
+
+        update_page(TRUE);
+    }
+}
 
 
 static void change_direction()

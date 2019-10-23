@@ -798,10 +798,15 @@ void update_page(int isSingleChange)
 
                     gtk_image_clear(GTK_IMAGE(pages->right));
 
-                } else if(pages->left != NULL && pages->right != NULL) {
+                } else {
 
-                    gtk_image_clear(GTK_IMAGE(pages->left));
-                    gtk_image_clear(GTK_IMAGE(pages->right));
+                    if(pages->left != NULL) {
+                        gtk_image_clear(GTK_IMAGE(pages->left));
+                    }
+
+                    if(pages->right != NULL) {
+                        gtk_image_clear(GTK_IMAGE(pages->right));
+                    }
 
                 }
 
@@ -903,6 +908,7 @@ void update_grid()
             gtk_grid_remove_column(GTK_GRID(grid), 0);
         }
 
+        gtk_widget_set_vexpand(pages->left, TRUE);
         gtk_widget_set_hexpand(pages->left, TRUE);
         gtk_grid_attach(GTK_GRID(grid), pages->left, 0, 0, 1, 1);
 
@@ -970,6 +976,10 @@ GtkWidget *create_menu_bar()
     gtk_menu_shell_append(GTK_MENU_SHELL(view_menu_struct.body), view_menu_struct.page_direction);
     g_signal_connect(G_OBJECT(view_menu_struct.page_direction), "activate", G_CALLBACK(change_direction), NULL);
 
+
+    view_menu_struct.set_single_mode = gtk_menu_item_new_with_label("Set Single Page");
+    gtk_menu_shell_append(GTK_MENU_SHELL(view_menu_struct.body), view_menu_struct.set_single_mode);
+    g_signal_connect(G_OBJECT(view_menu_struct.set_single_mode), "activate", G_CALLBACK(change_single), NULL);
 
     // Help Menu
     help_menu_struct.body = gtk_menu_new();
