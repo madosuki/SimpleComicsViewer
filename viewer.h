@@ -143,6 +143,7 @@ typedef struct
     GtkWidget *root;
     GtkWidget *page_direction;
     GtkWidget *set_single_mode;
+    GtkWidget *set_spread_mode;
 } view_menu_t;
 
 typedef struct
@@ -160,10 +161,19 @@ view_menu_t view_menu_struct;
 
 help_menu_t help_menu_struct;
 
-static void change_single()
+static void change_spread_to_single()
 {
     if(pages != NULL && !pages->isSingle) {
         pages->isSingle = TRUE;
+
+        update_page(TRUE);
+    }
+}
+
+static void change_single_to_spread()
+{
+    if(pages != NULL && pages->isSingle) {
+        pages->isSingle = FALSE;
 
         update_page(TRUE);
     }

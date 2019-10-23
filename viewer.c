@@ -826,20 +826,16 @@ void update_page(int isSingleChange)
 
                 gtk_image_clear(GTK_IMAGE(pages->left));
 
-                pages->current_page += 1;
+                pages->current_page++;
 
-                if(pages->current_page > detail->image_count - 1) {
-                    pages->current_page = detail->image_count - 1;
+                if(pages->current_page >= detail->image_count - 1) {
+                    pages->current_page--;
                 }
 
                 resize_when_spread(pages->current_page);
 
-                if(pages->current_page == detail->image_count - 1) {
-                    set_image(&pages->right, pages->current_page);
-                } else {
-                    set_image(&pages->left, pages->current_page);
-                    set_image(&pages->right, pages->current_page - 1);
-                }
+                set_image(&pages->left, pages->current_page);
+                set_image(&pages->right, pages->current_page - 1);
 
                 update_grid();
             }
@@ -977,9 +973,13 @@ GtkWidget *create_menu_bar()
     g_signal_connect(G_OBJECT(view_menu_struct.page_direction), "activate", G_CALLBACK(change_direction), NULL);
 
 
-    view_menu_struct.set_single_mode = gtk_menu_item_new_with_label("Set Single Page");
+    view_menu_struct.set_single_mode = gtk_menu_item_new_with_label("Set Single Mode");
     gtk_menu_shell_append(GTK_MENU_SHELL(view_menu_struct.body), view_menu_struct.set_single_mode);
-    g_signal_connect(G_OBJECT(view_menu_struct.set_single_mode), "activate", G_CALLBACK(change_single), NULL);
+    g_signal_connect(G_OBJECT(view_menu_struct.set_single_mode), "activate", G_CALLBACK(change_spread_to_single), NULL);
+
+    view_menu_struct.set_spread_mode = gtk_menu_item_new_with_label("Set Spread Mode");
+    gtk_menu_shell_append(GTK_MENU_SHELL(view_menu_struct.body), view_menu_struct.set_spread_mode);
+    g_signal_connect(G_OBJECT(view_menu_struct.set_spread_mode), "activate", G_CALLBACK(change_single_to_spread), NULL);
 
     // Help Menu
     help_menu_struct.body = gtk_menu_new();
