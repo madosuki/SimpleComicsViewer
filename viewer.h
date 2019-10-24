@@ -26,7 +26,7 @@ int get_image_file_count_from_directory(struct dirent **src, const int size, int
 
 int create_image_path_list(char **image_path_list, const char *dirname);
 
-void set_image_path_list(const char *dirname);
+int set_image_path_list(const char *dirname);
 
 int set_image_from_compressed_file(const char *file_name);
 

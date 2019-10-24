@@ -118,11 +118,27 @@ int create_image_path_list(char **image_path_list, const char *dirname)
     printf("target directory: %s\n", dirname);
 
     int r = scandir(dirname, &file_list, NULL, alphasort);
+    if(r < 1) {
+        free(file_list);
+        file_list = NULL;
+
+        return 0;
+    }
 
     int *number_list = (int*)malloc(sizeof(int) * LIST_BUFFER);
     memset(number_list, 0, sizeof(int) * LIST_BUFFER);
 
     int count = get_image_file_count_from_directory(file_list, r, number_list, dirname);
+
+    if(count < 1) {
+
+        free(number_list);
+        number_list = NULL;
+
+        free_array_with_alloced((void**)file_list, r);
+
+        return 0;
+    }
 
     printf("count: %d, r: %d\n", count, r);
 
@@ -173,25 +189,51 @@ int create_image_path_list(char **image_path_list, const char *dirname)
     return count;
 }
 
-void set_image_path_list(const char *dirname)
+int set_image_path_list(const char *dirname)
 {
-    detail = (DirectoryDetail_t*)malloc(sizeof(DirectoryDetail_t));
     if(detail != NULL) {
-        memset(detail, 0, sizeof(DirectoryDetail_t));
-        detail->image_path_list = (char**)malloc(LIST_BUFFER);
-        if(detail->image_path_list != NULL) {
-            printf("Not NULL from detail->image_list\n");
-            detail->image_count = create_image_path_list(detail->image_path_list, dirname);
-            printf("end\n");
+        detail = (DirectoryDetail_t*)malloc(sizeof(DirectoryDetail_t));
 
-            if(detail->image_count % 2) {
-                detail->isOdd = TRUE;
-            } else {
-                detail->isOdd = FALSE;
-            }
+        if(detail != NULL) {
+            memset(detail, 0, sizeof(DirectoryDetail_t));
         }
     }
 
+    if(detail == NULL) {
+        return 0;
+    }
+
+    if(detail->image_path_list == NULL) {
+        detail->image_path_list = (char**)malloc(LIST_BUFFER);
+
+        if(detail->image_path_list != NULL) {
+            return 0;
+        }
+    }
+
+    if(detail->image_path_list != NULL) {
+        printf("Not NULL from detail->image_list\n");
+
+        int count = create_image_path_list(detail->image_path_list, dirname);
+        printf("image count: %d\n", count);
+        if(count < 1) {
+            return 0;
+        }
+
+        detail->image_count = count;
+
+        printf("end\n");
+
+        if(detail->image_count % 2) {
+            detail->isOdd = TRUE;
+        } else {
+            detail->isOdd = FALSE;
+        }
+
+        return 1;
+    }
+
+    return 0;
 }
 
 void unref_dst()
@@ -727,7 +769,9 @@ int init_image_object(const char *file_name, int startpage)
         }
 
     } else {
-        set_image_path_list(file_name);
+        if(!set_image_path_list(file_name)) {
+            return FALSE;
+        }
     }
 
 
