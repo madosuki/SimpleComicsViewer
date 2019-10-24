@@ -297,6 +297,18 @@ gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer d
         return TRUE;
     }
 
+    if(keyval == GDK_KEY_s && isCtrl) {
+        change_spread_to_single();
+
+        return TRUE;
+    }
+
+    if(keyval == GDK_KEY_d && isCtrl) {
+        change_single_to_spread();
+
+        return TRUE;
+    }
+
 
     if((keyval == GDK_KEY_f && isCtrl) || event->keyval == GDK_KEY_Right || event->keyval == GDK_KEY_l) {
 
