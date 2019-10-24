@@ -119,7 +119,10 @@ int create_image_path_list(char **image_path_list, const char *dirname)
 
     int r = scandir(dirname, &file_list, NULL, alphasort);
     if(r < 1) {
-        free(file_list);
+
+        if(file_list != NULL) {
+            free(file_list);
+        }
         file_list = NULL;
 
         return 0;
@@ -191,49 +194,47 @@ int create_image_path_list(char **image_path_list, const char *dirname)
 
 int set_image_path_list(const char *dirname)
 {
-    if(detail != NULL) {
+    if(detail == NULL) {
         detail = (DirectoryDetail_t*)malloc(sizeof(DirectoryDetail_t));
 
         if(detail != NULL) {
             memset(detail, 0, sizeof(DirectoryDetail_t));
+        } else {
+            return FALSE;
         }
     }
 
-    if(detail == NULL) {
-        return 0;
-    }
 
     if(detail->image_path_list == NULL) {
-        detail->image_path_list = (char**)malloc(LIST_BUFFER);
+        detail->image_path_list = (char**)calloc(LIST_BUFFER, 1);
 
-        if(detail->image_path_list != NULL) {
-            return 0;
+        if(detail->image_path_list == NULL) {
+            free_array_with_alloced((void**)detail->image_path_list, LIST_BUFFER);
+            return FALSE;
         }
     }
 
-    if(detail->image_path_list != NULL) {
-        printf("Not NULL from detail->image_list\n");
+    int count = create_image_path_list(detail->image_path_list, dirname);
+    printf("image count: %d\n", count);
+    if(count < 1) {
+        free(detail->image_path_list);
+        detail->image_path_list = NULL;
 
-        int count = create_image_path_list(detail->image_path_list, dirname);
-        printf("image count: %d\n", count);
-        if(count < 1) {
-            return 0;
-        }
-
-        detail->image_count = count;
-
-        printf("end\n");
-
-        if(detail->image_count % 2) {
-            detail->isOdd = TRUE;
-        } else {
-            detail->isOdd = FALSE;
-        }
-
-        return 1;
+        return FALSE;
     }
 
-    return 0;
+    detail->image_count = count;
+
+    printf("end\n");
+
+    if(detail->image_count % 2) {
+        detail->isOdd = TRUE;
+    } else {
+        detail->isOdd = FALSE;
+    }
+
+
+    return TRUE;
 }
 
 void unref_dst()
@@ -755,8 +756,13 @@ int init_image_object(const char *file_name, int startpage)
 
         detail->image_count = 0;
 
-        gtk_image_clear((GtkImage*)pages->left);
-        gtk_image_clear((GtkImage*)pages->right);
+        if(pages->left != NULL) {
+            gtk_image_clear(GTK_IMAGE(pages->left));
+        }
+
+        if(pages->right != NULL) {
+            gtk_image_clear(GTK_IMAGE(pages->right));
+        }
 
         // pages->current_page = 0;
     }
@@ -769,6 +775,7 @@ int init_image_object(const char *file_name, int startpage)
         }
 
     } else {
+
         if(!set_image_path_list(file_name)) {
             return FALSE;
         }

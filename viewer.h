@@ -213,7 +213,6 @@ static void open_file_on_menu()
         }
 
         uint8_t flag = detect_compress_file(file_name);
-        printf("%d\n", flag);
         if((flag & UTILS_ZIP)) {
             isCompressFile = TRUE;
         } else {
@@ -228,6 +227,10 @@ static void open_file_on_menu()
 
                     printf("%s\n", file_name);
                 }
+            } else {
+                g_free(file_name);
+
+                goto end;
             }
 
             isCompressFile = FALSE;
