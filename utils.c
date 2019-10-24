@@ -13,32 +13,33 @@ const unsigned char zlib_best_compression_sig[2] = {120, 218};
 
 const uint8_t compress_headers_flag = UTILS_ZIP;
 
-int mygcd(int x, int y)
+double mygcd(double x, double y)
 {
-  int tmp = x % y;
+    double result = fmod(x, y);
+    while(1)
+    {
+        double tmp = fmod(y, result);
+        if(tmp <= 0.0)
+        {
+            return result;
+        }
 
-  while(1)
-  {
-      if(y % tmp == 0)
-      {
-          return tmp;
-      }
-
-      tmp = y % tmp;
-  }
+        result = tmp;
+    }
 }
 
-double *calc_aspect_raito(int width, int height, int gcd)
+double *calc_aspect_raito(int width, int height, double gcd)
 {
-  int width_aspect = width / gcd;
-  int height_aspect = height / gcd;
+    double width_aspect = width / gcd;
+    double height_aspect = height / gcd;
+    printf("%f, %f, %f\n", width_aspect, height_aspect, gcd);
 
-  double *tuple = (double*)calloc(2, sizeof(double));
+    double *tuple = (double*)calloc(2, sizeof(double));
 
-  tuple[0] = (double)width_aspect;
-  tuple[1] = (double)height_aspect;
-  
-  return tuple;
+    tuple[0] = width_aspect;
+    tuple[1] = height_aspect;
+
+    return tuple;
 }
 
 int detect_image(uint8_t *buf, int size)

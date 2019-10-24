@@ -11,6 +11,7 @@
 #include <sys/stat.h>
 #include <zlib.h>
 #include <stdint.h>
+#include <math.h>
 
 #define UTILS_PNG 1
 #define UTILS_JPG 2
@@ -30,9 +31,9 @@ const unsigned char zlib_best_compression_sig[2];
 
 const uint8_t compress_headers_flag;
 
-int mygcd(int x, int y);
+double mygcd(double x, double y);
 
-double *calc_aspect_raito(int width, int height, int gcd);
+double *calc_aspect_raito(int width, int height, double gcd);
 
 int detect_image(uint8_t *buf, int size);
 
