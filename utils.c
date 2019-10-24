@@ -4,7 +4,7 @@ const short png_sig_size = 8;
 const unsigned char png_sig[8] = {137, 80, 78, 71, 13, 10, 26, 10};
 
 const short jpg_sig_size = 4;
-const unsigned char jpg_sig[4] = {255, 216, 255, 219};
+const unsigned char jpg_sig[4] = {255, 216, 255, 224};
 
 const short zlib_sig_size = 2; 
 const unsigned char zlib_no_compression_or_low_sig[2] = {120, 1};
@@ -108,9 +108,28 @@ int detect_image_from_file(const char *file_name)
 
     uint32_t sig;
     fread(&sig, 1, 4, fp);
+    printf("%s : sig = %u\njpg sig: %u, png sig: %u\n", file_name, sig, *(uint32_t*)&jpg_sig, *(uint32_t*)&png_sig);
 
-    if(sig == *(uint32_t*)&jpg_sig || sig == *(uint32_t*)&png_sig) {
+    if(sig == *(uint32_t*)&jpg_sig) {
+
+        fclose(fp);
+
+        close(fd);
+
         return 1;
+    } else {
+
+        uint64_t tmp_sig;
+        fseek(fp, 0L, SEEK_SET);
+        fread(&tmp_sig, 1, 8, fp);
+        if(tmp_sig == *(uint64_t*)&png_sig) {
+
+            fclose(fp);
+
+            close(fd);
+
+            return 1;
+        }
     }
 
     fclose(fp);

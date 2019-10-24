@@ -447,9 +447,9 @@ void set_image_container(int position)
         image_container_list[position]->err = NULL;
 
         if(!isCompressFile) {
-            printf("gehahahah\n");
 
             if(detail->image_path_list[position] != NULL) {
+                printf("load now: %s\n", detail->image_path_list[position]);
                 image_container_list[position]->src = gdk_pixbuf_new_from_file(detail->image_path_list[position], &image_container_list[position]->err);
             }
 
