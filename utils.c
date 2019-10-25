@@ -19,8 +19,11 @@ double mygcd(double x, double y)
         return 1;
     }
 
+    if(x == y) {
+        return 1;
+    }
+
     double result = fmod(fmax(x, y), fmin(x, y));
-    int count = 0;
     while(1)
     {
         double tmp = fmod(y, result);
@@ -31,10 +34,6 @@ double mygcd(double x, double y)
 
         result = tmp;
 
-        if(count > 1000) {
-            return 1;
-        }
-        count++;
     }
 }
 
