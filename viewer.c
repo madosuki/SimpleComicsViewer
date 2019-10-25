@@ -1144,3 +1144,16 @@ void move_right()
     }
 
 }
+
+void hide_mouse()
+{
+    GdkDisplay *display = gdk_display_get_default();
+    GdkWindow *gdk_window = gtk_widget_get_window(window.window);
+    if(gdk_window != NULL) {
+        GdkCursor *cursor = gdk_cursor_new_for_display(display, GDK_BLANK_CURSOR);
+
+        GdkSeat *seat = gdk_display_get_default_seat(display);
+        gdk_seat_grab(seat, gdk_window, GDK_SEAT_CAPABILITY_POINTER, TRUE, cursor, NULL, NULL, NULL);
+    }
+
+}

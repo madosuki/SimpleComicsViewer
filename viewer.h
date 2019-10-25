@@ -20,6 +20,8 @@ int status;
 void move_right();
 void move_left();
 
+void hide_mouse();
+
 void free_array_with_alloced(void **list, const int size);
 
 int get_image_file_count_from_directory(struct dirent **src, const int size, int *dst, const char *dirname);
@@ -336,6 +338,8 @@ static void activate(GtkApplication* app, gpointer user_data)
     pages->isFinalPage = FALSE;
 
     isCompressFile = TRUE;
+
+    hide_mouse();
 
     // set_image_from_compressed_file("./tmp.zip");
 
