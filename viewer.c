@@ -788,6 +788,11 @@ int init_image_object(const char *file_name, int startpage)
         printf("%d\n", detail->image_count);
 
         if(pages->isSingle || detail->image_count == 1) {
+
+            if(!pages->isSingle) {
+                pages->isSingle = TRUE;
+            }
+
             set_image_container(0);
 
             resize_when_single(0);
