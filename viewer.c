@@ -783,20 +783,17 @@ int init_image_object(const char *file_name, int startpage)
 
 
 
-    if(detail->image_count > 0)
-    {
+    if(detail->image_count > 0) {
         image_container_list = (Image_Container_t**)calloc(detail->image_count, sizeof(Image_Container_t*));
+        printf("%d\n", detail->image_count);
 
-        if(pages->isSingle || detail->image_count == 1)
-        {
+        if(pages->isSingle || detail->image_count == 1) {
             set_image_container(0);
 
             resize_when_single(0);
 
             set_image(&pages->left, 0);
-        }
-        else
-        {
+        } else {
             // printf("%s\n%s\n", detail->image_path_list[0], detail->image_path_list[1]);
             set_image_container(0);
             set_image_container(1);
@@ -810,13 +807,10 @@ int init_image_object(const char *file_name, int startpage)
 */
             resize_when_spread(1);
 
-            if(pages->page_direction_right)
-            {
+            if(pages->page_direction_right) {
                 set_image(&pages->left, 1);
                 set_image(&pages->right, 0);
-            }
-            else
-            {
+            } else {
                 set_image(&pages->left, 0);
                 set_image(&pages->right, 1);
             }
