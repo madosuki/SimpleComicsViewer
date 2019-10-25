@@ -22,7 +22,7 @@ const short png_sig_size;
 const unsigned char png_sig[8];
 
 const short jpg_sig_size;
-const unsigned char jpg_sig[4];
+const unsigned char jpg_sig[2];
 
 const short zlib_sig_size; 
 const unsigned char zlib_no_compression_or_low_sig[2];

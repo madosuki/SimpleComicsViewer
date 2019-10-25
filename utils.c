@@ -3,8 +3,8 @@
 const short png_sig_size = 8;
 const unsigned char png_sig[8] = {137, 80, 78, 71, 13, 10, 26, 10};
 
-const short jpg_sig_size = 4;
-const unsigned char jpg_sig[4] = {255, 216, 255, 224};
+const short jpg_sig_size = 2;
+const unsigned char jpg_sig[2] = {255, 216};
 
 const short zlib_sig_size = 2; 
 const unsigned char zlib_no_compression_or_low_sig[2] = {120, 1};
@@ -15,7 +15,11 @@ const uint8_t compress_headers_flag = UTILS_ZIP;
 
 double mygcd(double x, double y)
 {
-    double result = fmod(x, y);
+    if(x < 0 || y == 0) {
+        return 1;
+    }
+
+    double result = fmod(fmax(x, y), fmin(x, y));
     int count = 0;
     while(1)
     {
@@ -112,17 +116,19 @@ int detect_image_from_file(const char *file_name)
         return 0;
     }
 
-    uint32_t sig;
-    fread(&sig, 1, 4, fp);
+    uint16_t sig;
+    fseek(fp, 0L, SEEK_SET);
+    fread(&sig, 1, 2, fp);
     printf("%s : sig = %u\njpg sig: %u, png sig: %u\n", file_name, sig, *(uint32_t*)&jpg_sig, *(uint32_t*)&png_sig);
 
-    if(sig == *(uint32_t*)&jpg_sig) {
+    if(sig == *(uint16_t*)&jpg_sig) {
 
         fclose(fp);
 
         close(fd);
 
         return 1;
+
     } else {
 
         uint64_t tmp_sig;
