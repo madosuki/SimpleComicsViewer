@@ -16,6 +16,7 @@ const uint8_t compress_headers_flag = UTILS_ZIP;
 double mygcd(double x, double y)
 {
     double result = fmod(x, y);
+    int count = 0;
     while(1)
     {
         double tmp = fmod(y, result);
@@ -25,6 +26,11 @@ double mygcd(double x, double y)
         }
 
         result = tmp;
+
+        if(count > 1000) {
+            return 1;
+        }
+        count++;
     }
 }
 
