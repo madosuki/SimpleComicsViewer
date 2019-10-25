@@ -2,27 +2,27 @@
 
 ## This Program is so buggy.
 
-#### Depend
+### Depend
 - GTK3
 - GDK3
 - zlib
 
-#### LICENCE
+### LICENCE
 GPLv3
 
-#### Feature
+### Feature
 - Load Image
 - Load Compressed File
 - Show Spread
 
-#### Supported file format
+### Supported file format
 - Single File
     - JPEG
     - PNG
 - Compressed File
-    - PNG or JPEG at non encrypted zip file.
+    - PNG or JPEG inside of non encrypted zip
 
-#### Manual
+### Manual
 - Shortcut Key
     - Move to right  
         l or right arrow or Ctrl+f
