@@ -24,16 +24,16 @@ GPLv3
 
 #### Manual
 - Shortcut Key
-    - Move to right
+    - Move to right  
         l or right arrow or Ctrl+f
-    - Move to left
+    - Move to left  
         h or left arrow or Ctrl+b
-    - Open File
+    - Open File  
         Ctrl+o
-    - Quit
+    - Quit  
         Ctrl+q or Alt+F4
-    - Change Single to Sprad
+    - Change Single to Sprad  
         Ctrl+d
-    - Change Spread to Single
+    - Change Spread to Single  
         Ctrl+s
 
