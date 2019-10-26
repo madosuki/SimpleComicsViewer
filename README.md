@@ -39,7 +39,7 @@ GPLv3
 
 ## How to run
 
-- Use AppImage
+- Use AppImage  
 First download AppImage from release page.  
 ```
 chmod +x ./Simple_Comics_Viewer-x86_64.AppImage
@@ -51,7 +51,7 @@ chmod +x ./Simple_Comics_Viewer-x86_64.AppImage
 ./build/simple_comics_viewer
 ```
 
-### Build
+### How to Build
 ```
 sudo apt-get install libgtk-3-dev build-essential
 make
