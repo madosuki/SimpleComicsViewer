@@ -68,3 +68,5 @@ simple_comics_viewer
 compile_commands.json
 
 *.txt
+
+.DirIcon
