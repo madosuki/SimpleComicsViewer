@@ -37,6 +37,20 @@ GPLv3
     - Change Spread to Single  
         Ctrl+s
 
+## How to run
+
+- Use AppImage
+First download AppImage from release page.  
+```
+chmod +x ./Simple_Comics_Viewer-x86_64.AppImage
+./Simple_Comics_Viewer-x86_64.AppImage
+```
+
+- After build
+```
+./build/simple_comics_viewer
+```
+
 ### Build
 ```
 sudo apt-get install libgtk-3-dev build-essential
