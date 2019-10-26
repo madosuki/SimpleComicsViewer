@@ -69,6 +69,6 @@ compile_commands.json
 
 *.txt
 
-.DirIcon
+*.DirIcon
 
-.AppImage
+*.AppImage
