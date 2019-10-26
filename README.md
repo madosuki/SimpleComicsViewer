@@ -37,3 +37,8 @@ GPLv3
     - Change Spread to Single  
         Ctrl+s
 
+### Build
+```
+sudo apt-get install libgtk-3-dev build-essential
+make
+```
