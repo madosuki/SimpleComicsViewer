@@ -16,7 +16,7 @@ void free_array_with_alloced(void **list, const int size)
         free(list);
         list = NULL;
 
-        printf("Free Success\n");
+        //printf("Free Success\n");
     }
 
 }
@@ -34,7 +34,7 @@ int set_image_from_compressed_file(const char *file_name)
     }
 
     for(int i = 0; i < uncompressed_file_list->size; i++) {
-        printf("file name: %s, size: %d\n", uncompressed_file_list->uncompress_data_list[i]->file_name, uncompressed_file_list->uncompress_data_list[i]->file_size);
+        //printf("file name: %s, size: %d\n", uncompressed_file_list->uncompress_data_list[i]->file_name, uncompressed_file_list->uncompress_data_list[i]->file_size);
     }
 
     if(detail == NULL) {
@@ -79,7 +79,7 @@ int get_image_file_count_from_directory(struct dirent **src, const int size, int
             strncat(final_path, slash, 1);
             strncat(final_path, src[i]->d_name, src_length);
 
-            printf("%s\n", final_path);
+            //printf("%s\n", final_path);
 
             if(detect_image_from_file(final_path)) {
                 number_list[count - 1] = i;
@@ -115,7 +115,7 @@ int create_image_path_list(char **image_path_list, const char *dirname)
 {
     struct dirent **file_list;
 
-    printf("target directory: %s\n", dirname);
+    // printf("target directory: %s\n", dirname);
 
     int r = scandir(dirname, &file_list, NULL, alphasort);
     if(r < 1) {
@@ -143,7 +143,7 @@ int create_image_path_list(char **image_path_list, const char *dirname)
         return 0;
     }
 
-    printf("count: %d, r: %d\n", count, r);
+    // printf("count: %d, r: %d\n", count, r);
 
     if(count < LIST_BUFFER) {
         size_t image_path_list_size = sizeof(char*) * count;
@@ -172,7 +172,7 @@ int create_image_path_list(char **image_path_list, const char *dirname)
                 strncat(final_path, slash, 1);
                 strncat(final_path, file_list[target]->d_name, target_length);
 
-                printf("%s\n", file_list[target]->d_name);
+                // printf("%s\n", file_list[target]->d_name);
 
                 image_path_list[i] = (char*)calloc(dirname_length + target_length + 1, 1);
 
@@ -215,7 +215,7 @@ int set_image_path_list(const char *dirname)
     }
 
     int count = create_image_path_list(detail->image_path_list, dirname);
-    printf("image count: %d\n", count);
+    // printf("image count: %d\n", count);
     if(count < 1) {
         free(detail->image_path_list);
         detail->image_path_list = NULL;
@@ -225,7 +225,7 @@ int set_image_path_list(const char *dirname)
 
     detail->image_count = count;
 
-    printf("end\n");
+    // printf("end\n");
 
     if(detail->image_count % 2) {
         detail->isOdd = TRUE;
@@ -239,7 +239,7 @@ int set_image_path_list(const char *dirname)
 
 void unref_dst()
 {
-    printf("unref_dst start\n");
+    // printf("unref_dst start\n");
     if(image_container_list[pages->current_page] != NULL) {
         if(pages->isSingle) {
 
@@ -258,7 +258,7 @@ void unref_dst()
             }
         }
     }
-    printf("unref_dst end\n");
+    // printf("unref_dst end\n");
 }
 
 void next_image(int isForward)
@@ -357,7 +357,7 @@ gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer d
 
         move_left();
 
-        printf("pressed right arrow key\n");
+        // printf("pressed right arrow key\n");
 
         return TRUE;
     }
@@ -366,7 +366,7 @@ gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer d
 
         move_right();
 
-        printf("pressed right left key\n");
+        // printf("pressed right left key\n");
 
         return TRUE;
 
@@ -409,18 +409,18 @@ void free_image_container()
 void close_variables()
 {
     if(!window.isClose) {
-        printf("free image_path_list\n");
+        //printf("free image_path_list\n");
         if(detail != NULL && detail->image_path_list != NULL) 
         {                                                                                
             free_array_with_alloced((void**)detail->image_path_list, detail->image_count);    
         }                                                                                
 
-        printf("free image_container_list\n");
+        //printf("free image_container_list\n");
         free_image_container();
 
-        printf("free uncompressed_file_list\n");
+        //printf("free uncompressed_file_list\n");
         free_uncompress_data_set(uncompressed_file_list);
-        printf("end\n");
+        //printf("end\n");
 
         if(detail != NULL) {
             free(detail);
@@ -433,7 +433,7 @@ void close_variables()
         }
 
         window.isClose = TRUE;
-        printf("Closed\n");
+        //printf("Closed\n");
     }
 }
 
@@ -449,17 +449,17 @@ void set_image_container(int position)
         if(!isCompressFile) {
 
             if(detail->image_path_list[position] != NULL) {
-                printf("load now: %s\n", detail->image_path_list[position]);
+                //printf("load now: %s\n", detail->image_path_list[position]);
                 image_container_list[position]->src = gdk_pixbuf_new_from_file(detail->image_path_list[position], &image_container_list[position]->err);
             }
 
         } else {
-            // printf("uncompressd load mode\n%d\n", uncompressed_file_list->uncompress_data_list[position]->file_size);
+            // //printf("uncompressd load mode\n%d\n", uncompressed_file_list->uncompress_data_list[position]->file_size);
 
             GdkPixbufLoader *loader = gdk_pixbuf_loader_new();
             gboolean check = gdk_pixbuf_loader_write(loader, uncompressed_file_list->uncompress_data_list[position]->data, uncompressed_file_list->uncompress_data_list[position]->file_size, NULL);
             if(!check) {
-                printf("GdkPixbufLoader write error\n");
+                //printf("GdkPixbufLoader write error\n");
             }
 
             // memcpy(image_container_list[position]->src, gdk_pixbuf_loader_get_pixbuf(loader), uncompressed_file_list->uncompress_data_list[position]->file_size);
@@ -467,15 +467,15 @@ void set_image_container(int position)
 
             GError *err;
             if(loader != NULL) {
-                printf("loader close begin\n");
+                //printf("loader close begin\n");
                 gdk_pixbuf_loader_close(loader, NULL);
-                printf("loader close end\n");
+                //printf("loader close end\n");
             }
 
         }
 
         if(image_container_list[position]->src == NULL) {
-            printf("empty!\n");
+            //printf("empty!\n");
         }
 
         image_container_list[position]->src_width = gdk_pixbuf_get_width(image_container_list[position]->src);
@@ -509,16 +509,16 @@ void resize_when_single(int position)
     double h_aspect = (double)image_container_list[position]->aspect_raito[1];
 
     /*
-       printf("widow size w: %d h: %d\n", window_width, window_height);
-       printf("src w: %d h: %d\n", width, height);
-       printf("%f : %f\n", w_aspect, h_aspect);
+       //printf("widow size w: %d h: %d\n", window_width, window_height);
+       //printf("src w: %d h: %d\n", width, height);
+       //printf("%f : %f\n", w_aspect, h_aspect);
        */
 
     if(height > window_height) {
         int diff = height - window_height;
         height = height - diff;
         int result = (int)ceil((double)height * (w_aspect / h_aspect));
-        // printf("result: %d, %d * %f\n", result, height, (w_aspect / h_aspect));
+        // //printf("result: %d, %d * %f\n", result, height, (w_aspect / h_aspect));
         width = result;
     }
 
@@ -685,7 +685,7 @@ int resize_when_spread(int page)
     image_container_list[page - 1]->dst_width = left_width;
     image_container_list[page - 1]->dst_height = left_height;
 
-    printf("Left Width: %d, Left Height: %d\n", left_width, left_height);
+    //printf("Left Width: %d, Left Height: %d\n", left_width, left_height);
 
     int right_width = half_width;
     int right_height = 0;
@@ -719,7 +719,7 @@ void set_margin_left_page(int position, int isOverHeight, int isFinalPage)
         int mix_width = (image_container_list[position - 1]->dst_width + image_container_list[position]->dst_width);
         int margin_left = (fmax(mix_width, window.width) - fmin(mix_width, window.width)) / 2;
 
-        printf("margin left: %d\n", margin_left);
+        //printf("margin left: %d\n", margin_left);
 
         // g_object_set(pages->left, "margin_left", margin_left, NULL);
 
@@ -785,7 +785,7 @@ int init_image_object(const char *file_name, int startpage)
 
     if(detail->image_count > 0) {
         image_container_list = (Image_Container_t**)calloc(detail->image_count, sizeof(Image_Container_t*));
-        printf("%d\n", detail->image_count);
+        //printf("%d\n", detail->image_count);
 
         if(pages->isSingle || detail->image_count == 1) {
 
@@ -799,7 +799,7 @@ int init_image_object(const char *file_name, int startpage)
 
             set_image(&pages->left, 0);
         } else {
-            // printf("%s\n%s\n", detail->image_path_list[0], detail->image_path_list[1]);
+            // //printf("%s\n%s\n", detail->image_path_list[0], detail->image_path_list[1]);
             set_image_container(0);
             set_image_container(1);
 
@@ -896,10 +896,12 @@ void update_page(int isSingleChange)
                     pages->current_page--;
                 }
 
-                resize_when_spread(pages->current_page);
 
                 set_image(&pages->left, pages->current_page);
                 set_image(&pages->right, pages->current_page - 1);
+
+                int isOverHeight = resize_when_spread(pages->current_page);
+                set_margin_left_page(pages->current_page, isOverHeight, FALSE);
 
                 update_grid();
             }
@@ -976,7 +978,7 @@ void update_grid()
 
     } else {
 
-        printf("update_grid spread\n");
+        //printf("update_grid spread\n");
 
         if(!isFirstLoad) {
             gtk_grid_remove_column(GTK_GRID(grid), 0);
@@ -1136,7 +1138,7 @@ void move_right()
         pages->current_page = detail->image_count - 1;
     }
 
-    printf("current_page: %d\n", pages->current_page);
+    //printf("current_page: %d\n", pages->current_page);
 
     if(pages->page_direction_right) {
         next_image(TRUE);
