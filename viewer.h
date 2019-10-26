@@ -339,7 +339,7 @@ static void activate(GtkApplication* app, gpointer user_data)
 
     isCompressFile = TRUE;
 
-    hide_mouse();
+    // hide_mouse();
 
     // set_image_from_compressed_file("./tmp.zip");
 

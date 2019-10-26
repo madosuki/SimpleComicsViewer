@@ -837,12 +837,14 @@ void fullscreen()
     {
         gtk_window_unfullscreen(GTK_WINDOW(window.window));
         gtk_widget_show(window.menubar);
+        hide_mouse();
         window.isFullScreen = FALSE;
     }
     else
     {
         gtk_window_fullscreen(GTK_WINDOW(window.window));
         gtk_widget_hide(window.menubar);
+        hide_mouse();
         window.isFullScreen = TRUE;
     }
 
@@ -1146,6 +1148,7 @@ void move_right()
 
 void hide_mouse()
 {
+    /*
     GdkDisplay *display = gdk_display_get_default();
     GdkWindow *gdk_window = gtk_widget_get_window(window.window);
     if(gdk_window != NULL) {
@@ -1154,5 +1157,20 @@ void hide_mouse()
         GdkSeat *seat = gdk_display_get_default_seat(display);
         gdk_seat_grab(seat, gdk_window, GDK_SEAT_CAPABILITY_POINTER, TRUE, cursor, NULL, NULL, NULL);
     }
+    */
+    
+    GdkDisplay *display = gdk_display_get_default();
+    GdkWindow *gdk_window = gtk_widget_get_window(window.window);
+    GdkCursor *cursor;
+
+    if(window.isFullScreen) {
+        cursor = gdk_cursor_new_from_name(display, "default");
+    } else {
+        cursor = gdk_cursor_new_for_display(display, GDK_BLANK_CURSOR);
+    }
+
+    gdk_window_set_cursor(gdk_window, cursor);
+
+    g_object_unref(cursor);
 
 }
