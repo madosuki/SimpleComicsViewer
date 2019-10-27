@@ -902,14 +902,16 @@ void update_page(int isSingleChange)
                 set_image_container(pages->current_page);
                 set_image_container(pages->current_page - 1);
 
-                set_image(&pages->left, pages->current_page);
-                set_image(&pages->right, pages->current_page - 1);
 
                 int isOverHeight = resize_when_spread(pages->current_page);
                 set_margin_left_page(pages->current_page, isOverHeight, FALSE);
 
+                set_image(&pages->right, pages->current_page - 1);
+                set_image(&pages->left, pages->current_page);
+
                 update_grid();
             }
+
         } else {
 
             set_image_container(pages->current_page);
@@ -1138,15 +1140,7 @@ void move_left()
         pages->current_page = detail->image_count - 1;
     }
 
-    printf("current_page: %d, from move_left\ncount: %d\n", pages->current_page, detail->image_count);
-
-    if(image_container_list[pages->current_page] == NULL) {
-        set_image_container(pages->current_page);
-    }
-
-    if(!pages->isSingle && image_container_list[pages->current_page - 1] == NULL) {
-        set_image_container(pages->current_page - 1);
-    }
+    // printf("current_page: %d, from move_left\ncount: %d\n", pages->current_page, detail->image_count);
 
     if(pages->page_direction_right) {
         next_image(FALSE);
@@ -1195,15 +1189,7 @@ void move_right()
         pages->current_page = detail->image_count - 1;
     }
 
-    printf("current_page: %d, from move_right\ncount: %d\n", pages->current_page, detail->image_count);
-
-    if(image_container_list[pages->current_page] == NULL) {
-        set_image_container(pages->current_page);
-    }
-
-    if(!pages->isSingle && image_container_list[pages->current_page - 1] == NULL) {
-        set_image_container(pages->current_page - 1);
-    }
+    // printf("current_page: %d, from move_right\ncount: %d\n", pages->current_page, detail->image_count);
 
 
     if(pages->page_direction_right) {
