@@ -105,6 +105,14 @@ typedef struct
     gint height;
 } DrawingArea_t;
 
+typedef struct
+{
+    GtkWidget *left_image_button;
+    GtkWidget *right_image_button;
+} Image_button_t;
+
+Image_button_t image_button;
+
 Image_Container_t **image_container_list;
 
 uncompress_data_set_t *uncompressed_file_list;

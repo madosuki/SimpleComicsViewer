@@ -822,6 +822,7 @@ int init_image_object(const char *file_name, int startpage)
 
 
             pages->current_page = 1;
+
         }
 
         return TRUE;
@@ -880,6 +881,8 @@ void update_page(int isSingleChange)
                     pages->current_page = 0;
                 }
 
+                set_image_container(pages->current_page);
+
                 resize_when_single(pages->current_page);
 
                 set_image(&pages->left, pages->current_page);
@@ -892,10 +895,12 @@ void update_page(int isSingleChange)
 
                 pages->current_page++;
 
-                if(pages->current_page >= detail->image_count - 1) {
-                    pages->current_page--;
+                if(pages->current_page > detail->image_count - 1) {
+                    pages->current_page = detail->image_count - 1;
                 }
 
+                set_image_container(pages->current_page);
+                set_image_container(pages->current_page - 1);
 
                 set_image(&pages->left, pages->current_page);
                 set_image(&pages->right, pages->current_page - 1);
@@ -909,6 +914,8 @@ void update_page(int isSingleChange)
 
             set_image_container(pages->current_page);
             set_image_container(pages->current_page - 1);
+
+            printf("%d from update_page\n", pages->current_page);
 
             if(pages->right != NULL) {
                 gtk_image_clear(GTK_IMAGE(pages->right));
@@ -985,6 +992,41 @@ void update_grid()
             gtk_grid_remove_column(GTK_GRID(grid), 0);
         }
 
+        /*
+        if(image_button.left_image_button == NULL) {
+            image_button.left_image_button = gtk_button_new();
+            gtk_button_set_relief(GTK_BUTTON(image_button.left_image_button), GTK_RELIEF_NONE);
+            g_object_set(image_button.left_image_button, "padding", 0, NULL);
+            g_object_set(image_button.left_image_button, "margin", 0, NULL);
+        }
+
+
+        if(image_button.right_image_button == NULL) {
+            image_button.right_image_button = gtk_button_new();
+            gtk_button_set_relief(GTK_BUTTON(image_button.right_image_button), GTK_RELIEF_NONE);
+            g_object_set(image_button.right_image_button, "padding", 0, NULL);
+            g_object_set(image_button.right_image_button, "margin", 0, NULL);
+        }
+
+        gtk_button_set_image(GTK_BUTTON(image_button.left_image_button), pages->left);
+        gtk_button_set_image(GTK_BUTTON(image_button.right_image_button), pages->right);
+
+
+        gtk_widget_set_vexpand(pages->left, TRUE);
+        gtk_widget_set_vexpand(image_button.left_image_button, TRUE);
+        gtk_widget_set_hexpand(pages->left, TRUE);
+
+        gtk_widget_set_vexpand(image_button.right_image_button, TRUE);
+        gtk_widget_set_vexpand(pages->right, TRUE);
+        gtk_widget_set_hexpand(pages->right, TRUE);
+
+        gtk_grid_attach(GTK_GRID(grid), image_button.left_image_button, 0, 0, 1, 1);
+        gtk_grid_attach_next_to(GTK_GRID(grid), image_button.right_image_button, image_button.left_image_button, GTK_POS_RIGHT, 1, 1);
+
+        gtk_widget_show(image_button.left_image_button);
+        gtk_widget_show(image_button.right_image_button);
+        */
+
         // gtk_widget_set_hexpand(pages->left, TRUE);
         gtk_widget_set_vexpand(pages->left, TRUE);
 
@@ -992,10 +1034,8 @@ void update_grid()
         gtk_widget_set_vexpand(pages->right, TRUE);
 
         gtk_grid_attach(GTK_GRID(grid), pages->left, 0, 0, 1, 1);
-
+        
         gtk_grid_attach_next_to(GTK_GRID(grid), pages->right, pages->left, GTK_POS_RIGHT, 1, 1);
-
-        // gtk_grid_attach(GTK_GRID(grid), pages->right, 1, 0, 1, 1);
 
         gtk_widget_show(pages->left);
         gtk_widget_show(pages->right);
@@ -1081,6 +1121,10 @@ void move_left()
         }
 
     }
+    
+    if(!pages->isSingle && pages->current_page % 2 == 0) {
+        pages->current_page++;
+    }
 
     if(pages->current_page >= detail->image_count) {
         if(pages->isSingle) {
@@ -1094,7 +1138,15 @@ void move_left()
         pages->current_page = detail->image_count - 1;
     }
 
-    // printf("%s\n", detail->image_path_list[pages->current_page]);
+    printf("current_page: %d, from move_left\ncount: %d\n", pages->current_page, detail->image_count);
+
+    if(image_container_list[pages->current_page] == NULL) {
+        set_image_container(pages->current_page);
+    }
+
+    if(!pages->isSingle && image_container_list[pages->current_page - 1] == NULL) {
+        set_image_container(pages->current_page - 1);
+    }
 
     if(pages->page_direction_right) {
         next_image(FALSE);
@@ -1107,6 +1159,7 @@ void move_left()
 
 void move_right()
 {
+
     if(pages->isSingle) {
         pages->current_page--;
     } else if(pages->page_direction_right) {
@@ -1134,11 +1187,24 @@ void move_right()
         }
     }
 
+    if(!pages->isSingle && pages->current_page % 2 == 0) {
+        pages->current_page++;
+    }
+
     if(pages->current_page < 0) {
         pages->current_page = detail->image_count - 1;
     }
 
-    //printf("current_page: %d\n", pages->current_page);
+    printf("current_page: %d, from move_right\ncount: %d\n", pages->current_page, detail->image_count);
+
+    if(image_container_list[pages->current_page] == NULL) {
+        set_image_container(pages->current_page);
+    }
+
+    if(!pages->isSingle && image_container_list[pages->current_page - 1] == NULL) {
+        set_image_container(pages->current_page - 1);
+    }
+
 
     if(pages->page_direction_right) {
         next_image(TRUE);
