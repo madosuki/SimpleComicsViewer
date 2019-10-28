@@ -28,8 +28,10 @@ int *get_central_directory_offset(FILE *fp, const int file_size)
     uint32_t offset;
     fread(&offset, 1, 4, fp);
 
+    /*
     printf("EOCD signature: %x\nNumber of disk: %d\nCentral Disk Start Position: %d\nNumber of central directory on disk: %d\nTotal Number of cd record: %d\nCD Size: %d\nCD Offset: %d\n", 
             eocd_sig, disk_num, central_directory_start_positon, cd_num_on_disk, total_cd_record_num, cd_size, offset);
+            */
 
     int *tuple = (int*)calloc(2, sizeof(int));
     tuple[0] = cd_num_on_disk;
@@ -50,7 +52,7 @@ void set_central_headers(zip_central_header_t **headers, int central_offset, int
 
         uint32_t c_sig;
         fread(&c_sig, 1, 4, fp);
-        // printf("central directory signature: %x\n", c_sig);
+        // // printf("central directory signature: %x\n", c_sig);
         tmp->signature = c_sig;
 
         uint16_t version;
@@ -123,8 +125,8 @@ void set_central_headers(zip_central_header_t **headers, int central_offset, int
         if(file_name_length > 0) {
             uint8_t *file_name = (uint8_t*)calloc(file_name_length, 1);
             fread(file_name, 1, file_name_length, fp);
-            printf("\nfile name: %s\n", file_name);
-            printf("zip uncompress size: %d, compress_size %d\n\n", uncompress_size, compress_size);
+            // printf("\nfile name: %s\n", file_name);
+            // printf("zip uncompress size: %d, compress_size %d\n\n", uncompress_size, compress_size);
 
             tmp->file_name = (uint8_t*)calloc(file_name_length, 1);
             memcpy(tmp->file_name, file_name, file_name_length);
@@ -160,7 +162,7 @@ void set_central_headers(zip_central_header_t **headers, int central_offset, int
         // pos = pos + (46 + file_name_length + extra_field_length);
     }
 
-    // printf("%d\n", total_uncompress_file_size);
+    // // printf("%d\n", total_uncompress_file_size);
     finally_uncompress_size = total_uncompress_file_size;
 }
 
@@ -369,14 +371,14 @@ int load_from_zip(const char *file_name, uncompress_data_set_t *data_set)
     int *eocd_data = get_central_directory_offset(fp, file_size);
     int offset = eocd_data[1];
     int cd_num_on_disk = eocd_data[0];
-    printf("central directory offset: %d\n", offset);
+    // printf("central directory offset: %d\n", offset);
     free(eocd_data);
 
     zip_central_header_t **headers = (zip_central_header_t**)calloc(cd_num_on_disk, sizeof(zip_central_header_t*));
 
     set_central_headers(headers, offset, cd_num_on_disk, file_size, fp);
 
-    printf("%lu\n", sizeof(uncompress_data_t*) * cd_num_on_disk);
+    // printf("%lu\n", sizeof(uncompress_data_t*) * cd_num_on_disk);
     data_set->uncompress_data_list = (uncompress_data_t**)malloc(sizeof(uncompress_data_t*) * cd_num_on_disk);
     memset(data_set->uncompress_data_list, 0, cd_num_on_disk);
 
@@ -391,7 +393,7 @@ int load_from_zip(const char *file_name, uncompress_data_set_t *data_set)
         printf("allocate error from data_set->uncompress_data_list\n");
         return 0;
     }
-    printf("data set allocate done\n");
+    // printf("data set allocate done\n");
 
 
     int i = 0;
@@ -421,7 +423,7 @@ int load_from_zip(const char *file_name, uncompress_data_set_t *data_set)
         }
         fread(tmp_file_name, 1, file_name_length, fp);
 
-        printf("target file: %s\n", tmp_file_name);
+        // printf("target file: %s\n", tmp_file_name);
 
         fseek(fp, extra_field_length, SEEK_CUR);
 

@@ -16,7 +16,7 @@ void free_array_with_alloced(void **list, const int size)
         free(list);
         list = NULL;
 
-        //printf("Free Success\n");
+        // printf("Free Success\n");
     }
 
 }
@@ -459,7 +459,7 @@ void set_image_container(int position)
             GdkPixbufLoader *loader = gdk_pixbuf_loader_new();
             gboolean check = gdk_pixbuf_loader_write(loader, uncompressed_file_list->uncompress_data_list[position]->data, uncompressed_file_list->uncompress_data_list[position]->file_size, NULL);
             if(!check) {
-                //printf("GdkPixbufLoader write error\n");
+                printf("GdkPixbufLoader write error\n");
             }
 
             // memcpy(image_container_list[position]->src, gdk_pixbuf_loader_get_pixbuf(loader), uncompressed_file_list->uncompress_data_list[position]->file_size);
@@ -917,7 +917,7 @@ void update_page(int isSingleChange)
             set_image_container(pages->current_page);
             set_image_container(pages->current_page - 1);
 
-            printf("%d from update_page\n", pages->current_page);
+            // printf("%d from update_page\n", pages->current_page);
 
             if(pages->right != NULL) {
                 gtk_image_clear(GTK_IMAGE(pages->right));
@@ -987,7 +987,7 @@ void update_grid()
 
     } else {
 
-        //printf("update_grid spread\n");
+        // printf("update_grid spread\n");
 
         if(!isFirstLoad) {
             gtk_grid_remove_column(GTK_GRID(grid), 0);

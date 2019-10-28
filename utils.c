@@ -43,7 +43,7 @@ double *calc_aspect_raito(int width, int height, double gcd)
 {
     double width_aspect = width / gcd;
     double height_aspect = height / gcd;
-    printf("%f, %f, %f\n", width_aspect, height_aspect, gcd);
+    // printf("%f, %f, %f\n", width_aspect, height_aspect, gcd);
 
     double *tuple = (double*)calloc(2, sizeof(double));
 
@@ -120,11 +120,11 @@ int detect_image_from_file(const char *file_name)
     uint16_t sig;
     fseek(fp, 0L, SEEK_SET);
     fread(&sig, 1, 2, fp);
-    printf("%s : sig = %u\njpg sig: %u, png sig: %u\n", file_name, sig, *(uint32_t*)&jpg_sig, *(uint32_t*)&png_sig);
+    // printf("%s : sig = %u\njpg sig: %u, png sig: %u\n", file_name, sig, *(uint32_t*)&jpg_sig, *(uint32_t*)&png_sig);
 
     if(sig == *(uint16_t*)&jpg_sig) {
 
-        printf("detect jpeg : %s\n", file_name);
+        // printf("detect jpeg : %s\n", file_name);
 
         fclose(fp);
 
