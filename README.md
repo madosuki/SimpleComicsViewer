@@ -10,9 +10,9 @@
 ### LICENCE
 **GPLv3**
 
-### Feature
-- **Load Image**
-- **Load Compressed File**
+### Features
+- **Load Image(Currently support only JPEG and PNG)**
+- **Load Compressed File(Currently support only zip)**
 - **Show Spread**
 
 ### Supported file format
