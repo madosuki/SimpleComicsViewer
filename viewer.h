@@ -133,6 +133,8 @@ typedef struct
 {
     GtkWidget *window;
     GtkWidget *menubar;
+    int menubar_width;
+    int menubar_height;
     int width;
     int height;
     int isFullScreen;
@@ -294,6 +296,7 @@ static void activate(GtkApplication* app, gpointer user_data)
 
     // Set Window Title
     gtk_window_set_title(GTK_WINDOW(window.window), "Simple Comix Viewer");
+
     // Set Window Size
     gtk_window_set_default_size(GTK_WINDOW(window.window), window.width, window.height);
 
@@ -309,18 +312,10 @@ static void activate(GtkApplication* app, gpointer user_data)
 
     GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
-    // add vbox to container
-    // gtk_container_add(GTK_CONTAINER(vbox), hbox);
-    // gtk_container_add(GTK_CONTAINER(window), vbox);
-
     gtk_container_add(GTK_CONTAINER(window.window), vbox);
 
     // settings menubar
     window.menubar = create_menu_bar();
-
-    // gtk_menu_attach(GTK_MENU(help), about, 0, 1, 0, 1);
-
-    // gtk_container_add(GTK_CONTAINER(window.window), menubar);
 
     // add menubar
     gtk_box_pack_start(GTK_BOX(vbox), window.menubar, FALSE, FALSE, 0);
@@ -347,73 +342,15 @@ static void activate(GtkApplication* app, gpointer user_data)
 
     isCompressFile = TRUE;
 
-    // hide_mouse();
-
-    // set_image_from_compressed_file("./tmp.zip");
-
-    /*
-    // set image file
-    if(init_image_object())
-    {
-        if(pages->isSingle)
-        {
-            gtk_widget_set_hexpand(pages->left, TRUE);
-            gtk_grid_attach(GTK_GRID(grid), pages->left, 0, 0, 1, 1);
-            // gtk_grid_attach(GTK_GRID(grid), pages->left, 1, 0, image_container_list[0]->dst_width, image_container_list[0]->dst_height);
-            // gtk_container_add(GTK_CONTAINER(scroll_window), pages->left);
-        }
-        else
-        {
-            // gtk_widget_set_hexpand(pages->left, TRUE);
-            gtk_widget_set_vexpand(pages->left, TRUE);
-
-            // gtk_widget_set_hexpand(pages->right, TRUE);
-            gtk_widget_set_vexpand(pages->right, TRUE);
-
-            gtk_grid_attach(GTK_GRID(grid), pages->left, 0, 0, 1, 1);
-            // gtk_grid_attach(GTK_GRID(grid), pages->right, 1, 0, 1, 1);
-
-            gtk_grid_attach_next_to(GTK_GRID(grid), pages->right, pages->left, GTK_POS_RIGHT, 1, 1);
-
-            // g_object_set(pages->left, "valign", GTK_ALIGN_CENTER, NULL);
-            // g_object_set(pages->right, "valign", GTK_ALIGN_CENTER, NULL);
-
-            // gtk_grid_attach(GTK_GRID(grid), pages->left, 0, 0, image_container_list[0]->dst_width, image_container_list[0]->dst_height);
-            // gtk_grid_attach(GTK_GRID(grid), pages->right, image_container_list[0]->dst_width, 0, image_container_list[1]->dst_width, image_container_list[1]->dst_height);
-
-
-        }
-    }
-    */
-
-    // kg_signal_connect(draw_area.scrolled_window, "size-allocate", G_CALLBACK(get_widget_size), NULL);
-    // concatenate between vbox and scroll window.
-
-    // gtk_box_pack_start(GTK_BOX(hbox), second_scroll_window, TRUE, TRUE, 0);
-
-    /*
-    // Create Button box
-    GtkWidget *button_box = gtk_button_box_new(GTK_ORIENTATION_HORIZONTAL);
-
-    // Create Button
-    GtkWidget *button = gtk_button_new_with_label("Hello World");
-
-    // Set event when click of button
-    g_signal_connect(button, "clicked", G_CALLBACK(print_hello), NULL);
-
-    // Swap
-    g_signal_connect_swapped(button, "clicked", G_CALLBACK(print_hello), NULL);
-
-    // Add
-    gtk_container_add(GTK_CONTAINER(button_box), button);
-
-    unsigned int padding = 0;
-    gtk_box_pack_start(GTK_BOX(vbox), button_box, TRUE, TRUE, padding);
-    */
-
-    // gtk_box_set_spacing(GTK_BOX(vbox), 100);
-
     gtk_widget_show_all(window.window);
+
+    // get menubar size;
+    GtkAllocation *alloc = g_new(GtkAllocation, 1);
+    gtk_widget_get_allocation(window.menubar, alloc);
+    window.menubar_height = alloc->height;
+    window.menubar_width = alloc->width;
+    g_free(alloc);
+
 }
 
 #endif // VIEWER_H

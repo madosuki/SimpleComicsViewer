@@ -74,10 +74,10 @@ int get_image_file_count_from_directory(struct dirent **src, const int size, int
                 break;
             }
 
-            strncat(final_path, dirname, dirname_length);
+            strcat(final_path, dirname);
             char slash[1] = "/";
-            strncat(final_path, slash, 1);
-            strncat(final_path, src[i]->d_name, src_length);
+            strcat(final_path, slash);
+            strcat(final_path, src[i]->d_name);
 
             //printf("%s\n", final_path);
 
@@ -167,10 +167,10 @@ int create_image_path_list(char **image_path_list, const char *dirname)
                     break;
                 }
 
-                strncat(final_path, dirname, dirname_length);
+                strcat(final_path, dirname);
                 char slash[1] = "/";
-                strncat(final_path, slash, 1);
-                strncat(final_path, file_list[target]->d_name, target_length);
+                strcat(final_path, slash);
+                strcat(final_path, file_list[target]->d_name);
 
                 // printf("%s\n", file_list[target]->d_name);
 
@@ -508,14 +508,13 @@ void resize_when_single(int position)
     double w_aspect = (double)image_container_list[position]->aspect_raito[0];
     double h_aspect = (double)image_container_list[position]->aspect_raito[1];
 
-    /*
-       //printf("widow size w: %d h: %d\n", window_width, window_height);
-       //printf("src w: %d h: %d\n", width, height);
-       //printf("%f : %f\n", w_aspect, h_aspect);
-       */
+    int diff_height_between_windown_and_menubar_height = window_height - window.menubar_height;
+    if(window.isFullScreen) {
+        diff_height_between_windown_and_menubar_height = window_height;
+    }
 
-    if(height > window_height) {
-        int diff = height - window_height;
+    if(height > diff_height_between_windown_and_menubar_height) {
+        int diff = height - diff_height_between_windown_and_menubar_height;
         height = height - diff;
         int result = (int)ceil((double)height * (w_aspect / h_aspect));
         // //printf("result: %d, %d * %f\n", result, height, (w_aspect / h_aspect));
@@ -672,13 +671,18 @@ int resize_when_spread(int page)
        }
        */
 
+    int diff_height_between_windown_and_menubar = window_height - window.menubar_height;
+    if(window.isFullScreen) {
+        diff_height_between_windown_and_menubar = window_height;
+    }
+
     int left_width = half_width;
     int left_height = 0;
     left_height = (int)ceil((double)left_width * (left_y_aspect / left_x_aspect));
     int isOverHeight = FALSE;
-    if(left_height > window_height)
+    if(left_height > diff_height_between_windown_and_menubar)
     {
-        scale_when_oversize(&left_width, &left_height, window_width, window_height, left_x_aspect, left_y_aspect, FALSE);
+        scale_when_oversize(&left_width, &left_height, window_width, diff_height_between_windown_and_menubar, left_x_aspect, left_y_aspect, FALSE);
         isOverHeight = TRUE;
     }
 
@@ -691,9 +695,9 @@ int resize_when_spread(int page)
     int right_height = 0;
     right_height = (int)ceil((double)right_width * (right_y_aspect / right_x_aspect));
 
-    if(right_height > window_height)
+    if(right_height > diff_height_between_windown_and_menubar)
     {
-        scale_when_oversize(&right_width, &right_height, window_width, window_height, right_x_aspect, right_y_aspect, FALSE);
+        scale_when_oversize(&right_width, &right_height, window_width, diff_height_between_windown_and_menubar, right_x_aspect, right_y_aspect, FALSE);
     }
 
     image_container_list[page]->dst_width = right_width;
