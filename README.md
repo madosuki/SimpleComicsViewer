@@ -53,6 +53,9 @@ chmod +x ./Simple_Comics_Viewer-x86_64.AppImage
 
 ### How to Build
 ```
-sudo apt-get install libgtk-3-dev build-essential
-make
+sudo apt-get install libgtk-3-dev build-essential automake autoconf
+```
+After move to project dir.
+```
+./autogen.sh && ./configure && make
 ```
