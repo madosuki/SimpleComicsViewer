@@ -2,7 +2,7 @@
 
 ## This Program is so buggy.
 
-### Depend
+### Depends
 - **GTK3**
 - **GDK3**
 - **zlib**
@@ -48,7 +48,7 @@ chmod +x ./Simple_Comics_Viewer-x86_64.AppImage
 
 - **After build**
 ```
-./build/simple_comics_viewer
+./src/simple_comics_viewer
 ```
 
 ### How to Build
