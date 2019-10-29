@@ -76,7 +76,9 @@ compile_commands.json
 autom4te.cache
 autoscan.log
 
-config.h.in*
+config.h
+config.h.in
+config.log
 configure
 config.status
 
@@ -92,3 +94,8 @@ aclocal.m4
 stamp-h1
 
 Makefile
+Makefile.in
+
+.deps
+
+*~
