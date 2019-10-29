@@ -72,3 +72,23 @@ compile_commands.json
 *.DirIcon
 
 *.AppImage
+
+autom4te.cache
+autoscan.log
+
+config.h.in*
+configure
+config.status
+
+compile
+install-sh
+missing
+INSTALL
+
+depcomp
+
+aclocal.m4
+
+stamp-h1
+
+Makefile
