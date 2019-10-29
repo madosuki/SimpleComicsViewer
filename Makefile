@@ -1,15 +1,22 @@
-CFLAGS = -O2 `pkg-config --cflags gtk+-3.0`
-LIBFLAGS = -lm -lz 
-LIBSDIR = `pkg-config --libs gtk+-3.0` 
+CC = gcc
+CFLAGS = `pkg-config --cflags gtk+-3.0` -O2
+LIBS = -lm -lz 
+LDFLAGS = `pkg-config --libs gtk+-3.0` 
 SOURCES = $(wildcard *.c)
+OUTDIR = ./build/
+EXECUTE = simple_comics_viewer
 
-run: main.c
-	gcc -o build/simple_comics_viewer $(SOURCES) $(CFLAGS) $(LIBSDIR) $(LIBFLAGS)
+.PHONY: all
+
+all: $(EXECUTE)
+
+$(EXECUTE): $(SOURCES)
+	$(CC) -o $(OUTDIR)$(EXECUTE) $(SOURCES) $(CFLAGS) $(LDFLAGS) $(LIBS)
 
 .PHONY: clean
 clean:
-	rm build/simple_comics_viewer
+	rm $(OUTDIR)$(EXECUTE)
 
 .PHONY: check
 check:
-	./build/simple_comics_viewer
+	$(OUTDIR)$(EXECUTE)
