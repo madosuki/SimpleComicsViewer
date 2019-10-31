@@ -33,9 +33,12 @@ int set_image_from_compressed_file(const char *file_name)
         return FALSE;
     }
 
+    /*
     for(int i = 0; i < uncompressed_file_list->size; i++) {
-        //printf("file name: %s, size: %d\n", uncompressed_file_list->uncompress_data_list[i]->file_name, uncompressed_file_list->uncompress_data_list[i]->file_size);
+        printf("file name: %s, size: %d\n", uncompressed_file_list->uncompress_data_list[i]->file_name, uncompressed_file_list->uncompress_data_list[i]->file_size);
     }
+    */
+
 
     if(detail == NULL) {
         detail = (DirectoryDetail_t*)calloc(sizeof(DirectoryDetail_t), sizeof(DirectoryDetail_t));
@@ -461,6 +464,16 @@ void set_image_container(int position)
             if(!check) {
                 printf("GdkPixbufLoader write error\n");
             }
+
+            free(uncompressed_file_list->uncompress_data_list[position]->data);
+            uncompressed_file_list->uncompress_data_list[position]->data = NULL;
+
+            free(uncompressed_file_list->uncompress_data_list[position]->file_name);
+            uncompressed_file_list->uncompress_data_list[position]->file_name = NULL;
+
+            free(uncompressed_file_list->uncompress_data_list[position]);
+            uncompressed_file_list->uncompress_data_list[position] = NULL;
+
 
             // memcpy(image_container_list[position]->src, gdk_pixbuf_loader_get_pixbuf(loader), uncompressed_file_list->uncompress_data_list[position]->file_size);
             image_container_list[position]->src = gdk_pixbuf_loader_get_pixbuf(loader);
