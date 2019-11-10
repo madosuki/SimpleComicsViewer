@@ -25,21 +25,23 @@
 ### Manual
 - **Shortcut Key**
     - **Move to Right**  
-        l or right arrow or Ctrl+f
+        l or right arrow or Ctrl+f  
     - **Move to Left**  
-        h or left arrow or Ctrl+b
+        h or left arrow or Ctrl+b  
     - **Move to Top Page**  
-        Home key or Ctrl+a
+        Home key or Ctrl+a or 0  
     - **Move to End Page**  
-        End key or Ctrl+e
+        End key or Ctrl+e or Shift+$  
     - **Open File**  
-        Ctrl+o
+        Ctrl+o  
     - **Quit**  
-        Ctrl+q or Alt+F4
+        Ctrl+q or Alt+F4  
     - **Change Single to Sprad**  
-        Ctrl+d
+        Ctrl+d  
     - **Change Spread to Single**  
-        Ctrl+s
+        Ctrl+s  
+    - **Change priority to Cover**  
+        c  
 
 ## How to run
 
