@@ -231,7 +231,7 @@ void unref_dst()
         g_object_unref(G_OBJECT(image_container_list[pages->current_page]->dst));
       }
 
-      if(image_container_list[pages->current_page - 1] != NULL && image_container_list[pages->current_page - 1]->dst != NULL) {
+      if((pages->current_page - 1) > -1 && image_container_list[pages->current_page - 1] != NULL && image_container_list[pages->current_page - 1]->dst != NULL) {
         g_object_unref(G_OBJECT(image_container_list[pages->current_page - 1]->dst));
       }
     }
@@ -854,6 +854,22 @@ void update_page(int isSingleChange)
         gtk_image_clear(GTK_IMAGE(pages->left));
       }
 
+      if(pages->isPriorityToFrontCover) {
+          if(pages->isCover && pages->current_page > 0) {
+            if(pages->page_direction_right) {
+              gtk_widget_show(pages->left);
+            } else {
+              gtk_widget_show(pages->right);
+            }
+            pages->isCover = FALSE;
+
+          } else if(pages->current_page == 0){
+            pages->isCover = TRUE;
+
+          }
+
+      }
+
 
       if(detail->isOdd && ((pages->isPriorityToFrontCover && pages->current_page == 0) || (!pages->isPriorityToFrontCover && pages->current_page == detail->image_count - 1)) ) {
         unref_dst();
@@ -873,20 +889,34 @@ void update_page(int isSingleChange)
 
         unref_dst();
 
-        int isOverHeight = resize_when_spread(pages->current_page);
-
-        if(pages->page_direction_right)
-        {
-          gtk_image_set_from_pixbuf(GTK_IMAGE(pages->right), image_container_list[pages->current_page - 1]->dst);
-          gtk_image_set_from_pixbuf(GTK_IMAGE(pages->left), image_container_list[pages->current_page]->dst);
+        int isOverHeight = FALSE;
+        if(pages->isCover) {
+          resize_when_single(0);
+        } else {
+          isOverHeight = resize_when_spread(pages->current_page);
         }
-        else
-        {
-          gtk_image_set_from_pixbuf(GTK_IMAGE(pages->left), image_container_list[pages->current_page - 1]->dst);
+
+        if(pages->page_direction_right) {
+
+          if(!pages->isCover) {
+            gtk_image_set_from_pixbuf(GTK_IMAGE(pages->right), image_container_list[pages->current_page - 1]->dst);
+          }
+
+          gtk_image_set_from_pixbuf(GTK_IMAGE(pages->left), image_container_list[pages->current_page]->dst);
+
+        } else {
+
+          if(!pages->isCover) {
+            gtk_image_set_from_pixbuf(GTK_IMAGE(pages->left), image_container_list[pages->current_page - 1]->dst);
+          }
+
           gtk_image_set_from_pixbuf(GTK_IMAGE(pages->right), image_container_list[pages->current_page]->dst);
         }
 
-        set_margin_left_page(pages->current_page, isOverHeight, FALSE);
+
+        if(!pages->isCover) {
+          set_margin_left_page(pages->current_page, isOverHeight, FALSE);
+        }
       }
 
     }
@@ -977,6 +1007,10 @@ GtkWidget *create_menu_bar()
   gtk_menu_shell_append(GTK_MENU_SHELL(view_menu_struct.body), view_menu_struct.set_spread_mode);
   g_signal_connect(G_OBJECT(view_menu_struct.set_spread_mode), "activate", G_CALLBACK(change_single_to_spread), NULL);
 
+  view_menu_struct.set_covermode = gtk_menu_item_new_with_label("Set Cover Mode");
+  gtk_menu_shell_append(GTK_MENU_SHELL(view_menu_struct.body), view_menu_struct.set_covermode);
+  g_signal_connect(G_OBJECT(view_menu_struct.set_covermode), "activate", G_CALLBACK(change_covermode), NULL);
+
   // Help Menu
   help_menu_struct.body = gtk_menu_new();
   help_menu_struct.root = gtk_menu_item_new_with_label("Help");
@@ -1004,6 +1038,10 @@ void move_left()
 
     if(pages->current_page > detail->image_count) {
       pages->current_page = 1;
+
+      if(pages->isPriorityToFrontCover) {
+        pages->current_page = 0;
+      }
     }
 
   } else {
@@ -1016,7 +1054,11 @@ void move_left()
 
   }
 
-  if(!pages->isSingle && pages->current_page % 2 == 0) {
+  if(pages->isPriorityToFrontCover && pages->current_page == 0) {
+    pages->isCover = TRUE;
+  }
+
+  if(!pages->isSingle && !pages->isPriorityToFrontCover && pages->current_page != 0 && pages->current_page % 2 == 0) {
     pages->current_page++;
   }
 
@@ -1027,7 +1069,6 @@ void move_left()
   if(pages->current_page < 0 && pages->isSingle) {
     pages->current_page = detail->image_count - 1;
   }
-
 
   if(pages->page_direction_right) {
     next_image(TRUE);
@@ -1070,13 +1111,28 @@ void move_right()
 
   if(pages->current_page >= detail->image_count) {
     if(pages->isSingle) {
+
       pages->current_page = 0;
+
     } else {
-      pages->current_page = 1;
+
+      if(pages->isPriorityToFrontCover) {
+
+        pages->current_page = 0;
+        pages->isCover = TRUE;
+
+      } else {
+
+        pages->current_page = 1;
+      }
     }
   }
 
-  if(!pages->isSingle && pages->current_page != 0 && pages->current_page % 2 == 0 && pages->current_page != detail->image_count - 1) {
+  if(pages->isPriorityToFrontCover && pages->current_page == 0) {
+    pages->isCover = TRUE;
+  }
+
+  if(!pages->isSingle && pages->current_page != 0 && !pages->isPriorityToFrontCover && pages->current_page % 2 == 0 && pages->current_page != detail->image_count - 1) {
     pages->current_page++;
   }
 

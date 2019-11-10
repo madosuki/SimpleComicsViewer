@@ -74,6 +74,7 @@ typedef struct
   int current_page;
   int isFinalPage;
   int isPriorityToFrontCover;
+  int isCover;
 } Pages;
 
 Pages *pages;
@@ -157,6 +158,7 @@ typedef struct
   GtkWidget *page_direction;
   GtkWidget *set_single_mode;
   GtkWidget *set_spread_mode;
+  GtkWidget *set_covermode;
 } view_menu_t;
 
 typedef struct
@@ -173,6 +175,33 @@ file_menu_t file_menu_struct;
 view_menu_t view_menu_struct;
 
 help_menu_t help_menu_struct;
+
+static void change_covermode()
+{
+  if(pages != NULL) {
+    if(pages->isPriorityToFrontCover) {
+      pages->isPriorityToFrontCover = FALSE;
+      pages->isCover = FALSE;
+
+      if(pages->current_page != 0 && pages->current_page % 2 == 0) {
+        pages->current_page++;
+      }
+
+      if(pages->current_page == 0) {
+        pages->current_page = 1;
+      }
+
+      update_page(FALSE);
+    } else {
+      pages->isPriorityToFrontCover = TRUE;
+      if(pages->current_page == 0) {
+        pages->isCover = TRUE;
+      }
+
+      update_page(FALSE);
+    }
+  }
+}
 
 static void change_spread_to_single()
 {
@@ -335,7 +364,7 @@ static void activate(GtkApplication* app, gpointer user_data)
   pages->page_direction_right = TRUE;
   pages->isSingle = FALSE;
   pages->isFinalPage = FALSE;
-  // pages->isPriorityToFrontCover = TRUE;
+  pages->isCover = FALSE;
   pages->isPriorityToFrontCover = FALSE;
 
   isCompressFile = TRUE;
