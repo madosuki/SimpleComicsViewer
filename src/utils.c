@@ -15,23 +15,20 @@ const uint8_t compress_headers_flag = UTILS_ZIP;
 
 double mygcd(double x, double y)
 {
-  if(x < 0 || y == 0) {
+  if(x < 0 || y == 0)
     return 1;
-  }
+  
 
-  if(x == y) {
+  if(x == y)
     return 1;
-  }
+
 
   double left = fmin(x, y);
   double right = fmod(fmax(x, y), fmin(x, y));
-  while(1)
-  {
+  while(1) {
     double tmp = fmod(left, right);
     if(tmp <= 0.0)
-    {
       return right;
-    }
 
     left = right;
     right = tmp;

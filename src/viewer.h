@@ -73,6 +73,7 @@ typedef struct
   int page_direction_right;
   int current_page;
   int isFinalPage;
+  int isPriorityToFrontCover;
 } Pages;
 
 Pages *pages;
@@ -334,6 +335,8 @@ static void activate(GtkApplication* app, gpointer user_data)
   pages->page_direction_right = TRUE;
   pages->isSingle = FALSE;
   pages->isFinalPage = FALSE;
+  // pages->isPriorityToFrontCover = TRUE;
+  pages->isPriorityToFrontCover = FALSE;
 
   isCompressFile = TRUE;
 
