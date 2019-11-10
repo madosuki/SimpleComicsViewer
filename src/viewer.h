@@ -192,11 +192,19 @@ static void change_covermode()
       }
 
       update_page(FALSE);
+
     } else {
       pages->isPriorityToFrontCover = TRUE;
+
+      pages->isCover = FALSE;
+
+      if(pages->current_page > 0 && pages->current_page % 2 == 0) {
+        pages->current_page--;
+      }
+
       if(pages->current_page == 0) {
         pages->isCover = TRUE;
-      }
+      } 
 
       update_page(FALSE);
     }

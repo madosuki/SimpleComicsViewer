@@ -269,6 +269,7 @@ gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer d
 
   int isCtrl = (event->state & ~consumed & ALL_ACCESS_MASK) == GDK_CONTROL_MASK; 
   int isAlt = (event->state & ~consumed & ALL_ACCESS_MASK) == GDK_MOD1_MASK; 
+  int isShift = (event->state & ~consumed & ALL_ACCESS_MASK) == GDK_SHIFT_MASK;
 
   if(keyval == GDK_KEY_o && isCtrl) {
     open_file_on_menu();
@@ -287,7 +288,7 @@ gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer d
     return FALSE;
   }
 
-  if((event->keyval == GDK_KEY_Home) || (event->keyval == GDK_KEY_a && isCtrl)) {
+  if((event->keyval == GDK_KEY_Home) || (event->keyval == GDK_KEY_a && isCtrl) || (event->keyval == GDK_KEY_0)) {
       pages->current_page = 1;
 
       if(pages->isSingle) {
@@ -303,7 +304,7 @@ gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer d
       return TRUE;
   }
 
-  if((event->keyval == GDK_KEY_End) || (event->keyval == GDK_KEY_e && isCtrl)) {
+  if((event->keyval == GDK_KEY_End) || (event->keyval == GDK_KEY_e && isCtrl) || (event->keyval == GDK_KEY_dollar && isShift)) {
     pages->current_page = detail->image_count - 1;
 
     if(pages->page_direction_right) {
@@ -313,6 +314,10 @@ gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer d
     }
 
     return TRUE;
+  }
+
+  if(event->keyval == GDK_KEY_c) {
+    change_covermode();
   }
 
   if(keyval == GDK_KEY_Return && isAlt) {
