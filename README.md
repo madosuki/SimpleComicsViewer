@@ -24,10 +24,14 @@
 
 ### Manual
 - **Shortcut Key**
-    - **Move to right**  
+    - **Move to Right**  
         l or right arrow or Ctrl+f
-    - **Move to left**  
+    - **Move to Left**  
         h or left arrow or Ctrl+b
+    - **Move to Top Page**
+        Home key or Ctrl+a
+    - **Move to End Page**
+        End key or Ctrl+e
     - **Open File**  
         Ctrl+o
     - **Quit**  
