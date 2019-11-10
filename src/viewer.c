@@ -287,28 +287,32 @@ gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer d
     return FALSE;
   }
 
-  switch(event->keyval) {
-    case GDK_KEY_Home:
+  if((event->keyval == GDK_KEY_Home) || (event->keyval == GDK_KEY_a && isCtrl)) {
       pages->current_page = 1;
 
-      if(pages->isSingle)
-      {
+      if(pages->isSingle) {
         pages->current_page = 0;
       }
 
-      if(pages->page_direction_right)
-      {
+      if(pages->page_direction_right) {
         next_image(FALSE);
-      }
-      else
-      {
+      } else {
         next_image(TRUE);
       }
 
       return TRUE;
+  }
 
-    default:
-      break;
+  if((event->keyval == GDK_KEY_End) || (event->keyval == GDK_KEY_e && isCtrl)) {
+    pages->current_page = detail->image_count - 1;
+
+    if(pages->page_direction_right) {
+      next_image(FALSE);
+    } else {
+      next_image(TRUE);
+    }
+
+    return TRUE;
   }
 
   if(keyval == GDK_KEY_Return && isAlt) {
