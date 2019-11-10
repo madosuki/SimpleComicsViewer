@@ -28,9 +28,9 @@
         l or right arrow or Ctrl+f
     - **Move to Left**  
         h or left arrow or Ctrl+b
-    - **Move to Top Page**
+    - **Move to Top Page**  
         Home key or Ctrl+a
-    - **Move to End Page**
+    - **Move to End Page**  
         End key or Ctrl+e
     - **Open File**  
         Ctrl+o
