@@ -1,4 +1,7 @@
 #include "viewer.h"
+#include "pdf_loader.h"
+#include <stdio.h>
+#include <stdlib.h>
 
 void free_array_with_alloced(void **list, const int size)
 {
@@ -18,6 +21,22 @@ void free_array_with_alloced(void **list, const int size)
 
   }
 
+}
+
+int set_image_from_pdf_file(const char *file_name)
+{
+  int check = InitMupdf(file_name);
+
+  if(!check) {
+    return FALSE;
+  }
+
+  if(detail == NULL)
+    detail = (DirectoryDetail_t*)calloc(sizeof(DirectoryDetail_t), sizeof(DirectoryDetail_t));
+
+  detail->image_count = page_max;
+
+  return TRUE;
 }
 
 int set_image_from_compressed_file(const char *file_name)
@@ -423,11 +442,22 @@ void set_image_container(int position)
 
     image_container_list[position]->err = NULL;
 
-    if(!isCompressFile) {
+    if(!isCompressFile && !isPDFfile) {
 
       if(detail->image_path_list[position] != NULL) {
         image_container_list[position]->src = gdk_pixbuf_new_from_file(detail->image_path_list[position], &image_container_list[position]->err);
       }
+
+    } else if(isPDFfile && !isCompressFile) {
+
+      fz_pixmap *tmp_fz_pixmap = GetPageData(position);
+
+      GdkPixbuf *tmp_gdk_pixbuf = gdk_pixbuf_new_from_data(tmp_fz_pixmap->samples,
+          GDK_COLORSPACE_RGB, FALSE, 8, tmp_fz_pixmap->w, tmp_fz_pixmap->h, tmp_fz_pixmap->stride,
+          NULL, NULL);
+
+      image_container_list[position]->src = tmp_gdk_pixbuf;
+
 
     } else {
 
@@ -624,8 +654,7 @@ int resize_when_spread(int page)
   int left_height = 0;
   left_height = (int)ceil((double)left_width * (left_y_aspect / left_x_aspect));
   int isOverHeight = FALSE;
-  if(left_height > diff_height_between_windown_and_menubar)
-  {
+  if(left_height > diff_height_between_windown_and_menubar) {
     scale_when_oversize(&left_width, &left_height, window_width, diff_height_between_windown_and_menubar, left_x_aspect, left_y_aspect, FALSE);
     isOverHeight = TRUE;
   }
@@ -637,8 +666,7 @@ int resize_when_spread(int page)
   int right_height = 0;
   right_height = (int)ceil((double)right_width * (right_y_aspect / right_x_aspect));
 
-  if(right_height > diff_height_between_windown_and_menubar)
-  {
+  if(right_height > diff_height_between_windown_and_menubar) {
     scale_when_oversize(&right_width, &right_height, window_width, diff_height_between_windown_and_menubar, right_x_aspect, right_y_aspect, FALSE);
   }
 
@@ -703,6 +731,12 @@ int init_image_object(const char *file_name, int startpage)
   if(isCompressFile) {
 
     if(!set_image_from_compressed_file(file_name)) {
+      return FALSE;
+    }
+
+  } else if(!isCompressFile && isPDFfile) {
+
+    if(!set_image_from_pdf_file(file_name)) {
       return FALSE;
     }
 

@@ -1,9 +1,9 @@
 bin_PROGRAMS = simple_comics_viewer
 
-simple_comics_viewer_SOURCES = main.c loader.c loader.h utils.c utils.h viewer.c viewer.h
+simple_comics_viewer_SOURCES = main.c loader.c loader.h utils.c utils.h viewer.c viewer.h pdf_loader.c pdf_loader.h
 
 simple_comics_viewer_CFLAGS = -O2 @GTK_CFLAGS@
 
-simple_comics_viewer_LDADD = -lz -lm @GTK_LIBS@
+simple_comics_viewer_LDADD = -lz -lm -lmupdf @GTK_LIBS@
 
 CLEANFILES = *~

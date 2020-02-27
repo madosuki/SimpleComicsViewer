@@ -4,12 +4,15 @@
 #include <gtk/gtk.h>
 #include <dirent.h>
 #include <math.h>
+#include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 
 #include "utils.h"
 #include "loader.h"
+
+#include "pdf_loader.h"
 
 #define LIST_BUFFER 1024
 #define DEFAULT_WINDOW_WIDTH 1024
@@ -31,6 +34,8 @@ int create_image_path_list(char **image_path_list, const char *dirname);
 int set_image_path_list(const char *dirname);
 
 int set_image_from_compressed_file(const char *file_name);
+
+int set_image_from_pdf_file(const char *file_name);
 
 void set_image_container(int position);
 
@@ -123,6 +128,8 @@ uncompress_data_set_t *uncompressed_file_list;
 DrawingArea_t draw_area;
 
 int isCompressFile;
+
+int isPDFfile;
 
 int isFirstLoad;
 
@@ -277,12 +284,24 @@ static void open_file_on_menu()
           printf("%s\n", file_name);
         }
       } else {
+        /*
         g_free(file_name);
 
         goto end;
+        */
+
+        if(InitMupdf(file_name)) {
+          isPDFfile = TRUE;
+        } else {
+          g_free(file_name);
+
+          goto end;
+        }
       }
 
       isCompressFile = FALSE;
+
+      printf("%s\n", file_name);
     }
 
     if(init_image_object(file_name, 0)) {
@@ -378,6 +397,8 @@ static void activate(GtkApplication* app, gpointer user_data)
   pages->isAcceptOverflow = FALSE;
 
   isCompressFile = TRUE;
+
+  isPDFfile = FALSE;
 
   gtk_widget_show_all(window.window);
 
