@@ -6,7 +6,7 @@
 void ClearFzPixmapCollection()
 {
   if(fz_pixmap_collection_struct->page_number > 0 && fz_data_struct->ctx != NULL) {
-    for(int i = 0; i < fz_pixmap_collection_struct->page_number; i++) {
+    for(ulong i = 0; i < fz_pixmap_collection_struct->page_number; i++) {
       if(fz_pixmap_collection_struct->fz_pixmap_collection[i] != NULL) {
         fz_drop_pixmap(fz_data_struct->ctx, fz_pixmap_collection_struct->fz_pixmap_collection[i]);
       }
@@ -41,11 +41,11 @@ void FzClear()
 }
 
 
-int InitMupdf(const char *filename)
+int InitMupdf(const char *filename, const int width, const int height)
 {
 
   rotate = 0.0;
-  zoom = 1;
+  zoom = 1.0;
 
   ctx = fz_new_context(NULL, NULL, FZ_STORE_UNLIMITED);
 
@@ -97,11 +97,11 @@ int InitMupdf(const char *filename)
 
   fz_pixmap_collection_struct = (fz_pixmap_collection_t*)malloc(sizeof(fz_pixmap_collection_t));
   fz_pixmap_collection_struct->fz_pixmap_collection = NULL;
+  fz_pixmap_collection_struct->page_number = page_max;
 
-  int check = SetFzPixmapCollection(zoom);
+  int check = SetFzPixmapCollection(width, height);
 
   printf("pages count of that document: %ld\n", page_max);
-
 
   return 1;
 }
@@ -126,7 +126,7 @@ fz_pixmap* GetPageData(const ulong n)
   return fz_pixmap_collection_struct->fz_pixmap_collection[n];
 }
 
-int SetFzPixmapCollection(const int zoom_value)
+int SetFzPixmapCollection(const int width, const int height)
 {
   if(fz_pixmap_collection_struct->fz_pixmap_collection != NULL)
     ClearFzPixmapCollection();
@@ -135,10 +135,11 @@ int SetFzPixmapCollection(const int zoom_value)
   size_t fz_collection_size = sizeof(fz_pixmap*) * page_max;
   fz_pixmap_collection_struct->fz_pixmap_collection = (fz_pixmap**)malloc(fz_collection_size);
 
-  fz_matrix ctm = fz_scale(zoom_value, zoom_value);
+  fz_matrix ctm = fz_scale(zoom, zoom);
   ctm = fz_pre_rotate(ctm, rotate);
   int page = 0;
-  while(page < page_max)
+  int isDetectMinimum = 0;
+  while((ulong)page < page_max)
   {
     fz_pixmap *pix;
     fz_try(ctx)
@@ -154,6 +155,20 @@ int SetFzPixmapCollection(const int zoom_value)
 
     printf("current page: %d, width: %d, height: %d\n", page, pix->w, pix->h);
 
+    if(pix->h < height && !isDetectMinimum) {
+      zoom = (float)height / (float)pix->h;
+
+      printf("zoom: %f, isDetectMinimum: %d\n", zoom, isDetectMinimum);
+      
+      ctm = fz_scale(zoom, zoom);
+      fz_drop_pixmap(ctx, pix);
+      pix = fz_new_pixmap_from_page_number(ctx, doc, page, ctm, fz_device_rgb(ctx), 0);
+      isDetectMinimum = 1;
+    }
+
+
+    
+    printf("current page: %d, width: %d, height: %d\n", page, pix->w, pix->h);
 
     /* fz_bitmap *bitmap = fz_new_bitmap_from_pixmap(ctx, pix, NULL); */
     /* fz_drop_bitmap(ctx, bitmap); */
@@ -164,7 +179,6 @@ int SetFzPixmapCollection(const int zoom_value)
 
     page++;
   }
-
 
   return 1;
 }

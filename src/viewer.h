@@ -15,8 +15,8 @@
 #include "pdf_loader.h"
 
 #define LIST_BUFFER 1024
-#define DEFAULT_WINDOW_WIDTH 1024
-#define DEFAULT_WINDOW_HEIGHT 768
+#define DEFAULT_WINDOW_WIDTH 1280
+#define DEFAULT_WINDOW_HEIGHT 960
 
 int status;
 
@@ -290,7 +290,7 @@ static void open_file_on_menu()
         goto end;
         */
 
-        if(InitMupdf(file_name)) {
+        if(InitMupdf(file_name, window.width, window.height)) {
           isPDFfile = TRUE;
         } else {
           g_free(file_name);

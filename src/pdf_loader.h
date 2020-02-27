@@ -18,7 +18,7 @@ typedef struct
 
   ulong page_max;
 
-  int zoom;
+  float zoom;
 
   float rotate;
 
@@ -38,17 +38,17 @@ fz_pixmap_collection_t *fz_pixmap_collection_struct;
 
 fz_context *ctx;
 fz_document *doc;
-int zoom;
+float zoom;
 float rotate;
 ulong page_max;
 
 void ClearFzPixmapCollection();
 
-int InitMupdf(const char *filename);
+int InitMupdf(const char *filename, const int width, const int height);
 fz_pixmap* GetPageData(const ulong n);
 ulong GetPageSize();
 int Scale(const int zoom_value);
-int SetFzPixmapCollection(const int zoom_value);
+int SetFzPixmapCollection(const int width, const int height);
 
 void FzClear();
 

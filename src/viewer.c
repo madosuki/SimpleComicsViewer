@@ -25,7 +25,7 @@ void free_array_with_alloced(void **list, const int size)
 
 int set_image_from_pdf_file(const char *file_name)
 {
-  int check = InitMupdf(file_name);
+  int check = InitMupdf(file_name, window.width, window.height);
 
   if(!check) {
     return FALSE;
@@ -428,6 +428,8 @@ void close_variables()
       free(pages);
       pages = NULL;
     }
+
+    FzClear();
 
     window.isClose = TRUE;
   }
