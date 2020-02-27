@@ -1032,16 +1032,27 @@ GtkWidget *create_menu_bar()
 void move_left()
 {
   if(pages->isSingle) {
-    pages->current_page++;
+    int tmp = pages->current_page + 1;
+
+    if(tmp < detail->image_count)
+      pages->current_page = tmp;
+
+    if(tmp >= detail->image_count && pages->isAcceptOverflow) {
+      pages->current_page = 0;
+    }
+
   } else if(pages->page_direction_right) {
 
-    pages->current_page += 2;
+    int tmp = pages->current_page + 2;
+
+    if(tmp < detail->image_count)
+      pages->current_page = tmp;
 
     if(pages->current_page == detail->image_count) {
       pages->current_page--;
     }
 
-    if(pages->current_page > detail->image_count) {
+    if(pages->current_page > detail->image_count && pages->isAcceptOverflow) {
       pages->current_page = 1;
 
       if(pages->isPriorityToFrontCover) {
@@ -1051,10 +1062,12 @@ void move_left()
 
   } else {
 
-    pages->current_page -= 2;
+    int tmp = pages->current_page - 2;
+    if(tmp < 0) {
+      pages->current_page = tmp;
 
-    if(pages->current_page < 0) {
-      pages->current_page = detail->image_count - 1;
+      if(pages->isAcceptOverflow)
+        pages->current_page = detail->image_count - 1;
     }
 
   }
@@ -1087,29 +1100,40 @@ void move_left()
 void move_right()
 {
   if(pages->isSingle) {
-    pages->current_page--;
 
-    if(pages->current_page < 0) {
+    int tmp = pages->current_page - 1;
+    if(tmp >= 0)
+      pages->current_page = tmp;
+
+    if(tmp < 0 && pages->isAcceptOverflow)
       pages->current_page = detail->image_count - 1;
-    }
+
 
   } else if(pages->page_direction_right) {
 
-    pages->current_page -= 2;
+    int tmp = pages->current_page - 2;
 
-    if(pages->current_page < 0) {
-      pages->current_page = detail->image_count - 1;
+    if(tmp < 0) {
+
+      if(pages->isAcceptOverflow)
+        pages->current_page = detail->image_count - 1;
+
+    } else {
+      pages->current_page = tmp;
     }
 
   } else {
 
-    pages->current_page += 2;
+    int tmp = pages->current_page + 2;
+    if(tmp < detail->image_count) {
+      pages->current_page = tmp;
+    }
 
     if(pages->current_page == detail->image_count) {
       pages->current_page--;
     }
 
-    if(pages->current_page > detail->image_count) {
+    if(pages->current_page > detail->image_count && pages->isAcceptOverflow) {
       pages->current_page = 1;
     }
   }

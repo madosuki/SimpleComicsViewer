@@ -75,6 +75,7 @@ typedef struct
   int isFinalPage;
   int isPriorityToFrontCover;
   int isCover;
+  int isAcceptOverflow;
 } Pages;
 
 Pages *pages;
@@ -374,6 +375,7 @@ static void activate(GtkApplication* app, gpointer user_data)
   pages->isFinalPage = FALSE;
   pages->isCover = FALSE;
   pages->isPriorityToFrontCover = FALSE;
+  pages->isAcceptOverflow = FALSE;
 
   isCompressFile = TRUE;
 
