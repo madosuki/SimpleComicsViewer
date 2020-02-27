@@ -2,10 +2,11 @@
 
 ## This Program is so buggy.
 
-### Depends
+### Depends List
 - **GTK3**
 - **GDK3**
 - **zlib**
+- **[MuPDF](https://github.com/ArtifexSoftware/mupdf)**
 
 ### LICENCE
 **GPLv3**
@@ -19,6 +20,7 @@
 - **Single File**
     - JPEG
     - PNG
+    - PDF(but still experimental support)  
 - **Compressed File**
     - PNG or JPEG inside of non encrypted zip
 
