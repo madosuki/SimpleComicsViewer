@@ -45,11 +45,13 @@ ulong page_max;
 void ClearFzPixmapCollection();
 
 int InitMupdf(const char *filename, const int width, const int height);
-fz_pixmap* GetPageData(const ulong n);
-ulong GetPageSize();
+fz_pixmap* get_pdf_data_from_page(const ulong n);
+ulong get_pdf_page_size();
 int Scale(const int zoom_value);
 int SetFzPixmapCollection(const int width, const int height);
 
 void FzClear();
+
+void ClearFzPixmap(fz_pixmap *pix);
 
 #endif

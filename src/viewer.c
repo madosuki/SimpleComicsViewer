@@ -5,15 +5,14 @@
 
 void free_array_with_alloced(void **list, const int size)
 {
-  if(list != NULL)
-  {
-    for(int i = 0; i < size; ++i)
-    {
-      if(list[i] != NULL)
-      {
+  if(list != NULL) {
+    for(int i = 0; i < size; ++i) {
+
+      if(list[i] != NULL) {
         free(list[i]);
         list[i] = NULL;
       }
+
     }
 
     free(list);
@@ -25,16 +24,18 @@ void free_array_with_alloced(void **list, const int size)
 
 int set_image_from_pdf_file(const char *file_name)
 {
-  int check = InitMupdf(file_name, window.width, window.height);
+  // int check = InitMupdf(file_name, window.width, window.height);
 
-  if(!check) {
-    return FALSE;
-  }
+  /*
+     if(!check) {
+     return FALSE;
+     }
+     */
 
   if(detail == NULL)
     detail = (DirectoryDetail_t*)calloc(sizeof(DirectoryDetail_t), sizeof(DirectoryDetail_t));
 
-  detail->image_count = page_max;
+  detail->image_count = get_pdf_page_size();
 
   return TRUE;
 }
@@ -58,7 +59,7 @@ int set_image_from_compressed_file(const char *file_name)
 
   if(detail->image_count % 2) {
     detail->isOdd = TRUE;
-  
+
   } else {
     detail->isOdd = FALSE;
   }
@@ -308,19 +309,19 @@ gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer d
   }
 
   if((event->keyval == GDK_KEY_Home) || (event->keyval == GDK_KEY_a && isCtrl) || (event->keyval == GDK_KEY_0)) {
-      pages->current_page = 1;
+    pages->current_page = 1;
 
-      if(pages->isSingle) {
-        pages->current_page = 0;
-      }
+    if(pages->isSingle) {
+      pages->current_page = 0;
+    }
 
-      if(pages->page_direction_right) {
-        next_image(FALSE);
-      } else {
-        next_image(TRUE);
-      }
+    if(pages->page_direction_right) {
+      next_image(FALSE);
+    } else {
+      next_image(TRUE);
+    }
 
-      return TRUE;
+    return TRUE;
   }
 
   if((event->keyval == GDK_KEY_End) || (event->keyval == GDK_KEY_e && isCtrl) || (event->keyval == GDK_KEY_dollar && isShift)) {
@@ -452,11 +453,12 @@ void set_image_container(int position)
 
     } else if(isPDFfile && !isCompressFile) {
 
-      fz_pixmap *tmp_fz_pixmap = GetPageData(position);
+      fz_pixmap *tmp_fz_pixmap = get_pdf_data_from_page(position);
 
       GdkPixbuf *tmp_gdk_pixbuf = gdk_pixbuf_new_from_data(tmp_fz_pixmap->samples,
           GDK_COLORSPACE_RGB, FALSE, 8, tmp_fz_pixmap->w, tmp_fz_pixmap->h, tmp_fz_pixmap->stride,
           NULL, NULL);
+      // ClearFzPixmap(tmp_fz_pixmap);
 
       image_container_list[position]->src = tmp_gdk_pixbuf;
 
@@ -714,6 +716,8 @@ int init_image_object(const char *file_name, int startpage)
     free_uncompress_data_set(uncompressed_file_list);
     uncompressed_file_list = NULL;
 
+    FzClear();
+
     free_image_container();
     image_container_list = NULL;
 
@@ -726,6 +730,7 @@ int init_image_object(const char *file_name, int startpage)
     if(pages->right != NULL) {
       gtk_image_clear(GTK_IMAGE(pages->right));
     }
+
 
   }
 
@@ -773,9 +778,9 @@ int init_image_object(const char *file_name, int startpage)
 
 
       if(pages->page_direction_right) {
-          set_image(&pages->right, 0);
+        set_image(&pages->right, 0);
 
-          set_image(&pages->left, 1);
+        set_image(&pages->left, 1);
 
       } else {
         set_image(&pages->left, 0);
@@ -896,18 +901,18 @@ void update_page(int isSingleChange)
       }
 
       if(pages->isPriorityToFrontCover) {
-          if(pages->isCover && pages->current_page > 0) {
-            if(pages->page_direction_right) {
-              gtk_widget_show(pages->left);
-            } else {
-              gtk_widget_show(pages->right);
-            }
-            pages->isCover = FALSE;
-
-          } else if(pages->current_page == 0){
-            pages->isCover = TRUE;
-
+        if(pages->isCover && pages->current_page > 0) {
+          if(pages->page_direction_right) {
+            gtk_widget_show(pages->left);
+          } else {
+            gtk_widget_show(pages->right);
           }
+          pages->isCover = FALSE;
+
+        } else if(pages->current_page == 0){
+          pages->isCover = TRUE;
+
+        }
 
       }
 
@@ -1084,17 +1089,24 @@ void move_left()
     if(tmp < detail->image_count)
       pages->current_page = tmp;
 
-    if(pages->current_page == detail->image_count) {
-      pages->current_page--;
+    if(tmp >= detail->image_count) {
+      if(tmp != 0 && tmp % 2 != 0) {
+        pages->current_page = tmp - 1;
+      } 
+
     }
 
-    if(pages->current_page > detail->image_count && pages->isAcceptOverflow) {
+    if(pages->isAcceptOverflow && pages->current_page >= detail->image_count) {
       pages->current_page = 1;
 
       if(pages->isPriorityToFrontCover) {
         pages->current_page = 0;
       }
     }
+
+
+
+
 
   } else {
 
@@ -1165,7 +1177,7 @@ void move_right()
       pages->current_page = tmp;
     }
 
-    if(pages->current_page == detail->image_count) {
+    if(pages->current_page >= detail->image_count) {
       pages->current_page--;
     }
 
