@@ -1,12 +1,29 @@
 #include "./pdf_loader.h"
-#include <mupdf/fitz/context.h>
-#include <mupdf/fitz/document.h>
-#include <mupdf/fitz/pixmap.h>
-#include <stdio.h>
+
+int test_open_pdf(const char *filename)
+{
+  fz_context *ctx = fz_new_context(NULL, NULL, FZ_STORE_UNLIMITED);
+  if(!ctx)
+    return 0;
+
+  fz_document *doc;
+  fz_try(ctx)
+    fz_register_document_handlers(ctx);
+  fz_catch(ctx) {
+    printf("cannot register fz_data_struct->document handlers: %s\n", fz_caught_message(ctx));
+    fz_drop_context(ctx);
+    return 0;
+  }
+
+  fz_drop_document(ctx, doc);
+  fz_drop_context(ctx);
+
+  return 1;
+}
 
 void ClearFzPixmapCollection()
 {
-  if(fz_pixmap_collection_struct->page_number > 0 && fz_data_struct->ctx != NULL) {
+  if(fz_pixmap_collection_struct != NULL && fz_pixmap_collection_struct->page_number > 0 && fz_data_struct->ctx != NULL) {
 
     for(ulong i = 0; i < fz_pixmap_collection_struct->page_number; i++) {
 
@@ -31,15 +48,18 @@ void FzClear()
   free(fz_pixmap_collection_struct);
   fz_pixmap_collection_struct = NULL;
 
-  if(fz_data_struct->doc != NULL && fz_data_struct->ctx != NULL) {
-    fz_drop_document(fz_data_struct->ctx, fz_data_struct->doc);
-  }
+  if(fz_data_struct != NULL)
+  {
+    if(fz_data_struct->doc != NULL && fz_data_struct->ctx != NULL) {
+      fz_drop_document(fz_data_struct->ctx, fz_data_struct->doc);
+    }
 
-  if(fz_data_struct->ctx != NULL) {
-    fz_drop_context(fz_data_struct->ctx);
-  }
+    if(fz_data_struct->ctx != NULL) {
+      fz_drop_context(fz_data_struct->ctx);
+    }
 
-  free(fz_data_struct);
+    free(fz_data_struct);
+  }
 
 }
 

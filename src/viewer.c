@@ -24,13 +24,11 @@ void free_array_with_alloced(void **list, const int size)
 
 int set_image_from_pdf_file(const char *file_name)
 {
-  // int check = InitMupdf(file_name, window.width, window.height);
+  int check = InitMupdf(file_name, window.width, window.height);
 
-  /*
-     if(!check) {
-     return FALSE;
-     }
-     */
+  if(!check) {
+    return FALSE;
+  }
 
   if(detail == NULL)
     detail = (DirectoryDetail_t*)calloc(sizeof(DirectoryDetail_t), sizeof(DirectoryDetail_t));
@@ -437,7 +435,7 @@ void close_variables()
 }
 
 
-void set_image_container(int position)
+void set_image_container(ulong position)
 {
   if(image_container_list[position] == NULL) {
     image_container_list[position] = malloc(sizeof(Image_Container_t));
@@ -454,6 +452,10 @@ void set_image_container(int position)
     } else if(isPDFfile && !isCompressFile) {
 
       fz_pixmap *tmp_fz_pixmap = get_pdf_data_from_page(position);
+
+      if(tmp_fz_pixmap == NULL) {
+        return;
+      }
 
       GdkPixbuf *tmp_gdk_pixbuf = gdk_pixbuf_new_from_data(tmp_fz_pixmap->samples,
           GDK_COLORSPACE_RGB, FALSE, 8, tmp_fz_pixmap->w, tmp_fz_pixmap->h, tmp_fz_pixmap->stride,
@@ -1104,10 +1106,6 @@ void move_left()
       }
     }
 
-
-
-
-
   } else {
 
     int tmp = pages->current_page - 2;
@@ -1130,6 +1128,10 @@ void move_left()
 
   if(pages->current_page == detail->image_count) {
     pages->current_page--;
+  }
+
+  if(pages->current_page > detail->image_count) {
+    pages->current_page = detail->image_count - 1;
   }
 
   if(pages->current_page < 0 && pages->isSingle) {

@@ -44,6 +44,8 @@ ulong page_max;
 
 void ClearFzPixmapCollection();
 
+int test_open_pdf(const char *filename);
+
 int InitMupdf(const char *filename, const int width, const int height);
 fz_pixmap* get_pdf_data_from_page(const ulong n);
 ulong get_pdf_page_size();

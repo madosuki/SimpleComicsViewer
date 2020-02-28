@@ -37,7 +37,7 @@ int set_image_from_compressed_file(const char *file_name);
 
 int set_image_from_pdf_file(const char *file_name);
 
-void set_image_container(int position);
+void set_image_container(ulong position);
 
 void set_image(GtkWidget **img, int position);
 
@@ -290,7 +290,7 @@ static void open_file_on_menu()
         goto end;
         */
 
-        if(InitMupdf(file_name, window.width, window.height)) {
+        if(test_open_pdf(file_name)) {
           isPDFfile = TRUE;
         } else {
           g_free(file_name);
