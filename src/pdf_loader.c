@@ -15,6 +15,16 @@ int test_open_pdf(const char *filename)
     return 0;
   }
 
+  fz_try(ctx)
+    doc = fz_open_document(ctx, filename);
+  fz_catch(ctx)
+  {
+    printf("cannot open fz_data_struct->document: %s\n", fz_caught_message(ctx));
+    fz_drop_context(ctx);
+    return 0;
+  }
+
+
   fz_drop_document(ctx, doc);
   fz_drop_context(ctx);
 
@@ -64,7 +74,7 @@ void FzClear()
 }
 
 
-int InitMupdf(const char *filename, const int width, const int height)
+int load_pdf(const char *filename, const int width, const int height)
 {
   fz_data_struct = (fz_data_t*)malloc(sizeof(fz_data_t));
 
@@ -123,7 +133,7 @@ int InitMupdf(const char *filename, const int width, const int height)
   fz_pixmap_collection_struct->fz_pixmap_collection = NULL;
   fz_pixmap_collection_struct->page_number = fz_data_struct->page_max;
 
-  int check = SetFzPixmapCollection(width, height);
+  int check = set_fz_pixmap_collection(width, height);
 
   printf("pages count of that fz_data_struct->document: %ld\n", fz_data_struct->page_max);
 
@@ -147,7 +157,7 @@ fz_pixmap* get_pdf_data_from_page(const ulong n)
   return fz_pixmap_collection_struct->fz_pixmap_collection[n];
 }
 
-int SetFzPixmapCollection(const int width, const int height)
+int set_fz_pixmap_collection(const int width, const int height)
 {
   if(fz_pixmap_collection_struct->fz_pixmap_collection != NULL)
     ClearFzPixmapCollection();

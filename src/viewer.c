@@ -24,7 +24,7 @@ void free_array_with_alloced(void **list, const int size)
 
 int set_image_from_pdf_file(const char *file_name)
 {
-  int check = InitMupdf(file_name, window.width, window.height);
+  int check = load_pdf(file_name, window.width, window.height);
 
   if(!check) {
     return FALSE;
@@ -457,12 +457,14 @@ void set_image_container(ulong position)
         return;
       }
 
+
       GdkPixbuf *tmp_gdk_pixbuf = gdk_pixbuf_new_from_data(tmp_fz_pixmap->samples,
-          GDK_COLORSPACE_RGB, FALSE, 8, tmp_fz_pixmap->w, tmp_fz_pixmap->h, tmp_fz_pixmap->stride,
-          NULL, NULL);
+                                                           GDK_COLORSPACE_RGB, FALSE, 8, tmp_fz_pixmap->w, tmp_fz_pixmap->h, tmp_fz_pixmap->stride,
+                                                           NULL, NULL);
       // ClearFzPixmap(tmp_fz_pixmap);
 
       image_container_list[position]->src = tmp_gdk_pixbuf;
+
 
 
     } else {
