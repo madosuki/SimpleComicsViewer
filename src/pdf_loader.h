@@ -65,7 +65,7 @@ fz_pixmap_collection_t *fz_pixmap_collection_struct;
 /* float rotate; */
 /* ulong page_max; */
 
-void ClearFzPixmapCollection();
+void clear_fz_pixmap_collection();
 
 int test_open_pdf(const char *filename);
 
@@ -75,9 +75,9 @@ ulong get_pdf_page_size();
 int Scale(const int zoom_value);
 int set_fz_pixmap_collection(const int width, const int height);
 
-void FzClear();
+void fz_clear();
 
-void ClearFzPixmap(fz_pixmap *pix);
+void clear_fz_pixmap(fz_pixmap *pix);
 
 void pdf_loader_lock_mutex(void *user, int lock);
 void pdf_loader_unlock_mutex(void *user, int lock);

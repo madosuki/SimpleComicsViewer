@@ -1,7 +1,4 @@
 #include "viewer.h"
-#include "pdf_loader.h"
-#include <stdio.h>
-#include <stdlib.h>
 
 void free_array_with_alloced(void **list, const int size)
 {
@@ -428,7 +425,7 @@ void close_variables()
       pages = NULL;
     }
 
-    FzClear();
+    fz_clear();
 
     window.isClose = TRUE;
   }
@@ -461,7 +458,6 @@ void set_image_container(ulong position)
       GdkPixbuf *tmp_gdk_pixbuf = gdk_pixbuf_new_from_data(tmp_fz_pixmap->samples,
                                                            GDK_COLORSPACE_RGB, FALSE, 8, tmp_fz_pixmap->w, tmp_fz_pixmap->h, tmp_fz_pixmap->stride,
                                                            NULL, NULL);
-      // ClearFzPixmap(tmp_fz_pixmap);
 
       image_container_list[position]->src = tmp_gdk_pixbuf;
 
@@ -720,7 +716,7 @@ int init_image_object(const char *file_name, int startpage)
     free_uncompress_data_set(uncompressed_file_list);
     uncompressed_file_list = NULL;
 
-    FzClear();
+    fz_clear();
 
     free_image_container();
     image_container_list = NULL;

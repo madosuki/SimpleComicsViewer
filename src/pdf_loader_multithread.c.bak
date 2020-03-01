@@ -7,11 +7,13 @@ void* set_fz_pixmap_with_thread(void *data)
   fz_rect bbox = ((set_fz_pix_t*) data)->bbox;
   fz_pixmap *pix = ((set_fz_pix_t*) data)->pix;
   fz_device *dev;
-  // fz_matrix ctm = ((set_fz_pix_t*) data)->ctm;
+  fz_matrix ctm = ((set_fz_pix_t*) data)->ctm;
 
   ctx = fz_clone_context(ctx);
 
-  dev = fz_new_draw_device(ctx, fz_identity, pix);
+  dev = fz_new_draw_device(ctx, ctm, pix);
+
+  // fz_identity
   fz_run_display_list(ctx, list, dev, fz_identity, bbox, NULL);
   fz_close_device(ctx, dev);
   fz_drop_device(ctx, dev);
@@ -83,7 +85,7 @@ int test_open_pdf(const char *filename)
 
 void ClearFzPixmapCollection()
 {
-  if(fz_pixmap_collection_struct != NULL && fz_pixmap_collection_struct->page_number > 0 && fz_data_struct->ctx != NULL) {
+  if(fz_pixmap_collection_struct != NULL && fz_pixmap_collection_struct->page_number > 0) {
 
     for(ulong i = 0; i < fz_pixmap_collection_struct->page_number; i++) {
 
@@ -108,20 +110,20 @@ void FzClear()
   free(fz_pixmap_collection_struct);
   fz_pixmap_collection_struct = NULL;
 
-  if(fz_data_struct != NULL && result_of_thread != NULL) {
-    for(ulong i = 0; i < fz_data_struct->page_max; i++) {
-      fz_drop_pixmap(fz_data_struct->ctx, result_of_thread[i]->pix);
+  /* if(fz_data_struct != NULL && result_of_thread != NULL) { */
+  /*   for(ulong i = 0; i < fz_data_struct->page_max; i++) { */
+  /*     fz_drop_pixmap(fz_data_struct->ctx, result_of_thread[i]->pix); */
 
-      free(result_of_thread[i]);
-    }
+  /*     free(result_of_thread[i]); */
+  /*     result_of_thread[i] = NULL; */
+  /*   } */
 
-    free(result_of_thread);
-  }
+  /*   free(result_of_thread); */
+  /*   result_of_thread = NULL; */
+  /* } */
+
 
   if(fz_data_struct != NULL) {
-    /* if(fz_data_struct->doc != NULL && fz_data_struct->ctx != NULL) { */
-    /*   fz_drop_document(fz_data_struct->ctx, fz_data_struct->doc); */
-    /* } */
 
     if(fz_data_struct->ctx != NULL) {
       fz_drop_context(fz_data_struct->ctx);
@@ -220,7 +222,7 @@ int load_pdf(const char *filename, const int width, const int height)
 
   int check = set_fz_pixmap_collection(width, height);
 
-  printf("pages count of that fz_data_struct->document: %ld\n", fz_data_struct->page_max);
+  // printf("pages count of that fz_data_struct->document: %ld\n", fz_data_struct->page_max);
 
   return 1;
 }
@@ -256,6 +258,8 @@ int set_fz_pixmap_collection(const int width, const int height)
   fz_data_struct->ctm = fz_scale(fz_data_struct->zoom, fz_data_struct->zoom);
   fz_data_struct->ctm = fz_pre_rotate(fz_data_struct->ctm, fz_data_struct->rotate);
 
+  int isMinimum = 0;
+
   for(int i = 0; i < (int)fz_data_struct->page_max; i++) {
       fz_page *page = fz_load_page(fz_data_struct->ctx, fz_data_struct->doc, i);
 
@@ -265,30 +269,41 @@ int set_fz_pixmap_collection(const int width, const int height)
  
       fz_device *dev = fz_new_list_device(fz_data_struct->ctx, list);
 
-      fz_run_page(fz_data_struct->ctx, page, dev, fz_data_struct->ctm, NULL);
+      fz_run_page(fz_data_struct->ctx, page, dev, fz_identity, NULL);
       fz_close_device(fz_data_struct->ctx, dev);
       fz_drop_device(fz_data_struct->ctx, dev);
 
       fz_pixmap *pix;
-      // fz_pixmap *pix = fz_new_pixmap_with_bbox(fz_data_struct->ctx, fz_device_rgb(fz_data_struct->ctx), fz_round_rect(bbox), NULL, 0);
+      // pix = fz_new_pixmap_with_bbox(fz_data_struct->ctx, fz_device_rgb(fz_data_struct->ctx), fz_round_rect(bbox), NULL, 0);
       // fz_clear_pixmap_with_value(fz_data_struct->ctx, pix, 0xff);
-      pix = fz_new_pixmap_from_page(fz_data_struct->ctx, page, fz_data_struct->ctm, fz_device_rgb(fz_data_struct->ctx), 0);
+      pix = fz_new_pixmap_from_display_list(fz_data_struct->ctx, list, fz_data_struct->ctm, fz_device_rgb(fz_data_struct->ctx), 0);
+      fz_clear_pixmap_with_value(fz_data_struct->ctx, pix, 0xff);
+      // pix = fz_new_pixmap_from_page(fz_data_struct->ctx, page, fz_data_struct->ctm, fz_device_rgb(fz_data_struct->ctx), 0);
 
-      if(pix->h < height) {
+      if(pix->h < height && !isMinimum) {
         
         float zoom = (float)height / (float)pix->h;
-        fz_data_struct->ctm = fz_scale(zoom, zoom);
-
-        dev = fz_new_list_device(fz_data_struct->ctx, list);
-        
-        fz_run_page(fz_data_struct->ctx, page, dev, fz_data_struct->ctm, NULL);
-        fz_close_device(fz_data_struct->ctx, dev);
-        fz_drop_device(fz_data_struct->ctx, dev);
-
         fz_drop_pixmap(fz_data_struct->ctx, pix);
+        fz_data_struct->ctm = fz_scale(zoom, zoom);
         
-        pix = fz_new_pixmap_from_page(fz_data_struct->ctx, page, fz_data_struct->ctm, fz_device_rgb(fz_data_struct->ctx), 0);
+        /* bbox = fz_transform_rect(bbox, fz_data_struct->ctm); */
 
+        /* fz_drop_display_list(fz_data_struct->ctx, list); */
+        /* list = fz_new_display_list(fz_data_struct->ctx, bbox); */
+
+        /* dev = fz_new_list_device(fz_data_struct->ctx, list); */
+        
+        /* fz_run_page(fz_data_struct->ctx, page, dev, fz_identity, NULL); */
+        /* fz_close_device(fz_data_struct->ctx, dev); */
+        /* fz_drop_device(fz_data_struct->ctx, dev); */
+
+
+        
+        // pix = fz_new_pixmap_from_page(fz_data_struct->ctx, page, fz_data_struct->ctm, fz_device_rgb(fz_data_struct->ctx), 0);
+        pix = fz_new_pixmap_from_display_list(fz_data_struct->ctx, list, fz_data_struct->ctm, fz_device_rgb(fz_data_struct->ctx), 0);
+        fz_clear_pixmap_with_value(fz_data_struct->ctx, pix, 0xff);
+
+        isMinimum = 1;
       }
 
       fz_drop_page(fz_data_struct->ctx, page);
@@ -307,6 +322,7 @@ int set_fz_pixmap_collection(const int width, const int height)
       data->ctm = fz_data_struct->ctm;
 
       pthread_create(&thread[i], NULL, set_fz_pixmap_with_thread, data);
+      
     }
 
   result_of_thread = (set_fz_pix_t**)malloc(sizeof(set_fz_pix_t*) * fz_data_struct->page_max);
@@ -314,10 +330,14 @@ int set_fz_pixmap_collection(const int width, const int height)
     
     pthread_join(thread[i], (void**)&result_of_thread[i]);
 
-    printf("%d\n", result_of_thread[i]->page_number);
-    fz_pixmap_collection_struct->fz_pixmap_collection[result_of_thread[i]->page_number] = result_of_thread[i]->pix;
+    fz_rect rec = fz_transform_rect(result_of_thread[i]->bbox, result_of_thread[i]->ctm);
+    fz_irect irect = fz_round_rect(rec);
+    
+    fz_pixmap_collection_struct->fz_pixmap_collection[result_of_thread[i]->page_number] = fz_new_pixmap_from_pixmap(fz_data_struct->ctx, result_of_thread[i]->pix, &irect);
+    // fz_pixmap_collection_struct->fz_pixmap_collection[result_of_thread[i]->page_number] = result_of_thread[i]->pix;
 
     fz_drop_display_list(fz_data_struct->ctx, result_of_thread[i]->list);
+    fz_drop_pixmap(fz_data_struct->ctx, result_of_thread[i]->pix);
 
     free(result_of_thread[i]);
     result_of_thread[i] = NULL;
@@ -330,15 +350,19 @@ int set_fz_pixmap_collection(const int width, const int height)
   thread = NULL;
 
   fz_drop_document(fz_data_struct->ctx, fz_data_struct->doc);
-  // fz_drop_context(fz_data_struct->ctx);
+  fz_drop_context(fz_data_struct->ctx);
+  fz_data_struct->ctx = fz_new_context(NULL, NULL, FZ_STORE_UNLIMITED);
+
 
   // free(fz_data_struct);
+  // fz_data_struct = NULL;
 
   return 1;
 }
 
 void ClearFzPixmap(fz_pixmap *pix)
 {
-  if(pix != NULL)
+  if(pix != NULL) {
     fz_drop_pixmap(fz_data_struct->ctx, pix);
+  }
 }
