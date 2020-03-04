@@ -3,9 +3,9 @@
 ## This Program is so buggy.
 
 ### Depends List
-- **GTK3**
+- **[GTK3](https://www.gtk.org/)**
 - **GDK3**
-- **zlib**
+- **[zlib](https://zlib.net/)**
 - **[MuPDF](https://github.com/ArtifexSoftware/mupdf)**
 
 ### LICENCE
