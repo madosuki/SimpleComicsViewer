@@ -360,27 +360,36 @@ static void activate(GtkApplication* app, gpointer user_data)
 
   isFirstLoad = TRUE;
 
+  GtkWidget *top_grid = gtk_grid_new();
+  g_object_set(top_grid, "expand", TRUE, NULL); 
+  gtk_container_add(GTK_CONTAINER(window.window), top_grid);
+
   // Create Vertical Box
-  GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  // GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
-  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  // GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
-  gtk_container_add(GTK_CONTAINER(window.window), vbox);
+  // gtk_container_add(GTK_CONTAINER(window.window), vbox);
 
   // settings menubar
   window.menubar = create_menu_bar();
+  gtk_grid_attach(GTK_GRID(top_grid), window.menubar, 0, 0, 1, 1);
 
   // add menubar
-  gtk_box_pack_start(GTK_BOX(vbox), window.menubar, FALSE, FALSE, 0);
+  // gtk_box_pack_start(GTK_BOX(vbox), window.menubar, FALSE, FALSE, 0);
 
   // add page area
-  gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
+  // gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
 
   // Initial Scroll Window
   draw_area.scrolled_window = gtk_scrolled_window_new(NULL, NULL);
   draw_area.width = 0;
   draw_area.height = 0;
-  gtk_box_pack_end(GTK_BOX(hbox), draw_area.scrolled_window, TRUE, TRUE, 0);
+
+  g_object_set(draw_area.scrolled_window, "expand", TRUE, NULL);
+  // gtk_box_pack_end(GTK_BOX(hbox), draw_area.scrolled_window, TRUE, TRUE, 0);
+
+  gtk_grid_attach_next_to(GTK_GRID(top_grid), draw_area.scrolled_window, window.menubar, GTK_POS_BOTTOM, 1, 1);
 
   grid = gtk_grid_new();
   gtk_container_add(GTK_CONTAINER(draw_area.scrolled_window), grid);
