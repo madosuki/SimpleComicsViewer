@@ -61,7 +61,7 @@ chmod +x ./Simple_Comics_Viewer-x86_64.AppImage
 
 ### How to Build
 ```
-sudo apt-get install libgtk-3-dev build-essential automake autoconf libharfbuzz-dev libjpeg-dev libopenjp2-7-dev libjbig2dec0-dev libpng-dev libfreetype6-dev
+sudo apt-get install libgtk-3-dev build-essential automake autoconf libharfbuzz-dev libjpeg-dev libopenjp2-7-dev libjbig2dec0-dev libpng-dev libfreetype6-dev zlib1g-dev
 ```
 After move to project dir.
 ```
