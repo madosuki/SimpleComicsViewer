@@ -184,6 +184,8 @@ view_menu_t view_menu_struct;
 
 help_menu_t help_menu_struct;
 
+GtkWidget *button_menu;
+
 static void change_covermode()
 {
   if(pages != NULL) {
@@ -381,6 +383,19 @@ static void activate(GtkApplication* app, gpointer user_data)
   // add page area
   // gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
 
+  button_menu = gtk_grid_new();
+  // g_object_set(button_menu, "expand", TRUE, NULL);
+  gtk_grid_attach_next_to(GTK_GRID(top_grid), button_menu, window.menubar, GTK_POS_BOTTOM, 1, 1);
+
+  GtkWidget *goto_left_button = gtk_button_new_with_label("Left");
+  gtk_grid_attach(GTK_GRID(button_menu), goto_left_button, 0, 0, 1, 1);
+  g_signal_connect(G_OBJECT(goto_left_button), "clicked", G_CALLBACK(move_left), NULL);
+
+  GtkWidget *goto_right_button = gtk_button_new_with_label("Right");
+  gtk_grid_attach_next_to(GTK_GRID(button_menu), goto_right_button, goto_left_button, GTK_POS_RIGHT, 1, 1);
+  g_signal_connect(G_OBJECT(goto_right_button), "clicked", G_CALLBACK(move_right), NULL);
+
+  
   // Initial Scroll Window
   draw_area.scrolled_window = gtk_scrolled_window_new(NULL, NULL);
   draw_area.width = 0;
@@ -389,8 +404,9 @@ static void activate(GtkApplication* app, gpointer user_data)
   g_object_set(draw_area.scrolled_window, "expand", TRUE, NULL);
   // gtk_box_pack_end(GTK_BOX(hbox), draw_area.scrolled_window, TRUE, TRUE, 0);
 
-  gtk_grid_attach_next_to(GTK_GRID(top_grid), draw_area.scrolled_window, window.menubar, GTK_POS_BOTTOM, 1, 1);
-
+  // gtk_grid_attach_next_to(GTK_GRID(top_grid), draw_area.scrolled_window, window.menubar, GTK_POS_BOTTOM, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(top_grid), draw_area.scrolled_window, button_menu, GTK_POS_BOTTOM, 1, 1);
+  
   grid = gtk_grid_new();
   gtk_container_add(GTK_CONTAINER(draw_area.scrolled_window), grid);
 

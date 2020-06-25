@@ -810,6 +810,7 @@ void fullscreen()
   {
     gtk_window_unfullscreen(GTK_WINDOW(window.window));
     gtk_widget_show(window.menubar);
+    gtk_widget_show(button_menu);
     hide_mouse();
     window.isFullScreen = FALSE;
   }
@@ -817,6 +818,7 @@ void fullscreen()
   {
     gtk_window_fullscreen(GTK_WINDOW(window.window));
     gtk_widget_hide(window.menubar);
+    gtk_widget_hide(button_menu);
     hide_mouse();
     window.isFullScreen = TRUE;
   }
