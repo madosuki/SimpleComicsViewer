@@ -303,35 +303,39 @@ gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer d
     return FALSE;
   }
 
-  if((event->keyval == GDK_KEY_Home) || (event->keyval == GDK_KEY_a && isCtrl) || (event->keyval == GDK_KEY_0)) {
-    pages->current_page = 1;
+  if((keyval == GDK_KEY_Home) || (keyval == GDK_KEY_a && isCtrl) || (keyval == GDK_KEY_0)) {
+    /* pages->current_page = 1; */
 
-    if(pages->isSingle) {
-      pages->current_page = 0;
-    }
+    /* if(pages->isSingle) { */
+    /*   pages->current_page = 0; */
+    /* } */
 
-    if(pages->page_direction_right) {
-      next_image(FALSE);
-    } else {
-      next_image(TRUE);
-    }
+    /* if(pages->page_direction_right) { */
+    /*   next_image(FALSE); */
+    /* } else { */
+    /*   next_image(TRUE); */
+    /* } */
 
-    return TRUE;
-  }
-
-  if((event->keyval == GDK_KEY_End) || (event->keyval == GDK_KEY_e && isCtrl) || (event->keyval == GDK_KEY_dollar && isShift)) {
-    pages->current_page = detail->image_count - 1;
-
-    if(pages->page_direction_right) {
-      next_image(FALSE);
-    } else {
-      next_image(TRUE);
-    }
+    move_top_page();
 
     return TRUE;
   }
 
-  if(event->keyval == GDK_KEY_c) {
+  if((keyval == GDK_KEY_End) || (keyval == GDK_KEY_e && isCtrl) || (keyval == GDK_KEY_dollar && isShift)) {
+    /* pages->current_page = detail->image_count - 1; */
+
+    /* if(pages->page_direction_right) { */
+    /*   next_image(FALSE); */
+    /* } else { */
+    /*   next_image(TRUE); */
+    /* } */
+
+    move_end_page();
+    
+    return TRUE;
+  }
+
+  if(keyval == GDK_KEY_c) {
     change_covermode();
   }
 
@@ -361,7 +365,7 @@ gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer d
     return TRUE;
   }
 
-  if((keyval == GDK_KEY_b && isCtrl) || event->keyval == GDK_KEY_Left || event->keyval == GDK_KEY_h) {
+  if((keyval == GDK_KEY_b && isCtrl) || keyval == GDK_KEY_Left || keyval == GDK_KEY_h) {
 
     move_left();
 
@@ -1221,6 +1225,33 @@ void move_right()
     next_image(TRUE);
   }
 
+}
+
+void move_top_page()
+{
+  pages->current_page = 1;
+
+  if(pages->isSingle) {
+    pages->current_page = 0;
+  }
+
+  if(pages->page_direction_right) {
+    next_image(FALSE);
+  } else {
+    next_image(TRUE);
+  }
+}
+
+void move_end_page()
+{
+  pages->current_page = detail->image_count - 1;
+  
+  if(pages->page_direction_right) {
+    next_image(FALSE);
+  } else {
+    next_image(TRUE);
+  }
+  
 }
 
 void hide_mouse()

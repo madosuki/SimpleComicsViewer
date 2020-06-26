@@ -22,6 +22,8 @@ int status;
 
 void move_right();
 void move_left();
+void move_top_page();
+void move_end_page();
 
 void hide_mouse();
 
