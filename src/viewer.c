@@ -304,31 +304,13 @@ gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer d
   }
 
   if((keyval == GDK_KEY_Home) || (keyval == GDK_KEY_a && isCtrl) || (keyval == GDK_KEY_0)) {
-    /* pages->current_page = 1; */
-
-    /* if(pages->isSingle) { */
-    /*   pages->current_page = 0; */
-    /* } */
-
-    /* if(pages->page_direction_right) { */
-    /*   next_image(FALSE); */
-    /* } else { */
-    /*   next_image(TRUE); */
-    /* } */
-
+    
     move_top_page();
-
+    
     return TRUE;
   }
 
   if((keyval == GDK_KEY_End) || (keyval == GDK_KEY_e && isCtrl) || (keyval == GDK_KEY_dollar && isShift)) {
-    /* pages->current_page = detail->image_count - 1; */
-
-    /* if(pages->page_direction_right) { */
-    /*   next_image(FALSE); */
-    /* } else { */
-    /*   next_image(TRUE); */
-    /* } */
 
     move_end_page();
     
@@ -337,6 +319,10 @@ gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer d
 
   if(keyval == GDK_KEY_c) {
     change_covermode();
+  }
+
+  if (keyval == GDK_KEY_Escape && window.isFullScreen) {
+    cancel_fullscreen();
   }
 
   if(keyval == GDK_KEY_Return && isAlt) {
@@ -383,11 +369,34 @@ gboolean my_detect_click_function(GtkWidget *widget, GdkEventTouch *event, gpoin
   guint y = (guint)event->y;
 
   // printf("coordinate x: %d, y: %d\n", x, y);
-  
-  if (x < (window.width) / 2) {
-    move_left();
-  } else {
-    move_right();
+
+  switch (event->type) {
+  case GDK_DOUBLE_BUTTON_PRESS:
+    if (window.isFullScreen) {
+          gtk_widget_show(window.menubar);
+          gtk_widget_show(button_menu);
+          hide_mouse();
+          window.is_double_click_when_fullscreen_mode = TRUE;
+    }
+    break;
+  case GDK_BUTTON_PRESS:
+
+    if (window.is_double_click_when_fullscreen_mode) {
+      if (window.isFullScreen) {
+        gtk_widget_hide(window.menubar);
+        gtk_widget_hide(button_menu);
+        hide_mouse();
+        window.is_double_click_when_fullscreen_mode = FALSE;
+      }
+      
+    }
+
+    if (x < (window.width) / 2) {
+      move_left();
+    } else {
+      move_right();
+    }
+    break;
   }
   
 
@@ -824,16 +833,21 @@ int init_image_object(const char *file_name, int startpage)
   return FALSE;
 }
 
-
-void fullscreen()
+void cancel_fullscreen()
 {
-  if(window.isFullScreen)
-  {
     gtk_window_unfullscreen(GTK_WINDOW(window.window));
     gtk_widget_show(window.menubar);
     gtk_widget_show(button_menu);
     hide_mouse();
     window.isFullScreen = FALSE;
+  
+}
+
+void fullscreen()
+{
+  if(window.isFullScreen)
+  {
+    cancel_fullscreen();
   }
   else
   {

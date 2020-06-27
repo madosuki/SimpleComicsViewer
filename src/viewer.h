@@ -68,6 +68,8 @@ gboolean my_detect_click_function(GtkWidget *widget, GdkEventTouch *event, gpoin
 
 void close_variables();
 
+void cancel_fullscreen();
+
 void fullscreen();
 
 void update_grid();
@@ -152,6 +154,7 @@ typedef struct
   int width;
   int height;
   int isFullScreen;
+  int is_double_click_when_fullscreen_mode;
   int isClose;
 } main_window_data_t;
 
@@ -350,6 +353,7 @@ static void activate(GtkApplication* app, gpointer user_data)
   window.width = DEFAULT_WINDOW_WIDTH;
   window.height = DEFAULT_WINDOW_HEIGHT;
   window.isFullScreen = FALSE;
+  window. is_double_click_when_fullscreen_mode = FALSE;
   window.isClose = FALSE;
   // g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(Close), NULL);
 
