@@ -376,6 +376,23 @@ gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer d
   return FALSE;
 }
 
+gboolean my_detect_click_function(GtkWidget *widget, GdkEventTouch *event, gpointer data)
+{
+
+  guint x = (guint)event->x;
+  guint y = (guint)event->y;
+
+  // printf("coordinate x: %d, y: %d\n", x, y);
+  
+  if (x < (window.width) / 2) {
+    move_left();
+  } else {
+    move_right();
+  }
+  
+
+}
+
 
 void free_image_container()
 {
@@ -774,6 +791,7 @@ int init_image_object(const char *file_name, int startpage)
       resize_when_single(0);
 
       set_image(&pages->left, 0);
+
     } else {
       set_image_container(0);
 
@@ -791,7 +809,6 @@ int init_image_object(const char *file_name, int startpage)
 
         set_image(&pages->right, 1);
       }
-
 
       pages->current_page = 1;
 

@@ -63,6 +63,8 @@ gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer d
 
 gboolean detect_resize_window(GtkWidget *widget, GdkEvent *event, gpointer data);
 
+gboolean my_detect_click_function(GtkWidget *widget, GdkEventTouch *event, gpointer data);
+
 
 void close_variables();
 
@@ -362,8 +364,13 @@ static void activate(GtkApplication* app, gpointer user_data)
 
   g_signal_connect(G_OBJECT(window.window), "configure-event", G_CALLBACK(detect_resize_window), NULL);
 
+  /* gtk_widget_add_events(window.window, GDK_TOUCH_MASK); */
+  /* g_signal_connect(G_OBJECT(window.window), "touch-event", G_CALLBACK(my_detect_touch_function), NULL); */
+
+
   isFirstLoad = TRUE;
 
+  // create menu bar base
   GtkWidget *top_grid = gtk_grid_new();
   g_object_set(top_grid, "expand", TRUE, NULL); 
   gtk_container_add(GTK_CONTAINER(window.window), top_grid);
@@ -421,9 +428,17 @@ static void activate(GtkApplication* app, gpointer user_data)
 
   // gtk_grid_attach_next_to(GTK_GRID(top_grid), draw_area.scrolled_window, window.menubar, GTK_POS_BOTTOM, 1, 1);
   gtk_grid_attach_next_to(GTK_GRID(top_grid), draw_area.scrolled_window, button_menu, GTK_POS_BOTTOM, 1, 1);
-  
+
+  // pages of grid
   grid = gtk_grid_new();
-  gtk_container_add(GTK_CONTAINER(draw_area.scrolled_window), grid);
+  // gtk_container_add(GTK_CONTAINER(draw_area.scrolled_window), grid);
+
+  GtkWidget *event_box_on_pages_grid = gtk_event_box_new();
+  gtk_container_add(GTK_CONTAINER(event_box_on_pages_grid), grid);
+  gtk_container_add(GTK_CONTAINER(draw_area.scrolled_window), event_box_on_pages_grid);
+  gtk_widget_add_events(event_box_on_pages_grid, GDK_BUTTON_PRESS_MASK);
+  g_signal_connect(G_OBJECT(event_box_on_pages_grid), "button-press-event", G_CALLBACK(my_detect_click_function), NULL);
+  
 
   // init pages struct
   pages = (Pages*)malloc(sizeof(Pages));
