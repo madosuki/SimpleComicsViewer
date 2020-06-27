@@ -1095,74 +1095,76 @@ GtkWidget *create_menu_bar()
 
 void move_left()
 {
-  if(pages->isSingle) {
-    int tmp = pages->current_page + 1;
+  if (pages->current_page > -1) {
 
-    if(tmp < detail->image_count)
-      pages->current_page = tmp;
+    if(pages->isSingle) {
+      int tmp = pages->current_page + 1;
 
-    if(tmp >= detail->image_count && pages->isAcceptOverflow) {
-      pages->current_page = 0;
-    }
+      if(tmp < detail->image_count)
+        pages->current_page = tmp;
 
-  } else if(pages->page_direction_right) {
-
-    int tmp = pages->current_page + 2;
-
-    if(tmp < detail->image_count)
-      pages->current_page = tmp;
-
-    if(tmp >= detail->image_count) {
-      if(tmp != 0 && tmp % 2 != 0) {
-        pages->current_page = tmp - 1;
-      } 
-
-    }
-
-    if(pages->isAcceptOverflow && pages->current_page >= detail->image_count) {
-      pages->current_page = 1;
-
-      if(pages->isPriorityToFrontCover) {
+      if(tmp >= detail->image_count && pages->isAcceptOverflow) {
         pages->current_page = 0;
+      }
+
+    } else if(pages->page_direction_right) {
+
+      int tmp = pages->current_page + 2;
+
+      if(tmp < detail->image_count)
+        pages->current_page = tmp;
+
+      if(tmp >= detail->image_count) {
+        if(tmp != 0 && tmp % 2 != 0) {
+          pages->current_page = tmp - 1;
+        } 
+
+      }
+
+      if(pages->isAcceptOverflow && pages->current_page >= detail->image_count) {
+        pages->current_page = 1;
+
+        if(pages->isPriorityToFrontCover) {
+          pages->current_page = 0;
+        }
+      }
+
+    } else {
+
+      int tmp = pages->current_page - 2;
+      if(tmp < 0) {
+        pages->current_page = tmp;
+
+        if(pages->isAcceptOverflow)
+          pages->current_page = detail->image_count - 1;
       }
     }
 
-  } else {
-
-    int tmp = pages->current_page - 2;
-    if(tmp < 0) {
-      pages->current_page = tmp;
-
-      if(pages->isAcceptOverflow)
-        pages->current_page = detail->image_count - 1;
+    if(pages->isPriorityToFrontCover && pages->current_page == 0) {
+      pages->isCover = TRUE;
     }
 
-  }
+    if(!pages->isSingle && !pages->isPriorityToFrontCover && pages->current_page != 0 && pages->current_page % 2 == 0) {
+      pages->current_page++;
+    }
 
-  if(pages->isPriorityToFrontCover && pages->current_page == 0) {
-    pages->isCover = TRUE;
-  }
+    if(pages->current_page == detail->image_count) {
+      pages->current_page--;
+    }
 
-  if(!pages->isSingle && !pages->isPriorityToFrontCover && pages->current_page != 0 && pages->current_page % 2 == 0) {
-    pages->current_page++;
-  }
+    if(pages->current_page > detail->image_count) {
+      pages->current_page = detail->image_count - 1;
+    }
 
-  if(pages->current_page == detail->image_count) {
-    pages->current_page--;
-  }
+    if(pages->current_page < 0 && pages->isSingle) {
+      pages->current_page = detail->image_count - 1;
+    }
 
-  if(pages->current_page > detail->image_count) {
-    pages->current_page = detail->image_count - 1;
-  }
-
-  if(pages->current_page < 0 && pages->isSingle) {
-    pages->current_page = detail->image_count - 1;
-  }
-
-  if(pages->page_direction_right) {
-    next_image(TRUE);
-  } else {
-    next_image(FALSE);
+    if(pages->page_direction_right) {
+      next_image(TRUE);
+    } else {
+      next_image(FALSE);
+    }
   }
 
 }
@@ -1170,105 +1172,114 @@ void move_left()
 
 void move_right()
 {
-  if(pages->isSingle) {
+  if (pages->current_page > -1) {
 
-    int tmp = pages->current_page - 1;
-    if(tmp >= 0)
-      pages->current_page = tmp;
-
-    if(tmp < 0 && pages->isAcceptOverflow)
-      pages->current_page = detail->image_count - 1;
-
-
-  } else if(pages->page_direction_right) {
-
-    int tmp = pages->current_page - 2;
-
-    if(tmp < 0) {
-
-      if(pages->isAcceptOverflow)
-        pages->current_page = detail->image_count - 1;
-
-    } else {
-      pages->current_page = tmp;
-    }
-
-  } else {
-
-    int tmp = pages->current_page + 2;
-    if(tmp < detail->image_count) {
-      pages->current_page = tmp;
-    }
-
-    if(pages->current_page >= detail->image_count) {
-      pages->current_page--;
-    }
-
-    if(pages->current_page > detail->image_count && pages->isAcceptOverflow) {
-      pages->current_page = 1;
-    }
-  }
-
-  if(pages->current_page >= detail->image_count) {
     if(pages->isSingle) {
 
-      pages->current_page = 0;
+      int tmp = pages->current_page - 1;
+      if(tmp >= 0)
+        pages->current_page = tmp;
+
+      if(tmp < 0 && pages->isAcceptOverflow)
+        pages->current_page = detail->image_count - 1;
+
+
+    } else if(pages->page_direction_right) {
+
+      int tmp = pages->current_page - 2;
+
+      if(tmp < 0) {
+
+        if(pages->isAcceptOverflow)
+          pages->current_page = detail->image_count - 1;
+
+      } else {
+        pages->current_page = tmp;
+      }
 
     } else {
 
-      if(pages->isPriorityToFrontCover) {
+      int tmp = pages->current_page + 2;
+      if(tmp < detail->image_count) {
+        pages->current_page = tmp;
+      }
 
-        pages->current_page = 0;
-        pages->isCover = TRUE;
+      if(pages->current_page >= detail->image_count) {
+        pages->current_page--;
+      }
 
-      } else {
-
+      if(pages->current_page > detail->image_count && pages->isAcceptOverflow) {
         pages->current_page = 1;
       }
     }
-  }
 
-  if(pages->isPriorityToFrontCover && pages->current_page == 0) {
-    pages->isCover = TRUE;
-  }
+    if(pages->current_page >= detail->image_count) {
+      if(pages->isSingle) {
 
-  if(!pages->isSingle && pages->current_page != 0 && !pages->isPriorityToFrontCover && pages->current_page % 2 == 0 && pages->current_page != detail->image_count - 1) {
-    pages->current_page++;
-  }
+        pages->current_page = 0;
 
-  if(pages->page_direction_right) {
-    next_image(FALSE);
-  } else {
-    next_image(TRUE);
-  }
+      } else {
 
+        if(pages->isPriorityToFrontCover) {
+
+          pages->current_page = 0;
+          pages->isCover = TRUE;
+
+        } else {
+
+          pages->current_page = 1;
+        }
+      }
+    }
+
+    if(pages->isPriorityToFrontCover && pages->current_page == 0) {
+      pages->isCover = TRUE;
+    }
+
+    if(!pages->isSingle && pages->current_page != 0 && !pages->isPriorityToFrontCover && pages->current_page % 2 == 0 && pages->current_page != detail->image_count - 1) {
+      pages->current_page++;
+    }
+
+    if(pages->page_direction_right) {
+      next_image(FALSE);
+    } else {
+      next_image(TRUE);
+    }
+
+  }
 }
 
 void move_top_page()
 {
-  pages->current_page = 1;
+  if (pages->current_page > -1) {
 
-  if(pages->isSingle) {
-    pages->current_page = 0;
-  }
+    pages->current_page = 1;
 
-  if(pages->page_direction_right) {
-    next_image(FALSE);
-  } else {
-    next_image(TRUE);
+    if(pages->isSingle) {
+      pages->current_page = 0;
+    }
+
+    if(pages->page_direction_right) {
+      next_image(FALSE);
+    } else {
+      next_image(TRUE);
+    }
   }
 }
 
 void move_end_page()
 {
-  pages->current_page = detail->image_count - 1;
+  if (pages->current_page > -1) {
+
+    pages->current_page = detail->image_count - 1;
   
-  if(pages->page_direction_right) {
-    next_image(FALSE);
-  } else {
-    next_image(TRUE);
+    if(pages->page_direction_right) {
+      next_image(FALSE);
+    } else {
+      next_image(TRUE);
+    }
+
   }
-  
 }
 
 void hide_mouse()

@@ -450,6 +450,7 @@ static void activate(GtkApplication* app, gpointer user_data)
   pages->isCover = FALSE;
   pages->isPriorityToFrontCover = FALSE;
   pages->isAcceptOverflow = FALSE;
+  pages-> current_page = -1;
 
   isCompressFile = TRUE;
 
