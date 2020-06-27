@@ -460,6 +460,9 @@ void close_variables()
 
     fz_clear();
 
+    if(window.isFullScreen)
+      pthread_detach(thread_of_curosr_observer);
+
     window.isClose = TRUE;
   }
 }
@@ -856,7 +859,7 @@ void fullscreen()
     gtk_widget_hide(window.menubar);
     gtk_widget_hide(button_menu);
     
-    // hide_mouse();
+    hide_mouse();
     
     window.isFullScreen = TRUE;
 
@@ -1350,8 +1353,6 @@ void *cursor_observer_in_fullscreen_mode(void *data)
 
     if(!window.isFullScreen)
       return NULL;
-
-    printf("%d, %d\n", x, y);
     
     time_t current = time(NULL);
 
