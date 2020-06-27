@@ -25,6 +25,7 @@ void move_left();
 void move_top_page();
 void move_end_page();
 
+void show_mouse();
 void hide_mouse();
 
 void free_array_with_alloced(void **list, const int size);
@@ -346,6 +347,13 @@ static void print_hello(GtkWidget *widget, gpointer data)
   g_print("Hello World\n");
 }
 
+static gboolean my_detect_motion_notify(GtkWidget *widget, GdkEvent *event, gpointer user_data)
+{
+  printf("detect!\n");
+  
+  return TRUE;
+}
+
 static void activate(GtkApplication* app, gpointer user_data)
 {
   // Window settings
@@ -442,6 +450,9 @@ static void activate(GtkApplication* app, gpointer user_data)
   gtk_container_add(GTK_CONTAINER(draw_area.scrolled_window), event_box_on_pages_grid);
   gtk_widget_add_events(event_box_on_pages_grid, GDK_BUTTON_PRESS_MASK);
   g_signal_connect(G_OBJECT(event_box_on_pages_grid), "button-press-event", G_CALLBACK(my_detect_click_function), NULL);
+  
+  /* gtk_widget_add_events(event_box_on_pages_grid, GDK_POINTER_MOTION_MASK); */
+  /* g_signal_connect(G_OBJECT(event_box_on_pages_grid), "motion-notify-event", G_CALLBACK(my_detect_motion_notify), NULL); */
   
 
   // init pages struct

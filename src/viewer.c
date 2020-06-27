@@ -375,7 +375,7 @@ gboolean my_detect_click_function(GtkWidget *widget, GdkEventTouch *event, gpoin
     if (window.isFullScreen) {
           gtk_widget_show(window.menubar);
           gtk_widget_show(button_menu);
-          hide_mouse();
+          show_mouse();
           window.is_double_click_when_fullscreen_mode = TRUE;
     }
     break;
@@ -838,7 +838,7 @@ void cancel_fullscreen()
     gtk_window_unfullscreen(GTK_WINDOW(window.window));
     gtk_widget_show(window.menubar);
     gtk_widget_show(button_menu);
-    hide_mouse();
+    show_mouse();
     window.isFullScreen = FALSE;
   
 }
@@ -1296,18 +1296,34 @@ void move_end_page()
   }
 }
 
+void show_mouse()
+{
+  GdkDisplay *display = gdk_display_get_default();
+  GdkWindow *gdk_window = gtk_widget_get_window(window.window);
+  GdkCursor *cursor;
+
+  cursor = gdk_cursor_new_from_name(display, "default");
+
+  gdk_window_set_cursor(gdk_window, cursor);
+
+  g_object_unref(cursor);
+  
+}
+
 void hide_mouse()
 {
   GdkDisplay *display = gdk_display_get_default();
   GdkWindow *gdk_window = gtk_widget_get_window(window.window);
   GdkCursor *cursor;
 
-  if(window.isFullScreen) {
-    cursor = gdk_cursor_new_from_name(display, "default");
-  } else {
-    cursor = gdk_cursor_new_for_display(display, GDK_BLANK_CURSOR);
-  }
+  /* if(window.isFullScreen) { */
+  /*   cursor = gdk_cursor_new_from_name(display, "default"); */
+  /* } else { */
+  /*   cursor = gdk_cursor_new_for_display(display, GDK_BLANK_CURSOR); */
+  /* } */
 
+  cursor = gdk_cursor_new_for_display(display, GDK_BLANK_CURSOR);
+  
   gdk_window_set_cursor(gdk_window, cursor);
 
   g_object_unref(cursor);
