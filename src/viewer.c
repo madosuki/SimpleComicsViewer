@@ -362,7 +362,7 @@ gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer d
   return FALSE;
 }
 
-gboolean my_detect_click_function(GtkWidget *widget, GdkEventTouch *event, gpointer data)
+gboolean my_detect_click_function(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
 
   guint x = (guint)event->x;
@@ -372,24 +372,27 @@ gboolean my_detect_click_function(GtkWidget *widget, GdkEventTouch *event, gpoin
 
   switch (event->type) {
   case GDK_DOUBLE_BUTTON_PRESS:
-    if (window.isFullScreen) {
-          gtk_widget_show(window.menubar);
-          gtk_widget_show(button_menu);
-          show_mouse();
-          window.is_double_click_when_fullscreen_mode = TRUE;
-    }
+    
+    /* if (window.isFullScreen) { */
+    /*       gtk_widget_show(window.menubar); */
+    /*       gtk_widget_show(button_menu); */
+    /*       show_mouse(); */
+    /*       window.is_double_click_when_fullscreen_mode = TRUE; */
+    /* } */
+    
     break;
+    
   case GDK_BUTTON_PRESS:
 
-    if (window.is_double_click_when_fullscreen_mode) {
-      if (window.isFullScreen) {
-        gtk_widget_hide(window.menubar);
-        gtk_widget_hide(button_menu);
-        hide_mouse();
-        window.is_double_click_when_fullscreen_mode = FALSE;
-      }
+    /* if (window.is_double_click_when_fullscreen_mode) { */
+    /*   if (window.isFullScreen) { */
+    /*     gtk_widget_hide(window.menubar); */
+    /*     gtk_widget_hide(button_menu); */
+    /*     hide_mouse(); */
+    /*     window.is_double_click_when_fullscreen_mode = FALSE; */
+    /*   } */
       
-    }
+    /* } */
 
     if (x < (window.width) / 2) {
       move_left();
@@ -840,22 +843,26 @@ void cancel_fullscreen()
     gtk_widget_show(button_menu);
     show_mouse();
     window.isFullScreen = FALSE;
-  
+
+    int error = pthread_join(thread_of_curosr_observer, NULL);
 }
 
 void fullscreen()
 {
-  if(window.isFullScreen)
-  {
+  if(window.isFullScreen) {
     cancel_fullscreen();
-  }
-  else
-  {
+  } else {
     gtk_window_fullscreen(GTK_WINDOW(window.window));
     gtk_widget_hide(window.menubar);
     gtk_widget_hide(button_menu);
-    hide_mouse();
+    
+    // hide_mouse();
+    
     window.isFullScreen = TRUE;
+
+    int error = pthread_create(&thread_of_curosr_observer, NULL, cursor_observer_in_fullscreen_mode, NULL);
+
+    
   }
 
 }
@@ -1328,4 +1335,39 @@ void hide_mouse()
 
   g_object_unref(cursor);
 
+}
+
+void *cursor_observer_in_fullscreen_mode(void *data)
+{
+  if(!window.isFullScreen)
+    return NULL;
+
+  time_t t = time(NULL);
+  guint x = cursor_pos.x;
+  guint y = cursor_pos.y;
+
+  while (TRUE) {
+
+    if(!window.isFullScreen)
+      return NULL;
+
+    printf("%d, %d\n", x, y);
+    
+    time_t current = time(NULL);
+
+    if (cursor_pos.x == x && cursor_pos.y == y) {
+      if (current > t) {
+        hide_mouse();
+      }
+    } else if (cursor_pos.x != x || cursor_pos.y != y) {
+      show_mouse();
+    }
+
+    t = current;
+    x = cursor_pos.x;
+    y = cursor_pos.y;
+
+
+  }
+  
 }

@@ -5,9 +5,12 @@
 #include <dirent.h>
 #include <math.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <time.h>
+#include <pthread.h>
 
 #include "utils.h"
 #include "loader.h"
@@ -19,6 +22,9 @@
 #define DEFAULT_WINDOW_HEIGHT 960
 
 int status;
+
+void *cursor_observer_in_fullscreen_mode(void *data);
+pthread_t thread_of_curosr_observer;
 
 void move_right();
 void move_left();
@@ -64,7 +70,7 @@ gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer d
 
 gboolean detect_resize_window(GtkWidget *widget, GdkEvent *event, gpointer data);
 
-gboolean my_detect_click_function(GtkWidget *widget, GdkEventTouch *event, gpointer data);
+gboolean my_detect_click_function(GtkWidget *widget, GdkEventButton *event, gpointer data);
 
 
 void close_variables();
@@ -125,6 +131,14 @@ typedef struct
   GtkWidget *left_image_button;
   GtkWidget *right_image_button;
 } Image_button_t;
+
+typedef struct
+{
+  guint x;
+  guint y;
+} Cursor_Position_t;
+
+Cursor_Position_t cursor_pos;
 
 Image_button_t image_button;
 
@@ -347,9 +361,13 @@ static void print_hello(GtkWidget *widget, gpointer data)
   g_print("Hello World\n");
 }
 
-static gboolean my_detect_motion_notify(GtkWidget *widget, GdkEvent *event, gpointer user_data)
+static gboolean my_detect_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
 {
-  printf("detect!\n");
+  guint x = (guint)event->x;
+  guint y = (guint)event->y;
+
+  cursor_pos.x = x;
+  cursor_pos.y = y;
   
   return TRUE;
 }
@@ -381,6 +399,9 @@ static void activate(GtkApplication* app, gpointer user_data)
 
 
   isFirstLoad = TRUE;
+
+  cursor_pos.x = 0;
+  cursor_pos.y = 0;
 
   // create menu bar base
   GtkWidget *top_grid = gtk_grid_new();
@@ -451,8 +472,8 @@ static void activate(GtkApplication* app, gpointer user_data)
   gtk_widget_add_events(event_box_on_pages_grid, GDK_BUTTON_PRESS_MASK);
   g_signal_connect(G_OBJECT(event_box_on_pages_grid), "button-press-event", G_CALLBACK(my_detect_click_function), NULL);
   
-  /* gtk_widget_add_events(event_box_on_pages_grid, GDK_POINTER_MOTION_MASK); */
-  /* g_signal_connect(G_OBJECT(event_box_on_pages_grid), "motion-notify-event", G_CALLBACK(my_detect_motion_notify), NULL); */
+  gtk_widget_add_events(event_box_on_pages_grid, GDK_POINTER_MOTION_MASK);
+  g_signal_connect(G_OBJECT(event_box_on_pages_grid), "motion-notify-event", G_CALLBACK(my_detect_motion_notify), NULL);
   
 
   // init pages struct
