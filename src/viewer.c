@@ -371,28 +371,7 @@ gboolean my_detect_click_function(GtkWidget *widget, GdkEventButton *event, gpoi
   // printf("coordinate x: %d, y: %d\n", x, y);
 
   switch (event->type) {
-  case GDK_DOUBLE_BUTTON_PRESS:
-    
-    /* if (window.isFullScreen) { */
-    /*       gtk_widget_show(window.menubar); */
-    /*       gtk_widget_show(button_menu); */
-    /*       show_mouse(); */
-    /*       window.is_double_click_when_fullscreen_mode = TRUE; */
-    /* } */
-    
-    break;
-    
   case GDK_BUTTON_PRESS:
-
-    /* if (window.is_double_click_when_fullscreen_mode) { */
-    /*   if (window.isFullScreen) { */
-    /*     gtk_widget_hide(window.menubar); */
-    /*     gtk_widget_hide(button_menu); */
-    /*     hide_mouse(); */
-    /*     window.is_double_click_when_fullscreen_mode = FALSE; */
-    /*   } */
-      
-    /* } */
 
     if (x < (window.width) / 2) {
       move_left();
@@ -842,8 +821,7 @@ int init_image_object(const char *file_name, int startpage)
 void cancel_fullscreen()
 {
     gtk_window_unfullscreen(GTK_WINDOW(window.window));
-    gtk_widget_show(window.menubar);
-    gtk_widget_show(button_menu);
+    show_menu();
     show_mouse();
     window.isFullScreen = FALSE;
 
@@ -856,8 +834,8 @@ void fullscreen()
     cancel_fullscreen();
   } else {
     gtk_window_fullscreen(GTK_WINDOW(window.window));
-    gtk_widget_hide(window.menubar);
-    gtk_widget_hide(button_menu);
+    
+    hide_menu();
     
     hide_mouse();
     
@@ -1356,7 +1334,7 @@ void *cursor_observer_in_fullscreen_mode(void *data)
     
     time_t current = time(NULL);
 
-    if (cursor_pos.x == x && cursor_pos.y == y) {
+    if (cursor_pos.x == x && cursor_pos.y == y && cursor_pos.y > (window.button_menu_height +  window.menubar_height)) {
       if (current > t) {
         hide_mouse();
       }
@@ -1371,4 +1349,16 @@ void *cursor_observer_in_fullscreen_mode(void *data)
 
   }
   
+}
+
+void show_menu()
+{
+  gtk_widget_show(window.menubar);
+  gtk_widget_show(button_menu);  
+}
+
+void hide_menu()
+{
+  gtk_widget_hide(window.menubar);
+  gtk_widget_hide(button_menu);
 }

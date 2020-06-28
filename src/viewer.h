@@ -26,6 +26,9 @@ int status;
 void *cursor_observer_in_fullscreen_mode(void *data);
 pthread_t thread_of_curosr_observer;
 
+void show_menu();
+void hide_menu();
+
 void move_right();
 void move_left();
 void move_top_page();
@@ -166,10 +169,11 @@ typedef struct
   GtkWidget *menubar;
   int menubar_width;
   int menubar_height;
+  int button_menu_width;
+  int button_menu_height;
   int width;
   int height;
   int isFullScreen;
-  int is_double_click_when_fullscreen_mode;
   int isClose;
 } main_window_data_t;
 
@@ -350,11 +354,24 @@ static void CloseWindow()
 
 }
 
-static void get_widget_size(GtkWidget *widget, GtkAllocation *allocation, void *data)
+static void get_draw_area_widget_size(GtkWidget *widget, GtkAllocation *allocation, void *data)
 {
   draw_area.width = allocation->width;
   draw_area.height = allocation->height;
 }
+
+static void get_button_menu_widget_size(GtkWidget *widget, GtkAllocation *allocation, void *data)
+{
+  window.button_menu_width = allocation->width;
+  window.button_menu_height = allocation->height;
+}
+
+static void get_menu_bar_widget_size(GtkWidget *widget, GtkAllocation *allocation, void *data)
+{
+  window.menubar_width = allocation->width;
+  window.menubar_height = allocation->height;
+}
+
 
 static void print_hello(GtkWidget *widget, gpointer data)
 {
@@ -368,7 +385,18 @@ static gboolean my_detect_motion_notify(GtkWidget *widget, GdkEventMotion *event
 
   cursor_pos.x = x;
   cursor_pos.y = y;
-  
+
+  if (window.isFullScreen) {
+
+    if (y == 0) {
+      show_menu();
+      show_mouse();
+    } else if (y > (window.button_menu_height + window.menubar_height)) {
+      hide_menu();
+    }
+    
+  }
+
   return TRUE;
 }
 
@@ -379,8 +407,11 @@ static void activate(GtkApplication* app, gpointer user_data)
   window.width = DEFAULT_WINDOW_WIDTH;
   window.height = DEFAULT_WINDOW_HEIGHT;
   window.isFullScreen = FALSE;
-  window. is_double_click_when_fullscreen_mode = FALSE;
   window.isClose = FALSE;
+  window.menubar_height = 0;
+  window.menubar_width = 0;
+  window.button_menu_width = 0;
+  window.button_menu_height = 0;
   // g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(Close), NULL);
 
   // Set Window Title
@@ -418,6 +449,7 @@ static void activate(GtkApplication* app, gpointer user_data)
   // settings menubar
   window.menubar = create_menu_bar();
   gtk_grid_attach(GTK_GRID(top_grid), window.menubar, 0, 0, 1, 1);
+  g_signal_connect(window.menubar, "size-allocate", G_CALLBACK(get_menu_bar_widget_size), NULL);
 
   // add menubar
   // gtk_box_pack_start(GTK_BOX(vbox), window.menubar, FALSE, FALSE, 0);
@@ -428,6 +460,7 @@ static void activate(GtkApplication* app, gpointer user_data)
   button_menu = gtk_grid_new();
   // g_object_set(button_menu, "expand", TRUE, NULL);
   gtk_grid_attach_next_to(GTK_GRID(top_grid), button_menu, window.menubar, GTK_POS_BOTTOM, 1, 1);
+  g_signal_connect(button_menu, "size-allocate", G_CALLBACK(get_button_menu_widget_size), NULL);
 
   GtkWidget *goto_left_button = gtk_button_new_with_label("Left");
   gtk_grid_attach(GTK_GRID(button_menu), goto_left_button, 0, 0, 1, 1);
