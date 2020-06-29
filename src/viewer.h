@@ -23,6 +23,8 @@
 
 int status;
 
+char *arg_file_name;
+
 void *cursor_observer_in_fullscreen_mode(void *data);
 pthread_t thread_of_curosr_observer;
 
@@ -212,6 +214,7 @@ help_menu_t help_menu_struct;
 
 GtkWidget *button_menu;
 
+
 static void change_covermode()
 {
   if(pages != NULL) {
@@ -281,6 +284,57 @@ static void change_direction()
   }
 }
 
+static int open_file(const char *file_name)
+{
+  char* tmp;
+  int is_dir = FALSE;
+  uint8_t flag = detect_compress_file(file_name);
+  if((flag & UTILS_ZIP)) {
+    isCompressFile = TRUE;
+  } else {
+    int check = detect_image_from_file(file_name);
+
+    if(check) {
+      
+      tmp = get_directory_path_from_filename(file_name);
+      if(tmp != NULL) {
+        is_dir = TRUE;
+      }
+      
+    } else {
+
+      if(test_open_pdf(file_name)) {
+        isPDFfile = TRUE;
+      } else {
+        
+        return FALSE;
+        
+      }
+    }
+
+    isCompressFile = FALSE;
+
+    // printf("%s\n", file_name);
+  }
+
+
+  int init_check;
+  if (is_dir) {
+    init_check = init_image_object(tmp, 0);
+  } else {
+    init_check =  init_image_object(file_name, 0);
+  }
+
+  if(init_check) {
+    update_grid();
+  } else {
+    printf("init image error\n");
+    return FALSE;
+  }
+
+  return TRUE;
+}
+
 static void open_file_on_menu()
 {
   GtkFileChooserAction action = GTK_FILE_CHOOSER_ACTION_OPEN;
@@ -296,54 +350,17 @@ static void open_file_on_menu()
       goto end;
     }
 
-    uint8_t flag = detect_compress_file(file_name);
-    if((flag & UTILS_ZIP)) {
-      isCompressFile = TRUE;
-    } else {
-      int check = detect_image_from_file(file_name);
+    int check = open_file(file_name);
 
-      if(check) {
-        char *tmp = get_directory_path_from_filename(file_name);
-        if(tmp != NULL) {
-          g_free(file_name);
+    if (!check)
+      printf("open_file error\n");
 
-          file_name = tmp;
-
-          printf("%s\n", file_name);
-        }
-      } else {
-        /*
-        g_free(file_name);
-
-        goto end;
-        */
-
-        if(test_open_pdf(file_name)) {
-          isPDFfile = TRUE;
-        } else {
-          g_free(file_name);
-
-          goto end;
-        }
-      }
-
-      isCompressFile = FALSE;
-
-      printf("%s\n", file_name);
-    }
-
-    if(init_image_object(file_name, 0)) {
-      update_grid();
-    } else {
-      printf("init image error\n");
-    }
 
     g_free(file_name);
 
   }
 
-end:
-
+ end:
   gtk_widget_destroy(dialog);
 }
 
@@ -399,6 +416,32 @@ static gboolean my_detect_motion_notify(GtkWidget *widget, GdkEventMotion *event
 
   return TRUE;
 }
+
+static gint run_cmd_argument(GApplication *app, GApplicationCommandLine *app_cmd, int *argc)
+{
+  g_application_activate(app);
+
+  if (arg_file_name != NULL) {
+
+    // char **argv = g_application_command_line_get_arguments(app_cmd, argc);
+
+    /* GFile *file = g_file_new_for_commandline_arg(argv[1]); */
+
+
+    int check = open_file(arg_file_name);
+
+    if (check) {
+      return 1;
+    } else {
+      printf("failed open file\n");
+      return 0;
+    }
+
+  }
+
+  return 1;
+}
+
 
 static void activate(GtkApplication* app, gpointer user_data)
 {
