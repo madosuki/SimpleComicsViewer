@@ -812,6 +812,8 @@ int init_image_object(const char *file_name, int startpage)
 
     }
 
+    update_page(FALSE);
+
     return TRUE;
   }
 
