@@ -11,7 +11,7 @@ int main(int argc, char **argv)
   g_signal_connect(G_APPLICATION(app), "command-line", G_CALLBACK(run_cmd_argument), NULL);
 
   GOptionEntry entries[] = {{"file", 'f', 0, G_OPTION_ARG_FILENAME, &arg_file_name, "Open File", "zip or jpg or png"}};
-  g_application_add_main_option_entries( G_APPLICATION(app), entries);
+  g_application_add_main_option_entries(G_APPLICATION(app), entries);
 
   // declared variable from src/viewer.h
   status = g_application_run(G_APPLICATION(app), argc, argv);
