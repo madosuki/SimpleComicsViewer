@@ -513,18 +513,29 @@ static void activate(GtkApplication* app, gpointer user_data)
   gtk_grid_attach_next_to(GTK_GRID(button_menu), goto_right_button, goto_left_button, GTK_POS_RIGHT, 1, 1);
   g_signal_connect(G_OBJECT(goto_right_button), "clicked", G_CALLBACK(move_right), NULL);
 
-  GtkWidget *goto_top_page_button = gtk_button_new_with_label("Top");
+  GtkWidget *goto_top_page_button = gtk_button_new_with_label("Go to Top page");
   gtk_grid_attach_next_to(GTK_GRID(button_menu),  goto_top_page_button, goto_right_button, GTK_POS_RIGHT, 1, 1);
   g_object_set( goto_top_page_button, "margin-left", 20, NULL);
   g_signal_connect(G_OBJECT(goto_top_page_button), "clicked", G_CALLBACK(move_top_page), NULL);
 
-  GtkWidget *goto_end_page_button = gtk_button_new_with_label("End");
+  GtkWidget *goto_end_page_button = gtk_button_new_with_label("Go to End page");
   gtk_grid_attach_next_to(GTK_GRID(button_menu),  goto_end_page_button, goto_top_page_button, GTK_POS_RIGHT, 1, 1);
   g_signal_connect(G_OBJECT(goto_end_page_button), "clicked", G_CALLBACK(move_end_page), NULL);
 
+  GtkWidget *goto_fullscreen_mode_button = gtk_button_new_with_label("FullScreenMode");
+  gtk_grid_attach_next_to(GTK_GRID(button_menu), goto_fullscreen_mode_button, goto_end_page_button, GTK_POS_RIGHT, 1, 1);
+  g_object_set(goto_fullscreen_mode_button, "margin-left", 20, NULL);
+  g_signal_connect(G_OBJECT(goto_fullscreen_mode_button), "clicked", G_CALLBACK(fullscreen), NULL);
+
   GtkWidget *open_file_button = gtk_button_new_with_label("Open");
-  gtk_grid_attach_next_to(GTK_GRID(button_menu),  open_file_button, goto_end_page_button, GTK_POS_RIGHT, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(button_menu), open_file_button, goto_fullscreen_mode_button, GTK_POS_RIGHT, 1, 1);
+  g_object_set(open_file_button, "margin-left", 20, NULL);
   g_signal_connect(G_OBJECT(open_file_button), "clicked", G_CALLBACK(open_file_on_menu), NULL);
+
+  GtkWidget *quit_button = gtk_button_new_with_label("Quit Application");
+  gtk_grid_attach_next_to(GTK_GRID(button_menu), quit_button, open_file_button, GTK_POS_RIGHT, 1, 1);
+  g_object_set(quit_button, "margin-left", 20, NULL);
+  g_signal_connect(G_OBJECT(quit_button), "clicked", G_CALLBACK(CloseWindow), NULL);
 
   
   // Initial Scroll Window
