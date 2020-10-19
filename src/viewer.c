@@ -319,10 +319,13 @@ gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer d
 
   if(keyval == GDK_KEY_c) {
     change_covermode();
+    return TRUE;
   }
 
-  if (keyval == GDK_KEY_Escape && window.isFullScreen) {
+  if ((keyval == GDK_KEY_Escape || (keyval == GDK_KEY_Return && isAlt))
+      && window.isFullScreen) {
     cancel_fullscreen();
+    return TRUE;
   }
 
   if(keyval == GDK_KEY_Return && isAlt) {
