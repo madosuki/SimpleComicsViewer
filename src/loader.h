@@ -70,19 +70,19 @@ typedef struct {
 
 void free_uncompress_data_set(uncompress_data_set_t *data);
 
-int *get_central_directory_offset(FILE *fp, const int file_size);
+int *get_zip_central_directory_offset(FILE *fp, const int file_size);
 
-void set_central_headers(zip_central_header_t **headers, int central_offset, int cd_num_on_disk, int file_size, FILE *fp);
+void set_zip_central_headers(zip_central_header_t **headers, int central_offset, int cd_num_on_disk, int file_size, FILE *fp);
 
-void free_local_header(zip_local_header_t *header);
+void free_zip_local_header(zip_local_header_t *header);
 
-void free_local_headers(zip_local_header_t ***headers, int size);
+void free_zip_local_headers(zip_local_header_t ***headers, int size);
 
-void free_central_header(zip_central_header_t *header);
+void free_zip_central_header(zip_central_header_t *header);
 
-void free_central_headers(zip_central_header_t **headers, int size);
+void free_zip_central_headers(zip_central_header_t **headers, int size);
 
-int set_local_header(FILE *fp, zip_local_header_t ***headers, int size);
+int set_zip_local_header(FILE *fp, zip_local_header_t ***headers, int size);
 
 int convert_bytes_to_int(unsigned char *src);
 

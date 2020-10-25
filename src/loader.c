@@ -4,7 +4,7 @@ const int eocd_size = 22;
 
 int finally_uncompress_size = 0;
 
-int *get_central_directory_offset(FILE *fp, const int file_size)
+int *get_zip_central_directory_offset(FILE *fp, const int file_size)
 {
   fseek(fp, file_size - 22, SEEK_SET);
   uint32_t eocd_sig;
@@ -35,7 +35,7 @@ int *get_central_directory_offset(FILE *fp, const int file_size)
   return tuple;
 }
 
-void set_central_headers(zip_central_header_t **headers, int central_offset, int cd_num_on_disk, int file_size, FILE *fp)
+void set_zip_central_headers(zip_central_header_t **headers, int central_offset, int cd_num_on_disk, int file_size, FILE *fp)
 {
   int pos = 0;
   int current = central_offset + pos;
@@ -157,7 +157,7 @@ void set_central_headers(zip_central_header_t **headers, int central_offset, int
   finally_uncompress_size = total_uncompress_file_size;
 }
 
-void free_local_header(zip_local_header_t *header)
+void free_zip_local_header(zip_local_header_t *header)
 {
   if(header->file_name != NULL) {
     free(header->file_name);
@@ -170,12 +170,12 @@ void free_local_header(zip_local_header_t *header)
   }
 }
 
-void free_local_headers(zip_local_header_t ***headers, int size)
+void free_zip_local_headers(zip_local_header_t ***headers, int size)
 {
   if(*headers != NULL) {
     for(int i = 0; i < size; ++i) {
       if(*headers[i] != NULL) {
-        free_local_header(*headers[i]);
+        free_zip_local_header(*headers[i]);
 
         free(*headers[i]);
 
@@ -187,7 +187,7 @@ void free_local_headers(zip_local_header_t ***headers, int size)
   }
 }
 
-void free_central_header(zip_central_header_t *header)
+void free_zip_central_header(zip_central_header_t *header)
 {
   if(header != NULL) {
     if(header->file_name != NULL) {
@@ -210,12 +210,12 @@ void free_central_header(zip_central_header_t *header)
   }
 }
 
-void free_central_headers(zip_central_header_t **headers, int size)
+void free_zip_central_headers(zip_central_header_t **headers, int size)
 {
   if(headers != NULL) {
     for(int i = 0; i < size; i++) {
       if(headers[i] != NULL) {
-        free_central_header(headers[i]);
+        free_zip_central_header(headers[i]);
       }
     }
 
@@ -224,7 +224,7 @@ void free_central_headers(zip_central_header_t **headers, int size)
   }
 }
 
-int set_local_header(FILE *fp, zip_local_header_t ***headers, int size)
+int set_zip_local_header(FILE *fp, zip_local_header_t ***headers, int size)
 {
 
   // set signature
@@ -359,14 +359,14 @@ int load_from_zip(const char *file_name, uncompress_data_set_t *data_set)
     return 0;
   }
 
-  int *eocd_data = get_central_directory_offset(fp, file_size);
+  int *eocd_data = get_zip_central_directory_offset(fp, file_size);
   int offset = eocd_data[1];
   int cd_num_on_disk = eocd_data[0];
   free(eocd_data);
 
   zip_central_header_t **headers = (zip_central_header_t**)calloc(cd_num_on_disk, sizeof(zip_central_header_t*));
 
-  set_central_headers(headers, offset, cd_num_on_disk, file_size, fp);
+  set_zip_central_headers(headers, offset, cd_num_on_disk, file_size, fp);
 
   data_set->uncompress_data_list = (uncompress_data_t**)malloc(sizeof(uncompress_data_t*) * cd_num_on_disk);
   memset(data_set->uncompress_data_list, 0, cd_num_on_disk);
@@ -375,7 +375,7 @@ int load_from_zip(const char *file_name, uncompress_data_set_t *data_set)
     fclose(fp);
     close(fd);
 
-    free_central_headers(headers, cd_num_on_disk);
+    free_zip_central_headers(headers, cd_num_on_disk);
 
     free_uncompress_data_set(data_set);
 
@@ -404,7 +404,7 @@ int load_from_zip(const char *file_name, uncompress_data_set_t *data_set)
       close(fd);
       fclose(fp);
 
-      free_central_headers(headers, cd_num_on_disk);
+      free_zip_central_headers(headers, cd_num_on_disk);
 
       return 0;
     }
@@ -430,7 +430,7 @@ int load_from_zip(const char *file_name, uncompress_data_set_t *data_set)
       body = NULL;
       printf("allocate error from body\n");
 
-      free_central_headers(headers, cd_num_on_disk);
+      free_zip_central_headers(headers, cd_num_on_disk);
 
       free_uncompress_data_set(data_set);
 
@@ -452,7 +452,7 @@ int load_from_zip(const char *file_name, uncompress_data_set_t *data_set)
       free(body);
       body = NULL;
 
-      free_central_headers(headers, cd_num_on_disk);
+      free_zip_central_headers(headers, cd_num_on_disk);
 
       free_uncompress_data_set(data_set);
 
@@ -475,7 +475,7 @@ int load_from_zip(const char *file_name, uncompress_data_set_t *data_set)
       free(out);
       out = NULL;
 
-      free_central_headers(headers, cd_num_on_disk);
+      free_zip_central_headers(headers, cd_num_on_disk);
 
       free_uncompress_data_set(data_set);
 
@@ -513,7 +513,7 @@ int load_from_zip(const char *file_name, uncompress_data_set_t *data_set)
             out = NULL;
           }
 
-          free_central_headers(headers, cd_num_on_disk);
+          free_zip_central_headers(headers, cd_num_on_disk);
 
           free_uncompress_data_set(data_set);
 
@@ -541,7 +541,7 @@ int load_from_zip(const char *file_name, uncompress_data_set_t *data_set)
 
           free_uncompress_data_set(data_set);
 
-          free_central_headers(headers, cd_num_on_disk);
+          free_zip_central_headers(headers, cd_num_on_disk);
 
 
           fclose(fp);
@@ -565,7 +565,7 @@ int load_from_zip(const char *file_name, uncompress_data_set_t *data_set)
           free(body);
           body = NULL;
 
-          free_central_headers(headers, cd_num_on_disk);
+          free_zip_central_headers(headers, cd_num_on_disk);
 
           free_uncompress_data_set(data_set);
 
@@ -621,7 +621,7 @@ int load_from_zip(const char *file_name, uncompress_data_set_t *data_set)
   }
 
 
-  free_central_headers(headers, cd_num_on_disk);
+  free_zip_central_headers(headers, cd_num_on_disk);
 
   fclose(fp);
 
