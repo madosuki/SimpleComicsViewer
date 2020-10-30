@@ -417,6 +417,11 @@ static gboolean my_detect_motion_notify(GtkWidget *widget, GdkEventMotion *event
   return TRUE;
 }
 
+/* static gboolean my_detect_wheel_event(GtkWidget *widget, GtkEventControllerScroll *event, gpointer user_data) */
+/* { */
+/*   return TRUE; */
+/* } */
+
 static gint run_cmd_argument(GApplication *app, GApplicationCommandLine *app_cmd, int *argc)
 {
   g_application_activate(app);
@@ -561,6 +566,9 @@ static void activate(GtkApplication* app, gpointer user_data)
   
   gtk_widget_add_events(event_box_on_pages_grid, GDK_POINTER_MOTION_MASK);
   g_signal_connect(G_OBJECT(event_box_on_pages_grid), "motion-notify-event", G_CALLBACK(my_detect_motion_notify), NULL);
+
+  /* gtk_widget_add_events(event_box_on_pages_grid, GDK_SCROLL_MASK); */
+  /* g_signal_connect(G_OBJECT(event_box_on_pages_grid), "scroll-event", G_CALLBACK(my_detect_wheel_event), NULL); */
   
 
   // init pages struct
