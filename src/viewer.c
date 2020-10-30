@@ -1,5 +1,46 @@
 #include "viewer.h"
 
+int status = 0;
+
+char *arg_file_name = NULL;
+
+pthread_t thread_of_curosr_observer;
+
+Pages *pages = NULL;
+DirectoryDetail_t *detail = NULL;
+
+Cursor_Position_t cursor_pos = {};
+
+Image_button_t image_button = {};
+
+Image_Container_t **image_container_list = NULL;
+
+uncompress_data_set_t *uncompressed_file_list = NULL;
+
+DrawingArea_t draw_area = {};
+
+int isCompressFile = 0;
+
+int isPDFfile = 0;
+
+int isFirstLoad = 0;
+
+GtkWidget *grid = NULL;
+
+GtkApplication *app = NULL;
+
+main_window_data_t window = {};
+
+file_menu_t file_menu_struct = {};
+
+view_menu_t view_menu_struct = {};
+
+help_menu_t help_menu_struct = {};
+
+GtkWidget *button_menu = NULL;
+
+
+
 void free_array_with_alloced(void **list, const int size)
 {
   if(list != NULL) {

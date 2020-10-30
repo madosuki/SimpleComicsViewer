@@ -14,9 +14,6 @@
 
 #define COMPRESS_METHOD_DEFLATE 8
 
-const int eocd_siz;
-
-int finally_uncompress_size;
 
 typedef struct {
   uint32_t signature;

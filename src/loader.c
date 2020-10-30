@@ -1,8 +1,13 @@
 #include "loader.h"
 
-const int eocd_size = 22;
+// const int eocd_size = 22;
+
+// int finally_uncompress_size = 0;
+
+int eocd_siz = 22;
 
 int finally_uncompress_size = 0;
+
 
 int *get_zip_central_directory_offset(FILE *fp, const int file_size)
 {

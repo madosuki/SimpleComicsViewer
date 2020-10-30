@@ -1,5 +1,9 @@
 #include "./pdf_loader.h"
 
+fz_data_t *fz_data_struct = NULL;
+set_fz_pix_t **result_of_thread = NULL;
+fz_pixmap_collection_t *fz_pixmap_collection_struct = NULL;
+
 void* set_fz_pixmap_with_thread(void *data)
 {
   fz_context *ctx = ((set_fz_pix_t*) data)->ctx;
