@@ -274,21 +274,25 @@ int set_image_path_list(const char *dirname)
 
 void unref_dst()
 {
-  if(image_container_list[pages->current_page] != NULL) {
-    if(pages->isSingle) {
+  if(pages != NULL && image_container_list != NULL) {
+    printf("\npages->current_page: %d\n\n", pages->current_page);
+    
+    if(image_container_list[pages->current_page] != NULL) {
+      if(pages->isSingle) {
 
-      if(image_container_list[pages->current_page]->dst != NULL) {
-        g_object_unref(G_OBJECT(image_container_list[pages->current_page]->dst));
-      }
+        if(image_container_list[pages->current_page]->dst != NULL) {
+          g_object_unref(G_OBJECT(image_container_list[pages->current_page]->dst));
+        }
 
-    } else {
+      } else {
 
-      if(image_container_list[pages->current_page]->dst != NULL) {
-        g_object_unref(G_OBJECT(image_container_list[pages->current_page]->dst));
-      }
+        if(image_container_list[pages->current_page]->dst != NULL) {
+          g_object_unref(G_OBJECT(image_container_list[pages->current_page]->dst));
+        }
 
-      if((pages->current_page - 1) > -1 && image_container_list[pages->current_page - 1] != NULL && image_container_list[pages->current_page - 1]->dst != NULL) {
-        g_object_unref(G_OBJECT(image_container_list[pages->current_page - 1]->dst));
+        if((pages->current_page - 1) > -1 && image_container_list[pages->current_page - 1] != NULL && image_container_list[pages->current_page - 1]->dst != NULL) {
+          g_object_unref(G_OBJECT(image_container_list[pages->current_page - 1]->dst));
+        }
       }
     }
   }
@@ -389,15 +393,14 @@ gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer d
 
 
   if((keyval == GDK_KEY_f && isCtrl) || event->keyval == GDK_KEY_Right || event->keyval == GDK_KEY_l) {
-
-    move_right();
+      move_right();
 
     return TRUE;
   }
 
   if((keyval == GDK_KEY_b && isCtrl) || keyval == GDK_KEY_Left || keyval == GDK_KEY_h) {
 
-    move_left();
+      move_left();
 
     return TRUE;
 
@@ -412,17 +415,16 @@ gboolean my_detect_click_function(GtkWidget *widget, GdkEventButton *event, gpoi
   guint x = (guint)event->x;
   guint y = (guint)event->y;
 
-  // printf("coordinate x: %d, y: %d\n", x, y);
+  printf("coordinate x: %d, y: %d, half: %d\n", x, y, (window.width / 2));
 
-  switch (event->type) {
-  case GDK_BUTTON_PRESS:
-
+  if(event->type == GDK_BUTTON_PRESS) {
+    
     if (x < (window.width) / 2) {
       move_left();
     } else {
       move_right();
     }
-    break;
+
   }
   
 
@@ -1179,13 +1181,16 @@ void move_left()
 
     } else {
 
-      int tmp = pages->current_page - 2;
-      if(tmp < 0) {
+        int tmp = pages->current_page - 2;
+        if(tmp < 1) {
+          tmp = 1;
+        }
+
         pages->current_page = tmp;
 
         if(pages->isAcceptOverflow)
           pages->current_page = detail->image_count - 1;
-      }
+
     }
 
     if(pages->isPriorityToFrontCover && pages->current_page == 0) {
@@ -1207,6 +1212,7 @@ void move_left()
     if(pages->current_page < 0 && pages->isSingle) {
       pages->current_page = detail->image_count - 1;
     }
+
 
     if(pages->page_direction_right) {
       next_image(TRUE);
