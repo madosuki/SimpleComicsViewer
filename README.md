@@ -44,6 +44,8 @@
         Ctrl+s  
     - **Change priority to Cover**  
         c  
+- **Other**
+  - **Move page on use mouse wheel**
 
 ## How to run
 
