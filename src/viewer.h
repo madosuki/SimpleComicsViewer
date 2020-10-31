@@ -427,9 +427,17 @@ static gboolean my_detect_wheel_event(GtkWidget *widget, GdkEvent *event, gpoint
 
 
     if(direction == GDK_SCROLL_UP) {
-      move_right();
+      if(pages->page_direction_right) {
+        move_right();
+      } else {
+        move_left();
+      }
     } else if(direction == GDK_SCROLL_DOWN) {
-      move_left();
+      if(pages->page_direction_right) {
+        move_left();
+      } else {
+        move_right();
+      }
     }
   }
 
