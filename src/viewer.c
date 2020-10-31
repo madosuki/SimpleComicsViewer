@@ -571,7 +571,7 @@ void set_image_container(ulong position)
   }
 }
 
-void resize_when_single(int position)
+int resize_when_single(int position)
 {
   gint window_width = 0;
   gint window_height = 0;
@@ -589,18 +589,25 @@ void resize_when_single(int position)
   if(window.isFullScreen) {
     diff_height_between_windown_and_menubar_height = window_height;
   }
-
+  
+  int isOverHeight = FALSE;
   if(height > diff_height_between_windown_and_menubar_height) {
     int diff = height - diff_height_between_windown_and_menubar_height;
     height = height - diff;
+
+    isOverHeight = TRUE;
+    
     int result = (int)ceil((double)height * (w_aspect / h_aspect));
     width = result;
   }
 
 
+  
   image_container_list[position]->dst = gdk_pixbuf_scale_simple(image_container_list[position]->src, width, height, GDK_INTERP_BILINEAR);
   image_container_list[position]->dst_width = width;
   image_container_list[position]->dst_height = height;
+
+  return isOverHeight;
 }
 
 gboolean detect_resize_window(GtkWidget *widget, GdkEvent *event, gpointer data)
@@ -615,7 +622,7 @@ gboolean detect_resize_window(GtkWidget *widget, GdkEvent *event, gpointer data)
 
         unref_dst();
 
-        resize_when_single(pages->current_page);
+        int isOverHeight = resize_when_single(pages->current_page);
 
         gtk_image_clear((GtkImage*)pages->left);
 
@@ -623,11 +630,11 @@ gboolean detect_resize_window(GtkWidget *widget, GdkEvent *event, gpointer data)
 
 
       } else {
-        if(detail->isOdd && ((pages->isPriorityToFrontCover && pages->current_page == 0) || (!pages->isPriorityToFrontCover && detail->image_count == pages->current_page - 1)) ) {
+        if(detail->isOdd || (pages->isPriorityToFrontCover && pages->isCover) || (!pages->isPriorityToFrontCover && detail->image_count == pages->current_page - 1))  {
 
           unref_dst();
 
-          resize_when_single(pages->current_page);
+          int isOverHeight = resize_when_single(pages->current_page);
 
           gtk_image_clear((GtkImage*)pages->left);
           gtk_image_clear((GtkImage*)pages->right);
@@ -696,6 +703,10 @@ void scale_when_oversize(int *x, int *y, int window_width, int window_height, do
 
 int resize_when_spread(int page)
 {
+  if(pages->isPriorityToFrontCover && page == 0) {
+    return resize_when_single(page);
+  }
+  
   int left_src_width = image_container_list[page - 1]->src_width;
   int left_src_height = image_container_list[page - 1]->src_height;
   double left_x_aspect = (double)image_container_list[page - 1]->aspect_raito[0];
@@ -838,20 +849,18 @@ int init_image_object(const char *file_name, int startpage)
 
     } else {
       set_image_container(0);
-
       set_image_container(1);
+      
       resize_when_spread(1);
 
 
       if(pages->page_direction_right) {
-        set_image(&pages->right, 0);
-
-        set_image(&pages->left, 1);
+          set_image(&pages->right, 0);
+          set_image(&pages->left, 1);
 
       } else {
-        set_image(&pages->left, 0);
-
-        set_image(&pages->right, 1);
+          set_image(&pages->left, 0);
+          set_image(&pages->right, 1);
       }
 
       pages->current_page = 1;
@@ -988,24 +997,27 @@ void update_page(int isSingleChange)
 
         } else if(pages->current_page == 0){
           pages->isCover = TRUE;
-
         }
 
       }
 
 
-      if(detail->isOdd && ((pages->isPriorityToFrontCover && pages->current_page == 0) || (!pages->isPriorityToFrontCover && pages->current_page == detail->image_count - 1)) ) {
+      if(detail->isOdd || ((pages->isPriorityToFrontCover && pages->isCover) || (!pages->isPriorityToFrontCover && pages->current_page == detail->image_count - 1)) ) {
         unref_dst();
 
-        int isOverHeight = resize_when_spread(pages->current_page);
+        int isOverHeight;
+        if(!pages->isCover)
+          isOverHeight = resize_when_spread(pages->current_page);
+        else
+          isOverHeight = resize_when_single(pages->current_page);
 
         if(pages->page_direction_right) {
 
-          gtk_image_set_from_pixbuf(GTK_IMAGE(pages->right), image_container_list[pages->current_page]->dst);
+          gtk_image_set_from_pixbuf(GTK_IMAGE(pages->left), image_container_list[pages->current_page]->dst);
 
         } else {
 
-          gtk_image_set_from_pixbuf(GTK_IMAGE(pages->left), image_container_list[pages->current_page]->dst);
+          gtk_image_set_from_pixbuf(GTK_IMAGE(pages->right), image_container_list[pages->current_page]->dst);
         }
 
       } else {

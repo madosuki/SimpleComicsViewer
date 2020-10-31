@@ -60,7 +60,7 @@ void set_image_container(ulong position);
 
 void set_image(GtkWidget **img, int position);
 
-void resize_when_single(int position);
+int resize_when_single(int position);
 
 int init_image_object();
 
@@ -222,11 +222,17 @@ extern GtkWidget *button_menu;
 
 static void change_covermode()
 {
+  if(pages->isPriorityToFrontCover) {
+    pages->isPriorityToFrontCover = FALSE;
+    pages->isCover = FALSE;
+  } else {
+    pages->isPriorityToFrontCover = TRUE;
+    pages->isCover = FALSE;
+  }
+  
   if(pages != NULL) {
     if(pages->isPriorityToFrontCover) {
-      pages->isPriorityToFrontCover = FALSE;
-      pages->isCover = FALSE;
-
+  
       if(pages->current_page != 0 && pages->current_page % 2 == 0) {
         pages->current_page++;
       }
@@ -238,10 +244,7 @@ static void change_covermode()
       update_page(FALSE);
 
     } else {
-      pages->isPriorityToFrontCover = TRUE;
-
-      pages->isCover = FALSE;
-
+  
       if(pages->current_page > 0 && pages->current_page % 2 == 0) {
         pages->current_page--;
       }
