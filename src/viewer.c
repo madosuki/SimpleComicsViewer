@@ -275,7 +275,7 @@ int set_image_path_list(const char *dirname)
 void unref_dst()
 {
   if(pages != NULL && image_container_list != NULL) {
-    printf("\npages->current_page: %d\n\n", pages->current_page);
+    // printf("\npages->current_page: %d\n\n", pages->current_page);
     
     if(image_container_list[pages->current_page] != NULL) {
       if(pages->isSingle) {
@@ -415,7 +415,7 @@ gboolean my_detect_click_function(GtkWidget *widget, GdkEventButton *event, gpoi
   guint x = (guint)event->x;
   guint y = (guint)event->y;
 
-  printf("coordinate x: %d, y: %d, half: %d\n", x, y, (window.width / 2));
+  // printf("coordinate x: %d, y: %d, half: %d\n", x, y, (window.width / 2));
 
   if(event->type == GDK_BUTTON_PRESS) {
     
