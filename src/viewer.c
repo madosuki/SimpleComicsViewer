@@ -1002,7 +1002,7 @@ void update_page(int isSingleChange)
       }
 
 
-      if(detail->isOdd || ((pages->isPriorityToFrontCover && pages->isCover) || (!pages->isPriorityToFrontCover && pages->current_page == detail->image_count - 1)) ) {
+      if(detail->isOdd && ((pages->isPriorityToFrontCover && pages->isCover) || (!pages->isPriorityToFrontCover && pages->current_page == detail->image_count - 1)) ) {
         unref_dst();
 
         int isOverHeight;
