@@ -39,6 +39,10 @@ help_menu_t help_menu_struct = {};
 
 GtkWidget *button_menu = NULL;
 
+const char *right_to_left_name = "Current Direction: Right to Left";
+const char *left_to_right_name = "Current Direction: Left to Right";
+
+GtkWidget *change_direction_button = NULL;
 
 
 void free_array_with_alloced(void **list, const int size)

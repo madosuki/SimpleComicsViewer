@@ -25,6 +25,11 @@ extern int status;
 
 extern char *arg_file_name;
 
+extern const char *right_to_left_name;
+extern const char *left_to_right_name;
+
+extern GtkWidget *change_direction_button;
+
 void *cursor_observer_in_fullscreen_mode(void *data);
 extern pthread_t thread_of_curosr_observer;
 
@@ -271,17 +276,18 @@ static void change_single_to_spread()
 
 static void change_direction()
 {
-  if(pages->left != NULL) {
-
-    if(pages->page_direction_right) {
-      pages->page_direction_right = FALSE;
-    } else {
-      pages->page_direction_right = TRUE;
-    }
-
-    update_page(FALSE);
-
+  if(pages->page_direction_right) {
+    pages->page_direction_right = FALSE;
+    gtk_button_set_label(GTK_BUTTON(change_direction_button), left_to_right_name);
+  } else {
+    pages->page_direction_right = TRUE;
+    gtk_button_set_label(GTK_BUTTON(change_direction_button), right_to_left_name);
   }
+
+  if(pages->left != NULL) {
+    update_page(FALSE);
+  }
+  
 }
 
 static int open_file(const char *file_name)
@@ -549,8 +555,16 @@ static void activate(GtkApplication* app, gpointer user_data)
   gtk_grid_attach_next_to(GTK_GRID(button_menu),  goto_end_page_button, goto_top_page_button, GTK_POS_RIGHT, 1, 1);
   g_signal_connect(G_OBJECT(goto_end_page_button), "clicked", G_CALLBACK(move_end_page), NULL);
 
+
+  // GtkWidget *change_direction_button = gtk_button_new_with_label("Change Page Direction");
+  change_direction_button = gtk_button_new_with_label(right_to_left_name);
+  gtk_grid_attach_next_to(GTK_GRID(button_menu),  change_direction_button, goto_end_page_button, GTK_POS_RIGHT, 1, 1);
+  g_object_set(change_direction_button, "margin-left", 20, NULL);
+  g_signal_connect(G_OBJECT(change_direction_button), "clicked", G_CALLBACK(change_direction), NULL);
+
+
   GtkWidget *goto_fullscreen_mode_button = gtk_button_new_with_label("FullScreenMode");
-  gtk_grid_attach_next_to(GTK_GRID(button_menu), goto_fullscreen_mode_button, goto_end_page_button, GTK_POS_RIGHT, 1, 1);
+  gtk_grid_attach_next_to(GTK_GRID(button_menu), goto_fullscreen_mode_button, change_direction_button, GTK_POS_RIGHT, 1, 1);
   g_object_set(goto_fullscreen_mode_button, "margin-left", 20, NULL);
   g_signal_connect(G_OBJECT(goto_fullscreen_mode_button), "clicked", G_CALLBACK(fullscreen), NULL);
 
