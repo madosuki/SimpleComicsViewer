@@ -585,14 +585,14 @@ int resize_when_single(int position)
   double w_aspect = (double)image_container_list[position]->aspect_raito[0];
   double h_aspect = (double)image_container_list[position]->aspect_raito[1];
 
-  int diff_height_between_windown_and_menubar_height = window_height - window.menubar_height;
+  int diff_height_between_windown_and_menu_and_button_bar_height = window_height - (window.menubar_height + window.button_menu_height);
   if(window.isFullScreen) {
-    diff_height_between_windown_and_menubar_height = window_height;
+    diff_height_between_windown_and_menu_and_button_bar_height = window_height;
   }
   
   int isOverHeight = FALSE;
-  if(height > diff_height_between_windown_and_menubar_height) {
-    int diff = height - diff_height_between_windown_and_menubar_height;
+  if(height > diff_height_between_windown_and_menu_and_button_bar_height) {
+    int diff = height - diff_height_between_windown_and_menu_and_button_bar_height;
     height = height - diff;
 
     isOverHeight = TRUE;
@@ -724,9 +724,9 @@ int resize_when_spread(int page)
   window.height = window_height;
 
 
-  int diff_height_between_windown_and_menubar = window_height - window.menubar_height;
+  int diff_height_between_window_and_menu_and_button_bar = window_height - (window.menubar_height + window.button_menu_height);
   if(window.isFullScreen) {
-    diff_height_between_windown_and_menubar = window_height;
+    diff_height_between_window_and_menu_and_button_bar = window_height;
   }
 
   int half_width = window_width / 2;
@@ -734,8 +734,8 @@ int resize_when_spread(int page)
   int left_height = 0;
   left_height = (int)ceil((double)left_width * (left_y_aspect / left_x_aspect));
   int isOverHeight = FALSE;
-  if(left_height > diff_height_between_windown_and_menubar) {
-    scale_when_oversize(&left_width, &left_height, window_width, diff_height_between_windown_and_menubar, left_x_aspect, left_y_aspect, FALSE);
+  if(left_height > diff_height_between_window_and_menu_and_button_bar) {
+    scale_when_oversize(&left_width, &left_height, window_width, diff_height_between_window_and_menu_and_button_bar, left_x_aspect, left_y_aspect, FALSE);
     isOverHeight = TRUE;
   }
 
@@ -746,8 +746,8 @@ int resize_when_spread(int page)
   int right_height = 0;
   right_height = (int)ceil((double)right_width * (right_y_aspect / right_x_aspect));
 
-  if(right_height > diff_height_between_windown_and_menubar) {
-    scale_when_oversize(&right_width, &right_height, window_width, diff_height_between_windown_and_menubar, right_x_aspect, right_y_aspect, FALSE);
+  if(right_height > diff_height_between_window_and_menu_and_button_bar) {
+    scale_when_oversize(&right_width, &right_height, window_width, diff_height_between_window_and_menu_and_button_bar, right_x_aspect, right_y_aspect, FALSE);
   }
 
   image_container_list[page]->dst_width = right_width;
