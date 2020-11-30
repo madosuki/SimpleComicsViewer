@@ -7,12 +7,15 @@
 #include <sys/types.h>
 #include <fcntl.h>
 #include <sys/stat.h>
-#include <zlib.h>
 #include <stdint.h>
+
+#include <archive.h>
+#include <archive_entry.h>
 
 #include "utils.h"
 
 #define COMPRESS_METHOD_DEFLATE 8
+#define NON_IMAGE_MESSAGE 2
 
 
 typedef struct {
@@ -62,29 +65,13 @@ typedef struct {
 
 typedef struct {
   uncompress_data_t **uncompress_data_list;
-  int size;
+  ssize_t size;
 } uncompress_data_set_t;
 
 void free_uncompress_data_set(uncompress_data_set_t *data);
 
-int *get_zip_central_directory_offset(FILE *fp, const int file_size);
+int load_from_compress_file(const char *file_name, uncompress_data_set_t *data_set);
 
-void set_zip_central_headers(zip_central_header_t **headers, int central_offset, int cd_num_on_disk, int file_size, FILE *fp);
-
-void free_zip_local_header(zip_local_header_t *header);
-
-void free_zip_local_headers(zip_local_header_t ***headers, int size);
-
-void free_zip_central_header(zip_central_header_t *header);
-
-void free_zip_central_headers(zip_central_header_t **headers, int size);
-
-int set_zip_local_header(FILE *fp, zip_local_header_t ***headers, int size);
-
-int convert_bytes_to_int(unsigned char *src);
-
-void close_zip_data();
-
-int load_from_zip(const char *file_name, uncompress_data_set_t *data_set);
+int copy_data_on_memory(struct archive *archive_read, uncompress_data_t *data, ssize_t file_size);
 
 #endif // LOADER_H

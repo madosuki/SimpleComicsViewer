@@ -83,7 +83,7 @@ int set_image_from_pdf_file(const char *file_name)
 int set_image_from_compressed_file(const char *file_name)
 {
   uncompressed_file_list = (uncompress_data_set_t*)calloc(sizeof(uncompress_data_set_t), sizeof(uncompress_data_set_t));
-  int ret = load_from_zip(file_name, uncompressed_file_list);
+  int ret = load_from_compress_file(file_name, uncompressed_file_list);
 
   if(!ret) {
     uncompressed_file_list = NULL;

@@ -5,7 +5,7 @@
 ### Depends List
 - **[GTK3](https://www.gtk.org/)**
 - **GDK3**
-- **[zlib](https://zlib.net/)**
+- **[libarchive](https://www.libarchive.org/)**
 - **[MuPDF](https://github.com/ArtifexSoftware/mupdf)**
 
 ### LICENCE
@@ -13,7 +13,7 @@
 
 ### Features
 - **Load Image(Currently support only JPEG and PNG)**
-- **Load Compressed File(Currently support only zip)**
+- **Load Compressed File(Currently support only supported files by libarchive)**
 - **Show Spread**
 
 ### Supported file format
@@ -63,7 +63,7 @@ chmod +x ./Simple_Comics_Viewer-x86_64.AppImage
 
 ### How to Build
 ```
-sudo apt-get install libgtk-3-dev build-essential automake autoconf libharfbuzz-dev libjpeg-dev libopenjp2-7-dev libjbig2dec0-dev libpng-dev libfreetype6-dev zlib1g-dev libmupdf-dev libjpeg62
+sudo apt-get install libgtk-3-dev build-essential automake autoconf libharfbuzz-dev libjpeg-dev libopenjp2-7-dev libjbig2dec0-dev libpng-dev libfreetype6-dev libarchive-dev libmupdf-dev libjpeg62
 ```
 After move to project dir.
 ```
