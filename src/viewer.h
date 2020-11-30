@@ -297,8 +297,10 @@ static int open_file(const char *file_name)
 {
   char* tmp;
   int is_dir = FALSE;
-  uint8_t flag = detect_compress_file(file_name);
-  if((flag & UTILS_ZIP)) {
+
+/*
+  int check_compress_file = detect_compress_file(file_name);
+  if(check_compress_file) {
     isCompressFile = TRUE;
   } else {
     int check = detect_image_from_file(file_name);
@@ -315,17 +317,39 @@ static int open_file(const char *file_name)
       if(test_open_pdf(file_name)) {
         isPDFfile = TRUE;
       } else {
-        
         return FALSE;
-        
       }
+
     }
 
     isCompressFile = FALSE;
 
     // printf("%s\n", file_name);
   }
+  */
 
+    int check = detect_image_from_file(file_name);
+    if(check) {
+      tmp = get_directory_path_from_filename(file_name);
+      if(tmp != NULL) {
+        is_dir = TRUE;
+        isCompressFile = FALSE;
+        isPDFfile = FALSE;
+      }
+    } else {
+      if(test_open_pdf(file_name)) {
+        is_dir = FALSE; 
+        isPDFfile = TRUE;
+        isCompressFile = FALSE;
+      } else {
+        if(detect_compress_file(file_name)) {
+          is_dir = FALSE;
+          isPDFfile = FALSE;
+          isCompressFile = TRUE;
+        }
+      }
+
+    }
 
   int init_check;
   if (is_dir) {

@@ -13,6 +13,10 @@
 #include <stdint.h>
 #include <math.h>
 
+#include <archive.h>
+
+#include "loader.h"
+
 #define UTILS_PNG 1
 #define UTILS_JPG 2
 
@@ -41,6 +45,6 @@ int detect_image_from_file(const char *file_name);
 
 char *get_directory_path_from_filename(const char *file_name);
 
-uint8_t detect_compress_file(const char *file_name);
+int detect_compress_file(const char *file_name);
 
 #endif // COMICS_V_UTILS_H

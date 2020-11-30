@@ -147,8 +147,22 @@ int detect_image_from_file(const char *file_name)
   return 0;
 }
 
-uint8_t detect_compress_file(const char *file_name)
+int detect_compress_file(const char *file_name)
 {
+  struct archive *arc = archive_read_new();
+  archive_read_support_filter_all(arc);
+  archive_read_support_format_all(arc);
+
+  int condition = archive_read_open_filename(arc, file_name, get_file_size(file_name));
+  if (condition != ARCHIVE_OK) {
+    return -1;
+  }
+
+  archive_read_close(arc);
+  archive_read_free(arc);
+
+  return 1;
+  /*
   FILE *fp;
 
   int fd = open(file_name, O_RDONLY);
@@ -189,6 +203,7 @@ uint8_t detect_compress_file(const char *file_name)
   close(fd);
 
   return 0;
+  */
 }
 
 char *get_directory_path_from_filename(const char *file_name)
