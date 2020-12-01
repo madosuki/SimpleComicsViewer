@@ -112,22 +112,23 @@ int get_image_file_count_from_directory(struct dirent **src, const int size, int
   int *number_list = (int*)malloc(sizeof(int) * LIST_BUFFER);
   memset(number_list, 0, sizeof(int) * LIST_BUFFER);
 
-  int dirname_length = strlen(dirname) + 1;
+  ssize_t dirname_length = strlen(dirname) + 1;
+  printf("current dir name: %s\n\n", dirname);
+
+  const char slash[2] = "/\0";
 
   int count = 1;
   for(int i = 0; i < size; ++i) {
 
     if(count < LIST_BUFFER) {
 
-      int src_length = strlen(src[i]->d_name) + 1;
+      ssize_t src_length = strlen(src[i]->d_name) + 1;
       char *final_path = (char*)calloc(dirname_length + src_length + 1, 1);
       if(final_path == NULL) {
-        free(final_path);
         break;
       }
 
       strcat(final_path, dirname);
-      char slash[1] = "/";
       strcat(final_path, slash);
       strcat(final_path, src[i]->d_name);
 
@@ -141,22 +142,25 @@ int get_image_file_count_from_directory(struct dirent **src, const int size, int
       }
 
       free(final_path);
+      final_path = NULL;
 
     }
 
   }
 
 
-  int *tmp = (int*)realloc(dst, sizeof(int) * count);
+  int *tmp = (int*)realloc(dst, (sizeof(int) * count) + 1);
   if(tmp != NULL) {
     dst = tmp;
     memset(dst, 0, sizeof(int) * count);
     memcpy(dst, number_list, sizeof(int) * count);
   } else {
     free(tmp);
+    tmp = NULL;
   }
 
   free(number_list);
+  number_list = NULL;
 
   return count - 1;
 }
@@ -170,8 +174,8 @@ int create_image_path_list(char **image_path_list, const char *dirname)
 
     if(file_list != NULL) {
       free(file_list);
+      file_list = NULL;
     }
-    file_list = NULL;
 
     return 0;
   }
@@ -212,7 +216,7 @@ int create_image_path_list(char **image_path_list, const char *dirname)
         }
 
         strcat(final_path, dirname);
-        char slash[1] = "/";
+        const char slash[2] = "/\0";
         strcat(final_path, slash);
         strcat(final_path, file_list[target]->d_name);
 
@@ -223,11 +227,17 @@ int create_image_path_list(char **image_path_list, const char *dirname)
         free(final_path);
       }
     } else {
-      free(tmp);
+      free(number_list);
+      number_list = NULL;
+
+      free_array_with_alloced((void**)file_list, r);
+
+      return -1;
     }
   }
 
   free(number_list);
+  number_list = NULL;
 
   free_array_with_alloced((void**)file_list, r);
 
@@ -248,7 +258,7 @@ int set_image_path_list(const char *dirname)
 
 
   if(detail->image_path_list == NULL) {
-    detail->image_path_list = (char**)calloc(LIST_BUFFER, 1);
+    detail->image_path_list = (char**)calloc(LIST_BUFFER + 1, 1);
 
     if(detail->image_path_list == NULL) {
       free_array_with_alloced((void**)detail->image_path_list, LIST_BUFFER);
@@ -271,7 +281,6 @@ int set_image_path_list(const char *dirname)
   } else {
     detail->isOdd = FALSE;
   }
-
 
   return TRUE;
 }
