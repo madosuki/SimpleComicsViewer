@@ -171,7 +171,7 @@ int get_file_count_and_set_image_path_list(struct dirent **src, const int size, 
 
         image_path_list[count - 1] = (char*)calloc(last_size, 1);
         strcpy(image_path_list[count - 1], final_path);
-        printf("%d, %d, %s\n\n", i, count - 1, image_path_list[count - 1]);
+        // printf("%d, %d, %s\n\n", i, count - 1, image_path_list[count - 1]);
       }
 
       free(final_path);
@@ -216,7 +216,7 @@ int get_file_count_and_set_image_path_list(struct dirent **src, const int size, 
 
   // free_array_with_alloced((void**)image_path_list, count);
 
-  return count + 1;
+  return count;
 }
 
 int create_image_path_list(char **image_path_list, const char *dirname)
