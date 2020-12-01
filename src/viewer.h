@@ -46,7 +46,7 @@ void hide_mouse();
 
 void free_array_with_alloced(void **list, const int size);
 
-int get_image_file_count_from_directory(struct dirent **src, const int size, int *dst, const char *dirname);
+int get_file_count_and_set_image_path_list(struct dirent **src, const int size, char **dst_image_path_list, const char *dirname);
 
 int create_image_path_list(char **image_path_list, const char *dirname);
 
