@@ -21,17 +21,17 @@
 #define DEFAULT_WINDOW_WIDTH 1280
 #define DEFAULT_WINDOW_HEIGHT 960
 
-extern int status;
+int status;
 
-extern char *arg_file_name;
+char *arg_file_name;
 
-extern const char *right_to_left_name;
-extern const char *left_to_right_name;
+const char *right_to_left_name;
+const char *left_to_right_name;
 
-extern GtkWidget *change_direction_button;
+GtkWidget *change_direction_button;
 
 void *cursor_observer_in_fullscreen_mode(void *data);
-extern pthread_t thread_of_curosr_observer;
+pthread_t thread_of_curosr_observer;
 
 void show_menu();
 void hide_menu();
@@ -106,7 +106,7 @@ typedef struct
   int isAcceptOverflow;
 } Pages;
 
-extern Pages *pages;
+Pages *pages;
 
 typedef struct
 {
@@ -115,7 +115,7 @@ typedef struct
   char **image_path_list;
 } DirectoryDetail_t;
 
-extern DirectoryDetail_t *detail;
+DirectoryDetail_t *detail;
 
 typedef struct
 {
@@ -148,27 +148,27 @@ typedef struct
   guint y;
 } Cursor_Position_t;
 
-extern Cursor_Position_t cursor_pos;
+Cursor_Position_t cursor_pos;
 
-extern Image_button_t image_button;
+Image_button_t image_button;
 
-extern Image_Container_t **image_container_list;
+Image_Container_t **image_container_list;
 
-extern uncompress_data_set_t *uncompressed_file_list;
+uncompress_data_set_t *uncompressed_file_list;
 
-extern DrawingArea_t draw_area;
+DrawingArea_t draw_area;
 
-extern int isCompressFile;
+int isCompressFile;
 
-extern int isPDFfile;
+int isPDFfile;
 
-extern int isFirstLoad;
+int isFirstLoad;
 
-extern GtkWidget *grid;
+GtkWidget *grid;
 
-extern GtkApplication *app;
+GtkApplication *app;
 
-extern GtkWidget *create_menu_bar();
+GtkWidget *create_menu_bar();
 
 typedef struct
 {
@@ -209,15 +209,15 @@ typedef struct
   GtkWidget *about;
 } help_menu_t;
 
-extern main_window_data_t window;
+main_window_data_t window;
 
-extern file_menu_t file_menu_struct;
+file_menu_t file_menu_struct;
 
-extern view_menu_t view_menu_struct;
+view_menu_t view_menu_struct;
 
-extern help_menu_t help_menu_struct;
+help_menu_t help_menu_struct;
 
-extern GtkWidget *button_menu;
+GtkWidget *button_menu;
 
 
 static void change_covermode()
@@ -298,58 +298,58 @@ static int open_file(const char *file_name)
   char* tmp;
   int is_dir = FALSE;
 
-/*
-  int check_compress_file = detect_compress_file(file_name);
-  if(check_compress_file) {
+  /*
+    int check_compress_file = detect_compress_file(file_name);
+    if(check_compress_file) {
     isCompressFile = TRUE;
-  } else {
+    } else {
     int check = detect_image_from_file(file_name);
 
     if(check) {
       
-      tmp = get_directory_path_from_filename(file_name);
-      if(tmp != NULL) {
-        is_dir = TRUE;
-      }
+    tmp = get_directory_path_from_filename(file_name);
+    if(tmp != NULL) {
+    is_dir = TRUE;
+    }
       
     } else {
 
-      if(test_open_pdf(file_name)) {
-        isPDFfile = TRUE;
-      } else {
-        return FALSE;
-      }
+    if(test_open_pdf(file_name)) {
+    isPDFfile = TRUE;
+    } else {
+    return FALSE;
+    }
 
     }
 
     isCompressFile = FALSE;
 
     // printf("%s\n", file_name);
-  }
+    }
   */
 
-    int check = detect_image_from_file(file_name);
-    if(check) {
-      tmp = get_directory_path_from_filename(file_name);
-      if(tmp != NULL) {
-        is_dir = TRUE;
-        isCompressFile = FALSE;
-        isPDFfile = FALSE;
-      }
-    } else {
-      if(test_open_pdf(file_name)) {
-        is_dir = FALSE; 
-        isPDFfile = TRUE;
-        isCompressFile = FALSE;
-      } else {
-        if(detect_compress_file(file_name)) {
-          is_dir = FALSE;
-          isPDFfile = FALSE;
-          isCompressFile = TRUE;
-        }
-      }
-
+  int check = detect_image_from_file(file_name);
+  if(check) {
+    tmp = get_directory_path_from_filename(file_name);
+    if(tmp != NULL) {
+      is_dir = TRUE;
+      isCompressFile = FALSE;
+      isPDFfile = FALSE;
     }
+  } else {
+    if(test_open_pdf(file_name)) {
+      is_dir = FALSE; 
+      isPDFfile = TRUE;
+      isCompressFile = FALSE;
+    } else {
+      if(detect_compress_file(file_name)) {
+        is_dir = FALSE;
+        isPDFfile = FALSE;
+        isCompressFile = TRUE;
+      }
+    }
+
+  }
 
   int init_check;
   if (is_dir) {
