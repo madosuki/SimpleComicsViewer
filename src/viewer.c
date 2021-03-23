@@ -109,50 +109,35 @@ int set_image_from_compressed_file(const char *file_name)
 
 int get_file_count_and_set_image_path_list(struct dirent **src, const int size, char **dst_image_path_list, const char *dirname)
 {
-  /*
-  int *number_list = (int*)malloc(sizeof(int) * LIST_BUFFER);
-  memset(number_list, 0, sizeof(int) * LIST_BUFFER);
-  */
 
   char **image_path_list = (char**)calloc(LIST_BUFFER, 1);
 
-  ssize_t dirname_length = strlen(dirname) + 1;
-  // printf("current dir name: %s\n\n", dirname);
-
-  const char slash[2] = "/\0";
+  ssize_t dirname_length = strlen(dirname);
 
   int count = 0;
   for(int i = 0; i < size; ++i) {
 
     if(count < LIST_BUFFER) {
 
-      ssize_t src_length = strlen(src[i]->d_name) + 1;
-      char *final_path = (char*)calloc(dirname_length + src_length + 2, 1);
+      const ssize_t src_length = strlen(src[i]->d_name);
+      const ssize_t final_path_size = dirname_length + src_length + 2;
+      char *final_path = (char*)calloc(final_path_size, 1);
+      ssize_t memmove_pos = 0;
       if(final_path == NULL) {
         break;
       }
 
-      strcat(final_path, dirname);
-      strcat(final_path, slash);
-      strcat(final_path, src[i]->d_name);
+      memmove(final_path, dirname, dirname_length);
+      memmove_pos += dirname_length;
+      memmove(final_path + memmove_pos, "/", 1);
+      ++memmove_pos;
+      memmove(final_path + memmove_pos, src[i]->d_name, src_length);
+      final_path[final_path_size - 1] = '\0';
 
 
       if(detect_image_from_file(final_path)) {
-        // number_list[count - 1] = i;
         ++count;
 
-        /* 
-        int *tmp = (int*)realloc(number_list, sizeof(int) * count);
-        if(tmp == NULL) {
-          free(final_path);
-          final_path = NULL;
-          free(number_list);
-          number_list = NULL;
-          return -1;
-        }
-        number_list = tmp;
-        */
-        
         ssize_t last_size = strlen(final_path) + 1;
         if(LIST_BUFFER < count) {
           char **tmp_char_list = realloc(image_path_list, count + 1);
@@ -160,18 +145,14 @@ int get_file_count_and_set_image_path_list(struct dirent **src, const int size, 
               free(final_path);
               final_path = NULL;
               free_array_with_alloced((void**)image_path_list, count);
-              /*
-              free(number_list);
-              number_list = NULL;
-              */
               return -1;
           }
           image_path_list = tmp_char_list;
         }
 
         image_path_list[count - 1] = (char*)calloc(last_size, 1);
-        strcpy(image_path_list[count - 1], final_path);
-        // printf("%d, %d, %s\n\n", i, count - 1, image_path_list[count - 1]);
+        memmove(image_path_list[count - 1], final_path, final_path_size);
+        /* strcpy(image_path_list[count - 1], final_path); */
       }
 
       free(final_path);
@@ -181,40 +162,19 @@ int get_file_count_and_set_image_path_list(struct dirent **src, const int size, 
 
   }
 
-
-  /*
-  int *tmp = (int*)realloc(dst_number_list, (sizeof(int) * count) + 1);
-  if(tmp != NULL) {
-    dst_number_list = tmp;
-    memset(dst_number_list, 0, sizeof(int) * count);
-    memcpy(dst_number_list, number_list, sizeof(int) * count);
-  } else {
-    free(tmp);
-    tmp = NULL;
-    count = 0;
-  }
-  */
-
   if(count > LIST_BUFFER) {
     char **tmp_char_list = realloc(dst_image_path_list, count + 1);
     if(tmp_char_list != NULL) {
       dst_image_path_list = tmp_char_list;
       memset(dst_image_path_list, 0, count);
-      memcpy(dst_image_path_list, image_path_list, count);
+      memmove(dst_image_path_list, image_path_list, count);
     } else {
       free_array_with_alloced((void**)image_path_list, count); 
       count = -1;
     }
   } else {
-    memcpy(dst_image_path_list, image_path_list, LIST_BUFFER);
+    memmove(dst_image_path_list, image_path_list, LIST_BUFFER);
   }
-
-  /*
-  free(number_list);
-  number_list = NULL;
-  */
-
-  // free_array_with_alloced((void**)image_path_list, count);
 
   return count;
 }
