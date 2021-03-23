@@ -21,17 +21,17 @@
 #define DEFAULT_WINDOW_WIDTH 1280
 #define DEFAULT_WINDOW_HEIGHT 960
 
-int status;
+extern int status;
 
-char *arg_file_name;
+extern char *arg_file_name;
 
-const char *right_to_left_name;
-const char *left_to_right_name;
+extern const char *right_to_left_name;
+extern const char *left_to_right_name;
 
-GtkWidget *change_direction_button;
+extern GtkWidget *change_direction_button;
 
-void *cursor_observer_in_fullscreen_mode(void *data);
-pthread_t thread_of_curosr_observer;
+extern void *cursor_observer_in_fullscreen_mode(void *data);
+extern pthread_t thread_of_curosr_observer;
 
 void show_menu();
 void hide_menu();
@@ -106,7 +106,7 @@ typedef struct
   int isAcceptOverflow;
 } Pages;
 
-Pages *pages;
+extern Pages *pages;
 
 typedef struct
 {
@@ -115,7 +115,7 @@ typedef struct
   char **image_path_list;
 } DirectoryDetail_t;
 
-DirectoryDetail_t *detail;
+extern DirectoryDetail_t *detail;
 
 typedef struct
 {
@@ -148,25 +148,25 @@ typedef struct
   guint y;
 } Cursor_Position_t;
 
-Cursor_Position_t cursor_pos;
+extern Cursor_Position_t cursor_pos;
 
-Image_button_t image_button;
+extern Image_button_t image_button;
 
-Image_Container_t **image_container_list;
+extern Image_Container_t **image_container_list;
 
-uncompress_data_set_t *uncompressed_file_list;
+extern uncompress_data_set_t *uncompressed_file_list;
 
-DrawingArea_t draw_area;
+extern DrawingArea_t draw_area;
 
-int isCompressFile;
+extern int isCompressFile;
 
-int isPDFfile;
+extern int isPDFfile;
 
-int isFirstLoad;
+extern int isFirstLoad;
 
-GtkWidget *grid;
+extern GtkWidget *grid;
 
-GtkApplication *app;
+extern GtkApplication *app;
 
 GtkWidget *create_menu_bar();
 
@@ -209,15 +209,15 @@ typedef struct
   GtkWidget *about;
 } help_menu_t;
 
-main_window_data_t window;
+extern main_window_data_t window;
 
-file_menu_t file_menu_struct;
+extern file_menu_t file_menu_struct;
 
-view_menu_t view_menu_struct;
+extern view_menu_t view_menu_struct;
 
-help_menu_t help_menu_struct;
+extern help_menu_t help_menu_struct;
 
-GtkWidget *button_menu;
+extern GtkWidget *button_menu;
 
 
 static void change_covermode()

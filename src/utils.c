@@ -6,7 +6,7 @@ const unsigned char png_sig[8] = {137, 80, 78, 71, 13, 10, 26, 10};
 const short jpg_sig_size = 2;
 const unsigned char jpg_sig[2] = {255, 216};
 
-const short zlib_sig_size = 2; 
+const short zlib_sig_size = 2;
 const unsigned char zlib_no_compression_or_low_sig[2] = {120, 1};
 const unsigned char zlib_default_compression_sig[2] = {120, 156};
 const unsigned char zlib_best_compression_sig[2] = {120, 218};

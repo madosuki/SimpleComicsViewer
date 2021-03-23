@@ -32,7 +32,7 @@ typedef struct
 
 } fz_data_t;
 
-fz_data_t *fz_data_struct;
+extern fz_data_t *fz_data_struct;
 
 typedef struct
 {
@@ -49,7 +49,7 @@ typedef struct
   int window_height;
 } set_fz_pix_t;
 
-set_fz_pix_t **result_of_thread;
+extern set_fz_pix_t **result_of_thread;
 
 typedef struct
 {
@@ -57,7 +57,7 @@ typedef struct
   ulong page_number;
 } fz_pixmap_collection_t;
 
-fz_pixmap_collection_t *fz_pixmap_collection_struct;
+extern fz_pixmap_collection_t *fz_pixmap_collection_struct;
 
 /* fz_context *ctx; */
 /* fz_document *doc; */

@@ -234,54 +234,64 @@ int create_image_path_list(char **image_path_list, const char *dirname)
     return 0;
   }
 
-  // int *number_list = (int*)calloc(sizeof(int) * LIST_BUFFER, sizeof(int));
-
+  int *number_list = (int*)calloc(sizeof(int) * LIST_BUFFER, sizeof(int));
   int count = get_file_count_and_set_image_path_list(file_list, r, image_path_list, dirname);
 
   if(count < 1) {
-
-/*
     free(number_list);
     number_list = NULL;
-    */
 
+    if(file_list != NULL) {
+      free(file_list);
+      file_list = NULL;
+    }
+    
     free_array_with_alloced((void**)file_list, r);
 
     return 0;
   }
 
-
-  /*
+  ssize_t set_count = 0;
   if(count < LIST_BUFFER) {
     size_t image_path_list_size = sizeof(char*) * count;
     char **tmp = (char**)realloc(image_path_list, image_path_list_size);
 
     if(tmp != NULL) {
       image_path_list = tmp;
-      const char slash[2] = "/\0";
 
       for(int i = 0; i < count; ++i) {
         const int target = number_list[i];
+        if(strcmp(file_list[target]->d_name, ".") != 0) {
 
-        int dirname_length = strlen(dirname) + 1;
-        const size_t target_length = strlen(file_list[target]->d_name) + 1;
+          const ssize_t dirname_length = strlen(dirname);
+          const ssize_t target_length = strlen(file_list[target]->d_name);
+          const ssize_t final_length = dirname_length + target_length + 2;
+          ssize_t memmove_pos = 0;
+        
+          char *final_path = (char*)calloc(final_length, 1);
+          if(final_path == NULL) {
+            free(final_path);
+            break;
+          }
 
-        const size_t final_length = dirname_length + target_length + 1;
-        char *final_path = (char*)calloc(final_length, 1);
-        if(final_path == NULL) {
+          memmove(final_path, dirname, dirname_length);
+          memmove_pos += dirname_length;
+          if(strcmp(dirname, "/") != 0) {
+            memmove(final_path + memmove_pos, "/", 1);
+            ++memmove_pos;
+          }
+          memmove(final_path + memmove_pos, file_list[target]->d_name, target_length);
+          final_path[final_length - 1] = '\0';
+
+          image_path_list[i] = (char*)calloc(final_length, 1);
+          memcpy(image_path_list[i], final_path, final_length);
+
           free(final_path);
-          break;
+
+          ++set_count;
+        } else {
+          image_path_list[i] = NULL;
         }
-
-        strcat(final_path, dirname);
-        strcat(final_path, slash);
-        strcat(final_path, file_list[target]->d_name);
-
-        image_path_list[i] = (char*)calloc(dirname_length + target_length + 1, 1);
-
-        strncpy(image_path_list[i], final_path, final_length);
-
-        free(final_path);
       }
     } else {
       free(number_list);
@@ -292,14 +302,15 @@ int create_image_path_list(char **image_path_list, const char *dirname)
       return -1;
     }
   }
-  */
 
-/*
+
   free(number_list);
   number_list = NULL;
-  */
 
   free_array_with_alloced((void**)file_list, r);
+
+  if(set_count == 0)
+    count = 0;
 
   return count;
 }
@@ -1440,12 +1451,6 @@ void hide_mouse()
   GdkDisplay *display = gdk_display_get_default();
   GdkWindow *gdk_window = gtk_widget_get_window(window.window);
   GdkCursor *cursor;
-
-  /* if(window.isFullScreen) { */
-  /*   cursor = gdk_cursor_new_from_name(display, "default"); */
-  /* } else { */
-  /*   cursor = gdk_cursor_new_for_display(display, GDK_BLANK_CURSOR); */
-  /* } */
 
   cursor = gdk_cursor_new_for_display(display, GDK_BLANK_CURSOR);
   
