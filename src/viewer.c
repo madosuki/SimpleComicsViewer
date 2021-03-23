@@ -118,63 +118,39 @@ int get_file_count_and_set_image_path_list(struct dirent **src, const int size, 
   for(int i = 0; i < size; ++i) {
 
     if(count < LIST_BUFFER) {
-
-      const ssize_t src_length = strlen(src[i]->d_name);
-      const ssize_t final_path_size = dirname_length + src_length + 2;
-      char *final_path = (char*)calloc(final_path_size, 1);
-      ssize_t memmove_pos = 0;
-      if(final_path == NULL) {
-        break;
-      }
-
-      memmove(final_path, dirname, dirname_length);
-      memmove_pos += dirname_length;
-      memmove(final_path + memmove_pos, "/", 1);
-      ++memmove_pos;
-      memmove(final_path + memmove_pos, src[i]->d_name, src_length);
-      final_path[final_path_size - 1] = '\0';
-
-
-      if(detect_image_from_file(final_path)) {
-        ++count;
-
-        ssize_t last_size = strlen(final_path) + 1;
-        if(LIST_BUFFER < count) {
-          char **tmp_char_list = realloc(image_path_list, count + 1);
-          if(tmp_char_list == NULL) {
-              free(final_path);
-              final_path = NULL;
-              free_array_with_alloced((void**)image_path_list, count);
-              return -1;
-          }
-          image_path_list = tmp_char_list;
+      if(strcmp(src[i]->d_name, ".") != 0 && strcmp(src[i]->d_name, "..") != 0) {
+        const ssize_t src_length = strlen(src[i]->d_name);
+        const ssize_t final_path_size = dirname_length + src_length + 2;
+        char *final_path = (char*)calloc(final_path_size, 1);
+        ssize_t memmove_pos = 0;
+        if(final_path == NULL) {
+          puts("failed allocate final_path");
+          break;
         }
 
-        image_path_list[count - 1] = (char*)calloc(last_size, 1);
-        memmove(image_path_list[count - 1], final_path, final_path_size);
-        /* strcpy(image_path_list[count - 1], final_path); */
+        memmove(final_path, dirname, dirname_length);
+        memmove_pos += dirname_length;
+        memmove(final_path + memmove_pos, "/", 1);
+        ++memmove_pos;
+        memmove(final_path + memmove_pos, src[i]->d_name, src_length);
+        final_path[final_path_size - 1] = '\0';
+
+        int check = detect_image_from_file(final_path);
+        if(check == UTILS_JPG || check == UTILS_PNG) {
+          ++count;
+
+          image_path_list[count - 1] = (char*)calloc(final_path_size, 1);
+          memmove(image_path_list[count - 1], final_path, final_path_size);
+        }
+
+        free(final_path);
+        final_path = NULL;
       }
-
-      free(final_path);
-      final_path = NULL;
-
     }
 
   }
 
-  if(count > LIST_BUFFER) {
-    char **tmp_char_list = realloc(dst_image_path_list, count + 1);
-    if(tmp_char_list != NULL) {
-      dst_image_path_list = tmp_char_list;
-      memset(dst_image_path_list, 0, count);
-      memmove(dst_image_path_list, image_path_list, count);
-    } else {
-      free_array_with_alloced((void**)image_path_list, count); 
-      count = -1;
-    }
-  } else {
-    memmove(dst_image_path_list, image_path_list, LIST_BUFFER);
-  }
+  memmove(dst_image_path_list, image_path_list, LIST_BUFFER);
 
   return count;
 }
@@ -211,66 +187,11 @@ int create_image_path_list(char **image_path_list, const char *dirname)
     return 0;
   }
 
-  ssize_t set_count = 0;
-  if(count < LIST_BUFFER) {
-    size_t image_path_list_size = sizeof(char*) * count;
-    char **tmp = (char**)realloc(image_path_list, image_path_list_size);
-
-    if(tmp != NULL) {
-      image_path_list = tmp;
-
-      for(int i = 0; i < count; ++i) {
-        const int target = number_list[i];
-        if(strcmp(file_list[target]->d_name, ".") != 0) {
-
-          const ssize_t dirname_length = strlen(dirname);
-          const ssize_t target_length = strlen(file_list[target]->d_name);
-          const ssize_t final_length = dirname_length + target_length + 2;
-          ssize_t memmove_pos = 0;
-        
-          char *final_path = (char*)calloc(final_length, 1);
-          if(final_path == NULL) {
-            free(final_path);
-            break;
-          }
-
-          memmove(final_path, dirname, dirname_length);
-          memmove_pos += dirname_length;
-          if(strcmp(dirname, "/") != 0) {
-            memmove(final_path + memmove_pos, "/", 1);
-            ++memmove_pos;
-          }
-          memmove(final_path + memmove_pos, file_list[target]->d_name, target_length);
-          final_path[final_length - 1] = '\0';
-
-          image_path_list[i] = (char*)calloc(final_length, 1);
-          memcpy(image_path_list[i], final_path, final_length);
-
-          free(final_path);
-
-          ++set_count;
-        } else {
-          image_path_list[i] = NULL;
-        }
-      }
-    } else {
-      free(number_list);
-      number_list = NULL;
-
-      free_array_with_alloced((void**)file_list, r);
-
-      return -1;
-    }
-  }
-
-
   free(number_list);
   number_list = NULL;
 
   free_array_with_alloced((void**)file_list, r);
 
-  if(set_count == 0)
-    count = 0;
 
   return count;
 }
@@ -303,6 +224,12 @@ int set_image_path_list(const char *dirname)
     detail->image_path_list = NULL;
 
     return FALSE;
+  }
+
+  if(count == 1) {
+    pages->isSingle = TRUE;
+  } else {
+    pages->isSingle = FALSE;
   }
 
   detail->image_count = count;
@@ -350,6 +277,8 @@ void next_image(int isForward)
     set_image_container(pages->current_page);
 
     gtk_image_clear((GtkImage*)pages->left);
+
+    resize_when_single(pages->current_page);
 
     gtk_image_set_from_pixbuf((GtkImage*)pages->left, image_container_list[pages->current_page]->dst);    
 
@@ -539,6 +468,7 @@ void close_variables()
 
 void set_image_container(ulong position)
 {
+
   if(image_container_list[position] == NULL) {
     image_container_list[position] = malloc(sizeof(Image_Container_t));
     memset(image_container_list[position], 0, sizeof(Image_Container_t));
@@ -549,6 +479,14 @@ void set_image_container(ulong position)
 
       if(detail->image_path_list[position] != NULL) {
         image_container_list[position]->src = gdk_pixbuf_new_from_file(detail->image_path_list[position], &image_container_list[position]->err);
+        
+        image_container_list[position]->src_width = gdk_pixbuf_get_width(image_container_list[position]->src);
+        image_container_list[position]->src_height = gdk_pixbuf_get_height(image_container_list[position]->src);
+        int width = image_container_list[position]->src_width;
+        int height = image_container_list[position]->src_height;
+
+        image_container_list[position]->aspect_raito = calc_aspect_raito(width, height, mygcd(width, height));
+
       }
 
     } else if(isPDFfile && !isCompressFile) {
@@ -565,7 +503,6 @@ void set_image_container(ulong position)
                                                            NULL, NULL);
 
       image_container_list[position]->src = tmp_gdk_pixbuf;
-
 
 
     } else {
@@ -605,10 +542,10 @@ void set_image_container(ulong position)
 
   }
 
-  if(pages->isSingle)
-  {
-    resize_when_single(position);
-  }
+  /* if(pages->isSingle) */
+  /* { */
+  /*   resize_when_single(position); */
+  /* } */
 }
 
 int resize_when_single(int position)
@@ -641,7 +578,6 @@ int resize_when_single(int position)
     width = result;
   }
 
-
   
   image_container_list[position]->dst = gdk_pixbuf_scale_simple(image_container_list[position]->src, width, height, GDK_INTERP_BILINEAR);
   image_container_list[position]->dst_width = width;
@@ -667,7 +603,6 @@ gboolean detect_resize_window(GtkWidget *widget, GdkEvent *event, gpointer data)
         gtk_image_clear((GtkImage*)pages->left);
 
         gtk_image_set_from_pixbuf((GtkImage*)pages->left, image_container_list[pages->current_page]->dst);
-
 
       } else {
         if(detail->isOdd || (pages->isPriorityToFrontCover && pages->isCover) || (!pages->isPriorityToFrontCover && detail->image_count == pages->current_page - 1))  {
@@ -824,9 +759,9 @@ void set_margin_left_page(int position, int isOverHeight, int isFinalPage)
 int init_image_object(const char *file_name, int startpage)
 {
   pages->current_page = 0;
-  // set image file path
+
   if(!isFirstLoad) {
-    free_array_with_alloced((void**)detail->image_path_list, detail->image_count);    
+    free_array_with_alloced((void**)detail->image_path_list, detail->image_count);
     detail->image_path_list = NULL;
 
     free_uncompress_data_set(uncompressed_file_list);
@@ -846,10 +781,7 @@ int init_image_object(const char *file_name, int startpage)
     if(pages->right != NULL) {
       gtk_image_clear(GTK_IMAGE(pages->right));
     }
-
-
   }
-
 
   if(isCompressFile) {
 
@@ -871,7 +803,6 @@ int init_image_object(const char *file_name, int startpage)
   }
 
 
-
   if(detail->image_count > 0) {
     image_container_list = (Image_Container_t**)calloc(detail->image_count, sizeof(Image_Container_t*));
 
@@ -886,13 +817,11 @@ int init_image_object(const char *file_name, int startpage)
       resize_when_single(0);
 
       set_image(&pages->left, 0);
-
     } else {
       set_image_container(0);
       set_image_container(1);
-      
-      resize_when_spread(1);
 
+      resize_when_spread(1);
 
       if(pages->page_direction_right) {
           set_image(&pages->right, 0);
@@ -911,7 +840,11 @@ int init_image_object(const char *file_name, int startpage)
 
     }
 
-    update_page(FALSE);
+    if(pages->isSingle) {
+      update_page(TRUE);
+    } else {
+      update_page(FALSE);
+    }
 
     return TRUE;
   }
@@ -946,7 +879,6 @@ void fullscreen()
 
     
   }
-
 }
 
 void update_page(int isSingleChange)
@@ -956,17 +888,14 @@ void update_page(int isSingleChange)
     if(isSingleChange) {
 
       if(pages->isSingle) {
-
         if(detail->isOdd && pages->current_page == (detail->image_count - 1)) {
-
-          gtk_image_clear(GTK_IMAGE(pages->right));
-
+          if(pages->right != NULL)
+            gtk_image_clear(GTK_IMAGE(pages->right));
         } else {
-
+          
           if(pages->left != NULL) {
             gtk_image_clear(GTK_IMAGE(pages->left));
           }
-
           if(pages->right != NULL) {
             gtk_image_clear(GTK_IMAGE(pages->right));
           }
@@ -1101,9 +1030,10 @@ void update_page(int isSingleChange)
 void update_grid()
 {
   if(pages->isSingle) {
-    if(!isFirstLoad) {
-      gtk_grid_remove_column(GTK_GRID(grid), 0);
-    }
+    // cause by crash, stll sruvery.
+    /* if(!isFirstLoad) { */
+    /*   gtk_grid_remove_column(GTK_GRID(grid), 0); */
+    /* } */
 
     gtk_widget_set_vexpand(pages->left, TRUE);
     gtk_widget_set_hexpand(pages->left, TRUE);
