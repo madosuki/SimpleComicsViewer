@@ -191,7 +191,9 @@ int set_image_path_list(const char *dirname)
     comic_container->detail = (DirectoryDetail_t*)malloc(sizeof(DirectoryDetail_t));
 
     if(comic_container->detail != NULL) {
-      memset(comic_container->detail, 0, sizeof(DirectoryDetail_t));
+      comic_container->detail->image_count = 0;
+      comic_container->detail->image_path_list = NULL;
+      comic_container->detail->isOdd = 0;
     } else {
       return FALSE;
     }

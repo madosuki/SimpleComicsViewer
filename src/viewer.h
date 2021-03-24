@@ -465,9 +465,13 @@ static void activate(GtkApplication* app, gpointer user_data)
   /* g_signal_connect(G_OBJECT(window.window), "touch-event", G_CALLBACK(my_detect_touch_function), NULL); */
 
   comic_container = malloc(sizeof(comic_container_t));
-  memset(comic_container, 0, sizeof(comic_container_t));
-  
+  comic_container->image_container_list = NULL;
+  comic_container->uncompressed_file_list = NULL;
+  comic_container->detail = NULL;
+  comic_container->pages = NULL;
+  comic_container->isPDFfile = FALSE;
   comic_container->isFirstLoad = TRUE;
+  comic_container->isCompressFile = TRUE;
 
   cursor_pos.x = 0;
   cursor_pos.y = 0;
@@ -571,17 +575,11 @@ static void activate(GtkApplication* app, gpointer user_data)
 
   // init pages struct
   comic_container->pages = (Pages*)malloc(sizeof(Pages));
-  memset(comic_container->pages, 0, sizeof(Pages));
-
   comic_container->pages->page_direction_right = TRUE;
   comic_container->pages->isSingle = FALSE;
   comic_container->pages->isFinalPage = FALSE;
   comic_container->pages->isAcceptOverflow = FALSE;
   comic_container->pages-> current_page = -1;
-
-  comic_container->isCompressFile = TRUE;
-
-  comic_container->isPDFfile = FALSE;
 
   gtk_widget_show_all(window.window);
 
