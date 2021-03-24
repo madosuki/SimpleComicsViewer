@@ -104,8 +104,6 @@ typedef struct
   int isAcceptOverflow;
 } Pages;
 
-extern Pages *pages;
-
 typedef struct
 {
   int isOdd;
@@ -113,7 +111,6 @@ typedef struct
   char **image_path_list;
 } DirectoryDetail_t;
 
-extern DirectoryDetail_t *detail;
 
 typedef struct
 {
@@ -126,6 +123,7 @@ typedef struct
   int dst_height;
   double *aspect_raito;
 } Image_Container_t;
+
 
 typedef struct
 {
@@ -146,21 +144,26 @@ typedef struct
   guint y;
 } Cursor_Position_t;
 
+typedef struct
+{
+  Pages *pages; // pages settings.
+  DirectoryDetail_t *detail; // a directory and file and there's count info.
+  Image_Container_t **image_container_list;
+  uncompress_data_set_t *uncompressed_file_list;
+  
+  int isCompressFile;
+  int isPDFfile;
+  int isFirstLoad;
+} comic_container_t;
+extern comic_container_t *comic_container;
+
+
 extern Cursor_Position_t cursor_pos;
 
 extern Image_button_t image_button;
 
-extern Image_Container_t **image_container_list;
-
-extern uncompress_data_set_t *uncompressed_file_list;
-
 extern DrawingArea_t draw_area;
 
-extern int isCompressFile;
-
-extern int isPDFfile;
-
-extern int isFirstLoad;
 
 extern GtkWidget *grid;
 
@@ -219,8 +222,8 @@ extern GtkWidget *button_menu;
 
 static void change_spread_to_single()
 {
-  if(pages != NULL && !pages->isSingle) {
-    pages->isSingle = TRUE;
+  if(comic_container->pages != NULL && !comic_container->pages->isSingle) {
+    comic_container->pages->isSingle = TRUE;
 
     update_page(TRUE);
   }
@@ -228,8 +231,8 @@ static void change_spread_to_single()
 
 static void change_single_to_spread()
 {
-  if(pages != NULL && pages->isSingle) {
-    pages->isSingle = FALSE;
+  if(comic_container->pages != NULL && comic_container->pages->isSingle) {
+    comic_container->pages->isSingle = FALSE;
 
     update_page(TRUE);
   }
@@ -238,15 +241,15 @@ static void change_single_to_spread()
 
 static void change_direction()
 {
-  if(pages->page_direction_right) {
-    pages->page_direction_right = FALSE;
+  if(comic_container->pages->page_direction_right) {
+    comic_container->pages->page_direction_right = FALSE;
     gtk_button_set_label(GTK_BUTTON(change_direction_button), left_to_right_name);
   } else {
-    pages->page_direction_right = TRUE;
+    comic_container->pages->page_direction_right = TRUE;
     gtk_button_set_label(GTK_BUTTON(change_direction_button), right_to_left_name);
   }
 
-  if(pages->left != NULL) {
+  if(comic_container->pages->left != NULL) {
     update_page(FALSE);
   }
   
@@ -262,19 +265,19 @@ static int open_file(const char *file_name)
     tmp = get_directory_path_from_filename(file_name);
     if(tmp != NULL) {
       is_dir = TRUE;
-      isCompressFile = FALSE;
-      isPDFfile = FALSE;
+      comic_container->isCompressFile = FALSE;
+      comic_container->isPDFfile = FALSE;
     }
   } else {
     if(test_open_pdf(file_name)) {
       is_dir = FALSE; 
-      isPDFfile = TRUE;
-      isCompressFile = FALSE;
+      comic_container->isPDFfile = TRUE;
+      comic_container->isCompressFile = FALSE;
     } else {
       if(detect_compress_file(file_name)) {
         is_dir = FALSE;
-        isPDFfile = FALSE;
-        isCompressFile = TRUE;
+        comic_container->isPDFfile = FALSE;
+        comic_container->isCompressFile = TRUE;
       }
     }
 
@@ -382,20 +385,20 @@ static gboolean my_detect_motion_notify(GtkWidget *widget, GdkEventMotion *event
 static gboolean my_detect_wheel_event(GtkWidget *widget, GdkEvent *event, gpointer user_data)
 {
 
-  if(pages != NULL) {
+  if(comic_container->pages != NULL) {
 
     GdkScrollDirection direction;
     gboolean result = gdk_event_get_scroll_direction(event, &direction);
 
 
     if(direction == GDK_SCROLL_UP) {
-      if(pages->page_direction_right) {
+      if(comic_container->pages->page_direction_right) {
         move_right();
       } else {
         move_left();
       }
     } else if(direction == GDK_SCROLL_DOWN) {
-      if(pages->page_direction_right) {
+      if(comic_container->pages->page_direction_right) {
         move_left();
       } else {
         move_right();
@@ -434,6 +437,7 @@ static gint run_cmd_argument(GApplication *app, GApplicationCommandLine *app_cmd
 
 static void activate(GtkApplication* app, gpointer user_data)
 {
+  
   // Window settings
   window.window = gtk_application_window_new(app);
   window.width = DEFAULT_WINDOW_WIDTH;
@@ -460,8 +464,10 @@ static void activate(GtkApplication* app, gpointer user_data)
   /* gtk_widget_add_events(window.window, GDK_TOUCH_MASK); */
   /* g_signal_connect(G_OBJECT(window.window), "touch-event", G_CALLBACK(my_detect_touch_function), NULL); */
 
-
-  isFirstLoad = TRUE;
+  comic_container = malloc(sizeof(comic_container_t));
+  memset(comic_container, 0, sizeof(comic_container_t));
+  
+  comic_container->isFirstLoad = TRUE;
 
   cursor_pos.x = 0;
   cursor_pos.y = 0;
@@ -564,18 +570,18 @@ static void activate(GtkApplication* app, gpointer user_data)
   
 
   // init pages struct
-  pages = (Pages*)malloc(sizeof(Pages));
-  memset(pages, 0, sizeof(Pages));
+  comic_container->pages = (Pages*)malloc(sizeof(Pages));
+  memset(comic_container->pages, 0, sizeof(Pages));
 
-  pages->page_direction_right = TRUE;
-  pages->isSingle = FALSE;
-  pages->isFinalPage = FALSE;
-  pages->isAcceptOverflow = FALSE;
-  pages-> current_page = -1;
+  comic_container->pages->page_direction_right = TRUE;
+  comic_container->pages->isSingle = FALSE;
+  comic_container->pages->isFinalPage = FALSE;
+  comic_container->pages->isAcceptOverflow = FALSE;
+  comic_container->pages-> current_page = -1;
 
-  isCompressFile = TRUE;
+  comic_container->isCompressFile = TRUE;
 
-  isPDFfile = FALSE;
+  comic_container->isPDFfile = FALSE;
 
   gtk_widget_show_all(window.window);
 
