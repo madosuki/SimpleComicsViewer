@@ -62,7 +62,7 @@ void set_image(GtkWidget **img, int position);
 
 int resize_when_single(int position);
 
-int init_image_object();
+int init_image_object(const char *file_name, uint startpage);
 
 void next_image(int isForward);
 
@@ -101,8 +101,6 @@ typedef struct
   int page_direction_right;
   int current_page;
   int isFinalPage;
-  int isPriorityToFrontCover;
-  int isCover;
   int isAcceptOverflow;
 } Pages;
 
@@ -199,7 +197,6 @@ typedef struct
   GtkWidget *page_direction;
   GtkWidget *set_single_mode;
   GtkWidget *set_spread_mode;
-  GtkWidget *set_covermode;
 } view_menu_t;
 
 typedef struct
@@ -219,44 +216,6 @@ extern help_menu_t help_menu_struct;
 
 extern GtkWidget *button_menu;
 
-
-static void change_covermode()
-{
-  if(pages->isPriorityToFrontCover) {
-    pages->isPriorityToFrontCover = FALSE;
-    pages->isCover = FALSE;
-  } else {
-    pages->isPriorityToFrontCover = TRUE;
-    pages->isCover = FALSE;
-  }
-  
-  if(pages != NULL) {
-    if(pages->isPriorityToFrontCover) {
-  
-      if(pages->current_page != 0 && pages->current_page % 2 == 0) {
-        pages->current_page++;
-      }
-
-      if(pages->current_page == 0) {
-        pages->current_page = 1;
-      }
-
-      update_page(FALSE);
-
-    } else {
-  
-      if(pages->current_page > 0 && pages->current_page % 2 == 0) {
-        pages->current_page--;
-      }
-
-      if(pages->current_page == 0) {
-        pages->isCover = TRUE;
-      } 
-
-      update_page(FALSE);
-    }
-  }
-}
 
 static void change_spread_to_single()
 {
@@ -297,36 +256,6 @@ static int open_file(const char *file_name)
 {
   char* tmp;
   int is_dir = FALSE;
-
-  /*
-    int check_compress_file = detect_compress_file(file_name);
-    if(check_compress_file) {
-    isCompressFile = TRUE;
-    } else {
-    int check = detect_image_from_file(file_name);
-
-    if(check) {
-      
-    tmp = get_directory_path_from_filename(file_name);
-    if(tmp != NULL) {
-    is_dir = TRUE;
-    }
-      
-    } else {
-
-    if(test_open_pdf(file_name)) {
-    isPDFfile = TRUE;
-    } else {
-    return FALSE;
-    }
-
-    }
-
-    isCompressFile = FALSE;
-
-    // printf("%s\n", file_name);
-    }
-  */
 
   int check = detect_image_from_file(file_name);
   if(check) {
@@ -641,8 +570,6 @@ static void activate(GtkApplication* app, gpointer user_data)
   pages->page_direction_right = TRUE;
   pages->isSingle = FALSE;
   pages->isFinalPage = FALSE;
-  pages->isCover = FALSE;
-  pages->isPriorityToFrontCover = FALSE;
   pages->isAcceptOverflow = FALSE;
   pages-> current_page = -1;
 

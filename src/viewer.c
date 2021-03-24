@@ -335,10 +335,6 @@ gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer d
     return TRUE;
   }
 
-  if(keyval == GDK_KEY_c) {
-    change_covermode();
-    return TRUE;
-  }
 
   if ((keyval == GDK_KEY_Escape || (keyval == GDK_KEY_Return && isAlt))
       && window.isFullScreen) {
@@ -605,7 +601,7 @@ gboolean detect_resize_window(GtkWidget *widget, GdkEvent *event, gpointer data)
         gtk_image_set_from_pixbuf((GtkImage*)pages->left, image_container_list[pages->current_page]->dst);
 
       } else {
-        if(detail->isOdd || (pages->isPriorityToFrontCover && pages->isCover) || (!pages->isPriorityToFrontCover && detail->image_count == pages->current_page - 1))  {
+        if(detail->isOdd)  {
 
           unref_dst();
 
@@ -678,9 +674,6 @@ void scale_when_oversize(int *x, int *y, int window_width, int window_height, do
 
 int resize_when_spread(int page)
 {
-  if(pages->isPriorityToFrontCover && page == 0) {
-    return resize_when_single(page);
-  }
   
   int left_src_width = image_container_list[page - 1]->src_width;
   int left_src_height = image_container_list[page - 1]->src_height;
@@ -756,9 +749,18 @@ void set_margin_left_page(int position, int isOverHeight, int isFinalPage)
 
 }
 
-int init_image_object(const char *file_name, int startpage)
+int init_image_object(const char *file_name, uint startpage)
 {
-  pages->current_page = 0;
+
+  pages->current_page = startpage;
+  if(!isFirstLoad && pages->current_page >= detail->image_count)
+    pages->current_page -= 1;
+  
+  if(pages->current_page % 2 && !pages->isSingle)
+    pages->current_page -= 1;
+
+  if(pages->current_page < 0)
+    pages->current_page = 0;
 
   if(!isFirstLoad) {
     free_array_with_alloced((void**)detail->image_path_list, detail->image_count);
@@ -802,7 +804,6 @@ int init_image_object(const char *file_name, int startpage)
     }
   }
 
-
   if(detail->image_count > 0) {
     image_container_list = (Image_Container_t**)calloc(detail->image_count, sizeof(Image_Container_t*));
 
@@ -812,33 +813,46 @@ int init_image_object(const char *file_name, int startpage)
         pages->isSingle = TRUE;
       }
 
-      set_image_container(0);
+      set_image_container(pages->current_page);
 
-      resize_when_single(0);
+      resize_when_single(pages->current_page);
 
-      set_image(&pages->left, 0);
+      set_image(&pages->left, pages->current_page);
+
     } else {
-      set_image_container(0);
-      set_image_container(1);
 
-      resize_when_spread(1);
-
-      if(pages->page_direction_right) {
-          set_image(&pages->right, 0);
-          set_image(&pages->left, 1);
-
+      if(!detail->isOdd) {
+        set_image_container(pages->current_page);
+        set_image_container(pages->current_page + 1);
+        resize_when_spread(pages->current_page + 1);
       } else {
-          set_image(&pages->left, 0);
-          set_image(&pages->right, 1);
+        set_image_container(pages->current_page);
+        resize_when_spread(pages->current_page);
+      }
+    }
+
+    if(!pages->isSingle) {
+
+      if(!detail->isOdd) {
+          if(pages->page_direction_right) {
+            set_image(&pages->right, pages->current_page);
+            set_image(&pages->left, pages->current_page + 1);
+          } else {
+            set_image(&pages->left, pages->current_page);
+            set_image(&pages->right, pages->current_page + 1);
+          }
+          pages->current_page = pages->current_page + 1;
+      } else {
+        if(pages->page_direction_right) {
+          set_image(&pages->right, pages->current_page);
+        } else {
+          set_image(&pages->left, pages->current_page);
+        }
       }
 
-      pages->current_page = 1;
-
-      if(pages->isPriorityToFrontCover) {
-        pages->current_page = 0;
-      }
 
     }
+
 
     if(pages->isSingle) {
       update_page(TRUE);
@@ -881,6 +895,7 @@ void fullscreen()
   }
 }
 
+// isSingleChange is mode change of spread to single or spread to single.
 void update_page(int isSingleChange)
 {
   if(!isFirstLoad) {
@@ -955,30 +970,12 @@ void update_page(int isSingleChange)
         gtk_image_clear(GTK_IMAGE(pages->left));
       }
 
-      if(pages->isPriorityToFrontCover) {
-        if(pages->isCover && pages->current_page > 0) {
-          if(pages->page_direction_right) {
-            gtk_widget_show(pages->left);
-          } else {
-            gtk_widget_show(pages->right);
-          }
-          pages->isCover = FALSE;
 
-        } else if(pages->current_page == 0){
-          pages->isCover = TRUE;
-        }
-
-      }
-
-
-      if(detail->isOdd && ((pages->isPriorityToFrontCover && pages->isCover) || (!pages->isPriorityToFrontCover && pages->current_page == detail->image_count - 1)) ) {
+      if(detail->isOdd) {
         unref_dst();
 
         int isOverHeight;
-        if(!pages->isCover)
-          isOverHeight = resize_when_spread(pages->current_page);
-        else
-          isOverHeight = resize_when_single(pages->current_page);
+        isOverHeight = resize_when_spread(pages->current_page);
 
         if(pages->page_direction_right) {
 
@@ -994,33 +991,23 @@ void update_page(int isSingleChange)
         unref_dst();
 
         int isOverHeight = FALSE;
-        if(pages->isCover) {
-          resize_when_single(0);
-        } else {
-          isOverHeight = resize_when_spread(pages->current_page);
-        }
+        isOverHeight = resize_when_spread(pages->current_page);
+
 
         if(pages->page_direction_right) {
 
-          if(!pages->isCover) {
-            gtk_image_set_from_pixbuf(GTK_IMAGE(pages->right), image_container_list[pages->current_page - 1]->dst);
-          }
-
+          gtk_image_set_from_pixbuf(GTK_IMAGE(pages->right), image_container_list[pages->current_page - 1]->dst);
           gtk_image_set_from_pixbuf(GTK_IMAGE(pages->left), image_container_list[pages->current_page]->dst);
 
         } else {
 
-          if(!pages->isCover) {
-            gtk_image_set_from_pixbuf(GTK_IMAGE(pages->left), image_container_list[pages->current_page - 1]->dst);
-          }
+          gtk_image_set_from_pixbuf(GTK_IMAGE(pages->left), image_container_list[pages->current_page - 1]->dst);
 
           gtk_image_set_from_pixbuf(GTK_IMAGE(pages->right), image_container_list[pages->current_page]->dst);
         }
 
 
-        if(!pages->isCover) {
-          set_margin_left_page(pages->current_page, isOverHeight, FALSE);
-        }
+        set_margin_left_page(pages->current_page, isOverHeight, FALSE);
       }
 
     }
@@ -1059,12 +1046,6 @@ void update_grid()
 
     gtk_widget_show(pages->left);
     gtk_widget_show(pages->right);
-
-    if(pages->isPriorityToFrontCover && pages->current_page == 0) {
-      gtk_widget_hide(pages->left);
-    }
-
-
 
   }
 
@@ -1112,10 +1093,6 @@ GtkWidget *create_menu_bar()
   gtk_menu_shell_append(GTK_MENU_SHELL(view_menu_struct.body), view_menu_struct.set_spread_mode);
   g_signal_connect(G_OBJECT(view_menu_struct.set_spread_mode), "activate", G_CALLBACK(change_single_to_spread), NULL);
 
-  view_menu_struct.set_covermode = gtk_menu_item_new_with_label("Set Cover Mode");
-  gtk_menu_shell_append(GTK_MENU_SHELL(view_menu_struct.body), view_menu_struct.set_covermode);
-  g_signal_connect(G_OBJECT(view_menu_struct.set_covermode), "activate", G_CALLBACK(change_covermode), NULL);
-
   // Help Menu
   help_menu_struct.body = gtk_menu_new();
   help_menu_struct.root = gtk_menu_item_new_with_label("Help");
@@ -1131,7 +1108,7 @@ GtkWidget *create_menu_bar()
 
 void move_left()
 {
-  if (pages->current_page > -1) {
+ if (pages->current_page > -1) {
 
     if(pages->isSingle) {
       int tmp = pages->current_page + 1;
@@ -1160,9 +1137,6 @@ void move_left()
       if(pages->isAcceptOverflow && pages->current_page >= detail->image_count) {
         pages->current_page = 1;
 
-        if(pages->isPriorityToFrontCover) {
-          pages->current_page = 0;
-        }
       }
 
     } else {
@@ -1179,11 +1153,7 @@ void move_left()
 
     }
 
-    if(pages->isPriorityToFrontCover && pages->current_page == 0) {
-      pages->isCover = TRUE;
-    }
-
-    if(!pages->isSingle && !pages->isPriorityToFrontCover && pages->current_page != 0 && pages->current_page % 2 == 0) {
+    if(!pages->isSingle && pages->current_page != 0 && pages->current_page % 2 == 0) {
       pages->current_page++;
     }
 
@@ -1259,24 +1229,13 @@ void move_right()
         pages->current_page = 0;
 
       } else {
-
-        if(pages->isPriorityToFrontCover) {
-
-          pages->current_page = 0;
-          pages->isCover = TRUE;
-
-        } else {
-
-          pages->current_page = 1;
-        }
+        
+        pages->current_page = 1;
+        
       }
     }
 
-    if(pages->isPriorityToFrontCover && pages->current_page == 0) {
-      pages->isCover = TRUE;
-    }
-
-    if(!pages->isSingle && pages->current_page != 0 && !pages->isPriorityToFrontCover && pages->current_page % 2 == 0 && pages->current_page != detail->image_count - 1) {
+    if(!pages->isSingle && pages->current_page != 0 && pages->current_page % 2 == 0 && pages->current_page != detail->image_count - 1) {
       pages->current_page++;
     }
 
