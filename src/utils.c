@@ -4,7 +4,7 @@ const short png_sig_size = 8;
 const unsigned char png_sig[8] = {137, 80, 78, 71, 13, 10, 26, 10};
 
 const short jpg_sig_size = 2;
-const unsigned char jpg_sig[2] = {255, 216};
+const unsigned char jpg_sig[2] = {0xFF, 0xD8};
 
 const short zlib_sig_size = 2;
 const unsigned char zlib_no_compression_or_low_sig[2] = {120, 1};
@@ -90,39 +90,34 @@ int detect_image_from_file(const char *file_name)
 {
   FILE *fp;
 
-  int fd = open(file_name, O_RDONLY);
-  if(fd < 0) {
-    printf("File Destructor Open Error\n");
-    return 0;
-  }
-
-  fp = fdopen(fd, "rb");
-  if (fp == NULL) {
-    printf("fdopen Error\n");
-    close(fd);
+  fp = fopen(file_name, "rb");
+  if(fp == NULL) {
+    printf("fopen error in detect_image_from_file\n");
     return 0;
   }
 
   struct stat stbuf;
-  fstat(fd, &stbuf);
-
-  long file_size = stbuf.st_size;
-  if(file_size < 4) {
+  if(fstat(fileno(fp), &stbuf) != 0) {
+    printf("fstat error in detect_image_from_file=n");
     fclose(fp);
-    close(fd);
     return 0;
   }
 
+  if(stbuf.st_size < 4) {
+    printf("this file size is too small in detect_image_from_file\n");
+    fclose(fp);
+    return 0;
+  }
+  
   uint16_t sig;
   fseek(fp, 0L, SEEK_SET);
   int read_count = fread(&sig, 1, 2, fp);
 
   if(sig == *(uint16_t*)&jpg_sig) {
-
+    printf("detect jpg: %s, sig: %x\n", file_name, sig);
+    
     fclose(fp);
-
-    close(fd);
-
+    
     return 1;
 
   } else {
@@ -131,18 +126,15 @@ int detect_image_from_file(const char *file_name)
     fseek(fp, 0L, SEEK_SET);
     read_count = fread(&tmp_sig, 1, 8, fp);
     if(tmp_sig == *(uint64_t*)&png_sig) {
+      printf("detect png: %s, sig: %x\n", file_name, sig);
 
       fclose(fp);
-
-      close(fd);
 
       return 1;
     }
   }
 
   fclose(fp);
-
-  close(fd);
 
   return 0;
 }

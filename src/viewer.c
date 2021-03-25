@@ -125,7 +125,7 @@ int get_file_count_and_set_image_path_list(struct dirent **src, const int size, 
         final_path[final_path_size - 1] = '\0';
 
         int check = detect_image_from_file(final_path);
-        if(check == UTILS_JPG || check == UTILS_PNG) {
+        if(check) {
           ++count;
 
           image_path_list[count - 1] = (char*)calloc(final_path_size, 1);
