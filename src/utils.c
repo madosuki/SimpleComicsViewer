@@ -103,6 +103,11 @@ int detect_image_from_file(const char *file_name)
     return 0;
   }
 
+  if(!S_ISREG(stbuf.st_mode)) {
+    fclose(fp);
+    return 0;
+  }
+
   if(stbuf.st_size < 4) {
     printf("this file size is too small in detect_image_from_file\n");
     fclose(fp);
