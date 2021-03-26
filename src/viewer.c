@@ -805,6 +805,8 @@ int resize_when_spread(int page)
 void set_margin_left_page(int position, int isOverHeight, int isFinalPage)
 {
   // this function can call only when spread mode.
+  /* int left_pos = 0; */
+  /* int right_pos = 0; */
   if(isOverHeight) {
     int mix_width = 0;
 
@@ -895,7 +897,7 @@ int init_image_object(const char *file_name, uint startpage)
       }
 
       set_image_container(comic_container->pages->current_page);
-      resize_when_single(comic_container->pages->current_page);
+      is_over_height = resize_when_single(comic_container->pages->current_page);
       set_image(&comic_container->pages->left, comic_container->pages->current_page);
 
     } else {
@@ -933,7 +935,7 @@ int init_image_object(const char *file_name, uint startpage)
       } else {
         set_image_container(comic_container->pages->current_page);
         
-        if(!(check_valid_cover_mode() && comic_container->pages->current_page == 0)) {
+        if(!(check_valid_cover_mode()) ) {
           set_image_container(comic_container->pages->current_page + 1);
           resize_when_spread(comic_container->pages->current_page + 1);
         } else {
@@ -945,9 +947,7 @@ int init_image_object(const char *file_name, uint startpage)
         } else {
           set_image(&comic_container->pages->right, comic_container->pages->current_page);
         }
-
       }
-
     }
 
     if(is_over_height && !comic_container->pages->isSingle) {
@@ -957,20 +957,25 @@ int init_image_object(const char *file_name, uint startpage)
         set_margin_left_page(comic_container->pages->current_page, TRUE, FALSE);
     }
 
-    /* if(!comic_container->isFirstLoad) { */
-    /*   if(comic_container->pages->isSingle) { */
-    /*     update_page(TRUE); */
-    /*   } else { */
-    /*     update_page(FALSE); */
-    /*   } */
-    /* } */
 
+    int is_final = 0;
+    if(comic_container->pages->current_page == comic_container->detail->image_count - 1)
+      is_final = TRUE;
+    
     if(comic_container->pages->isSingle) {
-      update_page(TRUE);
+      if(comic_container->isFirstLoad)
+        set_margin_left_page(comic_container->pages->current_page, is_over_height, is_final);
+      else
+        update_page(TRUE);
     } else {
-      update_page(FALSE);
-    }
 
+      if(comic_container->isFirstLoad) {
+        set_margin_left_page(comic_container->pages->current_page, is_over_height, is_final);
+      } else {
+        update_page(FALSE);        
+      }
+
+    }
 
     return TRUE;
   }
