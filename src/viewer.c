@@ -713,55 +713,38 @@ int resize_when_spread(int page)
   int right_width = 0;
   int right_height = 0;
 
+  int img_src_width = 0;
+  int img_src_height = 0;
+  double img_x_aspect = 0;
+  double img_y_aspect = 0;
+  int img_width = 0;
+  int img_height = 0;
+
+
   if(check_valid_cover_mode()) {
-    if(comic_container->pages->page_direction_right)
-      goto cover_left;
-    else
-      goto cover_right;
+    goto cover;
   } else {
     goto no_cover;
   }
 
- cover_right:
-  right_src_width = comic_container->image_container_list[page]->src_width;
-  right_src_height = comic_container->image_container_list[page]->src_height;
-  right_x_aspect = (double)comic_container->image_container_list[page]->aspect_raito[0];
-  right_y_aspect = (double)comic_container->image_container_list[page]->aspect_raito[1];
+ cover:
+  img_src_width = comic_container->image_container_list[page]->src_width;
+  img_src_height = comic_container->image_container_list[page]->src_height;
+  img_x_aspect = (double)comic_container->image_container_list[page]->aspect_raito[0];
+  img_y_aspect = (double)comic_container->image_container_list[page]->aspect_raito[1];
 
-  right_width = half_width;
-  right_height = (int)ceil((double)right_width * (right_y_aspect / right_x_aspect));
+  img_width = half_width;
+  img_height = (int)ceil((double)img_width * (img_y_aspect / img_x_aspect));
 
-  if(right_height > diff_height_between_window_and_menu_and_button_bar) {
-    scale_when_oversize(&right_width, &right_height, window_width, diff_height_between_window_and_menu_and_button_bar, right_x_aspect, right_y_aspect, FALSE);
+  if(img_height > diff_height_between_window_and_menu_and_button_bar) {
+    scale_when_oversize(&img_width, &img_height, window_width, diff_height_between_window_and_menu_and_button_bar, img_x_aspect, img_y_aspect, FALSE);
     isOverHeight = TRUE;
   }
 
-  comic_container->image_container_list[page]->dst_width = right_width;
-  comic_container->image_container_list[page]->dst_height = right_height;
+  comic_container->image_container_list[page]->dst_width = img_width;
+  comic_container->image_container_list[page]->dst_height = img_height;
 
-  comic_container->image_container_list[page]->dst = gdk_pixbuf_scale_simple(comic_container->image_container_list[page]->src, right_width, right_height, GDK_INTERP_BILINEAR);
-
-  return isOverHeight;
-
-  
- cover_left:
-  left_src_width = comic_container->image_container_list[page]->src_width;
-  left_src_height = comic_container->image_container_list[page]->src_height;
-  left_x_aspect = (double)comic_container->image_container_list[page]->aspect_raito[0];
-  left_y_aspect = (double)comic_container->image_container_list[page]->aspect_raito[1];
-
-  left_width = half_width;
-  left_height = (int)ceil((double)left_width * (left_y_aspect / left_x_aspect));
-
-  if(left_height > diff_height_between_window_and_menu_and_button_bar) {
-    scale_when_oversize(&left_width, &left_height, window_width, diff_height_between_window_and_menu_and_button_bar, left_x_aspect, left_y_aspect, FALSE);
-    isOverHeight = TRUE;
-  }
-
-  comic_container->image_container_list[page]->dst_width = left_width;
-  comic_container->image_container_list[page]->dst_height = left_height;
-
-  comic_container->image_container_list[page]->dst = gdk_pixbuf_scale_simple(comic_container->image_container_list[page]->src, left_width, left_height, GDK_INTERP_BILINEAR);
+  comic_container->image_container_list[page]->dst = gdk_pixbuf_scale_simple(comic_container->image_container_list[page]->src, img_width, img_height, GDK_INTERP_BILINEAR);
 
   return isOverHeight;
 
