@@ -80,7 +80,10 @@ gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer d
 
 gboolean detect_resize_window(GtkWidget *widget, GdkEvent *event, gpointer data);
 
-gboolean my_detect_click_function(GtkWidget *widget, GdkEventButton *event, gpointer data);
+gboolean my_detect_click_function(GtkWidget *widget, GdkEventButton *event,
+                                  gpointer data);
+
+int check_valid_cover_mode();
 
 
 void close_variables();
@@ -151,9 +154,10 @@ typedef struct
   Image_Container_t **image_container_list;
   uncompress_data_set_t *uncompressed_file_list;
   
-  int isCompressFile;
-  int isPDFfile;
-  int isFirstLoad;
+  int isCompressFile; // file mode when open
+  int isPDFfile; // file mode when open
+  int isFirstLoad; // whether file opened or not.
+  int isCoverMode; // cover mode on or off.
 } comic_container_t;
 extern comic_container_t *comic_container;
 
@@ -472,6 +476,7 @@ static void activate(GtkApplication* app, gpointer user_data)
   comic_container->isPDFfile = FALSE;
   comic_container->isFirstLoad = TRUE;
   comic_container->isCompressFile = TRUE;
+  comic_container->isCoverMode = FALSE;
 
   cursor_pos.x = 0;
   cursor_pos.y = 0;
