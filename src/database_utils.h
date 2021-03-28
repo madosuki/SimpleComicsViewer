@@ -1,8 +1,12 @@
+#ifndef DATABASE_UTILS
+#define DATABASE_UTILS
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdint.h>
 #include <sqlite3.h>
+#include <time.h>
 
 typedef enum SQLITE_TYPE_ENUM{
   INTEGER,
@@ -79,3 +83,7 @@ typedef struct {
 
 
 file_histoy_s *get_file_history(db_s *db);
+int create_file_history_table(db_s *db);
+int create_book_shelf_table(db_s *db);
+
+#endif

@@ -1,5 +1,10 @@
 #include "database_utils.h"
 
+char *create_data()
+{
+  return NULL;
+}
+
 created_string_s *create_pair(sqlite_pair_s *data)
 {
   if(data == NULL) {
