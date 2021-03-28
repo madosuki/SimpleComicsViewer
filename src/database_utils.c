@@ -238,7 +238,6 @@ file_histoy_s *get_file_history(db_s *db)
     
     history_data.file_path = (char*)file_name;
     history_data.file_path_size = file_name_size;
-    history_data.number = id;
 
     history[history_size - 1] = history_data;
     ++history_size;
@@ -269,7 +268,7 @@ file_histoy_s *get_file_history(db_s *db)
   return history;
 }
 
-int create_table(db_s *db, const char *sql)
+int inline create_table(db_s *db, const char *sql)
 {
   sqlite3 *ppDb;
   int err = sqlite3_open(db->file_path, &ppDb);
