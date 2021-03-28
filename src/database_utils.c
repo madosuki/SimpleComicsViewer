@@ -186,7 +186,7 @@ file_histoy_s *get_file_history(db_s *db)
 
   const char *table_name = "'file-history'";
   created_string_s orderby = {};
-  orderby.data = "order by date asc";
+  orderby.data = "order by unixtime asc";
   orderby.size = 13;
 
   created_string_s **options_list = malloc(sizeof(created_string_s*));
@@ -237,7 +237,7 @@ file_histoy_s *get_file_history(db_s *db)
 
 
     file_histoy_s history_data = {};
-    int id = sqlite3_column_int(stmt, 0);
+    /* int id = sqlite3_column_int(stmt, 0); */
     const unsigned char *file_name = sqlite3_column_text(stmt, 1);
     const ssize_t file_name_size = strlen((char*)file_name);
     
@@ -308,7 +308,7 @@ int inline create_table(db_s *db, const char *sql)
 int create_file_history_table(db_s *db)
 {
 
-  const char *create_statement = "create table 'file-history' (id integer primary key autoincrement, path text not null, date datetime not null)";
+  const char *create_statement = "create table 'file-history' (id integer primary key autoincrement, path text not null, unixtime integer not null)";
 
   return create_table(db, create_statement);
 }
