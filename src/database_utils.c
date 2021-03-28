@@ -179,9 +179,9 @@ file_histoy_s *get_file_history(db_s *db)
     return NULL;
   }
 
-  const char *table_name = "file_history";
+  const char *table_name = "'file-history'";
   created_string_s orderby = {};
-  orderby.data = "order by id asc";
+  orderby.data = "order by date asc";
   orderby.size = 13;
 
   created_string_s **options_list = malloc(sizeof(created_string_s*));
@@ -231,8 +231,6 @@ file_histoy_s *get_file_history(db_s *db)
     }
 
 
-    /* int id = sqlite3_column_int(stmt, 0); */
-    /* printf("id: %d\n", id); */
     file_histoy_s history_data = {};
     int id = sqlite3_column_int(stmt, 0);
     const unsigned char *file_name = sqlite3_column_text(stmt, 1);
@@ -269,4 +267,52 @@ file_histoy_s *get_file_history(db_s *db)
 
 
   return history;
+}
+
+int create_table(db_s *db, const char *sql)
+{
+  sqlite3 *ppDb;
+  int err = sqlite3_open(db->file_path, &ppDb);
+  if(err == SQLITE_ERROR) {
+    return -1;
+  }
+
+  sqlite3_stmt *stmt;
+  err = sqlite3_prepare_v2(ppDb, sql, -1, &stmt, NULL);
+  if(err == SQLITE_ERROR) {
+    printf("failed sqlite prepare v2\n");
+
+    return -1;
+  }
+
+  while(1) {
+    err = sqlite3_step(stmt);
+
+    if(err == SQLITE_BUSY)
+      continue;
+
+    if(err == SQLITE_DONE)
+      break;
+    
+  }
+
+  sqlite3_finalize(stmt);
+
+  return 1;
+}
+
+int create_file_history_table(db_s *db)
+{
+
+  const char *create_statement = "create table 'file-history' (id integer primary key autoincrement, path text not null, date datetime not null)";
+
+  return create_table(db, create_statement);
+}
+
+int create_book_shelf_table(db_s *db)
+{
+
+  const char *create_statement = "create table 'book-shelf' (id integer primary key autoincrement, filepath text not null, thumbpath text not null, title text not null)";
+
+  return create_table(db, create_statement);
 }

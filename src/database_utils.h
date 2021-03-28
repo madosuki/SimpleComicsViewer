@@ -52,7 +52,6 @@ typedef struct {
 typedef struct {
   char *file_path;
   ssize_t file_path_size;
-  int number;
 } file_histoy_s;
 
 typedef struct {
@@ -71,7 +70,7 @@ typedef struct {
 typedef struct {
   book_info_s *list;
   ssize_t size;
-} book_info_list_s;
+} book_shelf_s;
 
 typedef struct {
   char *file_path;
