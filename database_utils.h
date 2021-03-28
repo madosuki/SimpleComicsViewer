@@ -51,6 +51,7 @@ typedef struct {
 
 typedef struct {
   char *file_path;
+  ssize_t file_path_size;
   int number;
 } file_histoy_s;
 
@@ -77,3 +78,5 @@ typedef struct {
   ssize_t file_path_length;
 } db_s;
 
+
+file_histoy_s *get_file_history(db_s *db);
