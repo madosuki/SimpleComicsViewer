@@ -259,6 +259,7 @@ file_histoy_s *get_file_history(db_s *db)
 
 
   sqlite3_finalize(stmt);
+  sqlite3_close(ppDb);
 
   free(select);
   select = NULL;
@@ -302,6 +303,8 @@ int inline create_table(db_s *db, const char *sql)
 
   sqlite3_finalize(stmt);
 
+  sqlite3_close(ppDb);
+
   return 1;
 }
 
@@ -319,4 +322,56 @@ int create_book_shelf_table(db_s *db)
   const char *create_statement = "create table 'book-shelf' (id integer primary key autoincrement, filepath text not null, thumbpath text not null, title text not null)";
 
   return create_table(db, create_statement);
+}
+
+int insert_file_history(db_s *db, const char *file_path, const ssize_t file_path_size, const long unixtime)
+{
+  sqlite3 *ppDb;
+  int err = sqlite3_open(db->file_path, &ppDb);
+  if(err == SQLITE_ERROR) {
+    return -1;
+  }
+  const char *sql = "insert into 'file-history' (name, unixtime) (?, ?)";
+  const ssize_t swl_size = 50;
+
+  sqlite3_stmt *stmt;
+  err = sqlite3_prepare_v2(ppDb, sql, -1, &stmt, NULL);
+  if(err == SQLITE_ERROR) {
+    printf("failed sqlite prepare v2\n");
+
+    return -1;
+  }
+
+  err = sqlite3_bind_text(stmt, 1, file_path, file_path_size, SQLITE_TRANSIENT);
+  if(err == SQLITE_ERROR) {
+    sqlite3_finalize(stmt);
+    sqlite3_close(ppDb);
+
+    return -1;
+  }
+
+  err = sqlite3_bind_int64(stmt, 2, unixtime);
+  if(err == SQLITE_ERROR) {
+    sqlite3_finalize(stmt);
+    sqlite3_close(ppDb);
+
+    return -1;
+  }
+
+
+  while(1) {
+    err = sqlite3_step(stmt);
+
+    if(err == SQLITE_BUSY)
+      continue;
+
+    if(err == SQLITE_DONE)
+      break;
+  }
+
+  sqlite3_finalize(stmt);
+
+  sqlite3_close(ppDb);
+
+  return 1;
 }
