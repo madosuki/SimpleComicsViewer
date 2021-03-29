@@ -253,7 +253,7 @@ static void change_direction()
     gtk_button_set_label(GTK_BUTTON(change_direction_button), right_to_left_name);
   }
 
-  if(comic_container->pages->left != NULL) {
+  if(comic_container->pages->left != NULL || comic_container->pages->right != NULL) {
     update_page(FALSE);
   }
   
