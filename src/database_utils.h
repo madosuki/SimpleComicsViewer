@@ -86,4 +86,6 @@ file_histoy_s *get_file_history(db_s *db);
 int create_file_history_table(db_s *db);
 int create_book_shelf_table(db_s *db);
 
+int insert_or_udpate_file_history(db_s *db, const char* file_path_name, const ssize_t file_path_name_size, const long unixtime);
+
 #endif

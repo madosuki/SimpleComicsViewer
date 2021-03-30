@@ -375,3 +375,121 @@ int insert_file_history(db_s *db, const char *file_path, const ssize_t file_path
 
   return 1;
 }
+
+int update_file_history(db_s *db, const char *file_name, const ssize_t file_name_size, const long unixtime)
+{
+  sqlite3 *ppDb;
+  int err = sqlite3_open(db->file_path, &ppDb);
+  if(err == SQLITE_ERROR) {
+    return -1;
+  }
+  const char *sql = "update 'file-history' set unixtime = ? when name = ?";
+  const ssize_t swl_size = 50;
+
+  sqlite3_stmt *stmt;
+  err = sqlite3_prepare_v2(ppDb, sql, -1, &stmt, NULL);
+  if(err == SQLITE_ERROR) {
+    printf("failed sqlite prepare v2\n");
+
+    return -1;
+  }
+
+  err = sqlite3_bind_int64(stmt, 1, unixtime);
+  if(err == SQLITE_ERROR) {
+    sqlite3_finalize(stmt);
+    sqlite3_close(ppDb);
+
+    return -1;
+  }
+
+  err = sqlite3_bind_text(stmt, 2, file_name, file_name_size, SQLITE_TRANSIENT);
+  if(err == SQLITE_ERROR) {
+    sqlite3_finalize(stmt);
+    sqlite3_close(ppDb);
+
+    return -1;
+  }
+
+
+  while(1) {
+    err = sqlite3_step(stmt);
+
+    if(err == SQLITE_BUSY)
+      continue;
+
+    if(err == SQLITE_DONE)
+      break;
+  }
+
+  sqlite3_finalize(stmt);
+
+  sqlite3_close(ppDb);
+
+  return 1;
+}
+
+int check_exists_row_in_file_history(db_s *db, const char *file_path_name, const ssize_t file_path_name_size)
+{
+
+  sqlite3 *ppDb;
+  int err = sqlite3_open(db->file_path, &ppDb);
+  if(err == SQLITE_ERROR) {
+    return -1;
+  }
+  const char *sql = "select count(name) from 'file-history' when name = ?";
+  const ssize_t swl_size = 50;
+
+  sqlite3_stmt *stmt;
+  err = sqlite3_prepare_v2(ppDb, sql, -1, &stmt, NULL);
+  if(err == SQLITE_ERROR) {
+    printf("failed sqlite prepare v2\n");
+
+    return -1;
+  }
+
+  err = sqlite3_bind_text(stmt, 1, file_path_name, file_path_name_size, SQLITE_TRANSIENT);
+  if(err == SQLITE_ERROR) {
+    sqlite3_finalize(stmt);
+    sqlite3_close(ppDb);
+
+    return -1;
+  }
+
+
+  int count = 0;
+  while(1) {
+    err = sqlite3_step(stmt);
+
+    if(err == SQLITE_BUSY)
+      continue;
+
+    count = sqlite3_column_int(stmt, 0);
+    
+    if(err == SQLITE_DONE)
+      break;
+  }
+
+  sqlite3_finalize(stmt);
+
+  sqlite3_close(ppDb);
+
+  if(!count) {
+    return -1;
+  }
+  
+
+  return 1;
+}
+
+int insert_or_udpate_file_history(db_s *db, const char* file_path_name, const ssize_t file_path_name_size, const long unixtime)
+{
+  if(file_path_name == NULL || file_path_name_size < 1 || unixtime < 1)
+    return -1;
+
+  int is_exists = check_exists_row_in_file_history(db, file_path_name, file_path_name_size);
+  if(!is_exists) {
+    return insert_file_history(db, file_path_name, file_path_name_size, unixtime);
+  }
+
+  return update_file_history(db, file_path_name, file_path_name_size, unixtime);
+}

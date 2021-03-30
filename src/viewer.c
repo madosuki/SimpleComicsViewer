@@ -784,10 +784,10 @@ int resize_when_spread(int page)
   right_x_aspect = (double)comic_container->image_container_list[right_pos]->aspect_raito[0];
   right_y_aspect = (double)comic_container->image_container_list[right_pos]->aspect_raito[1];
 
-  printf("page: %d\n", page);
-  printf("left: %d, %d\nright: %d, %d\n\n", left_src_width, left_src_height, right_src_width, right_src_height);
-  printf("diff: %d\n", diff_height_between_window_and_menu_and_button_bar);
-  printf("half width: %d\n", half_width);
+  /* printf("page: %d\n", page); */
+  /* printf("left: %d, %d\nright: %d, %d\n\n", left_src_width, left_src_height, right_src_width, right_src_height); */
+  /* printf("diff: %d\n", diff_height_between_window_and_menu_and_button_bar); */
+  /* printf("half width: %d\n", half_width); */
 
   if(left_height > diff_height_between_window_and_menu_and_button_bar) {
     scale_when_oversize(&left_width, &left_height, window_width, diff_height_between_window_and_menu_and_button_bar, left_x_aspect, left_y_aspect, FALSE);
@@ -1291,9 +1291,19 @@ GtkWidget *create_menu_bar()
   GtkWidget *internal_list = gtk_menu_new();
   gtk_menu_item_set_submenu(GTK_MENU_ITEM(file_menu_struct.file_history), internal_list);
 
+  if(file_history_on_menu_struct.size == 0) {
+    GtkWidget *none = gtk_menu_item_new_with_label("none");
+    gtk_menu_shell_append(GTK_MENU_SHELL(internal_list), none);
+  }
+  
   for(int i = 0; 0 < file_history_on_menu_struct.size; ++i) {
-    if(file_history_on_menu_struct.list != NULL && file_history_on_menu_struct.list[i] != NULL)
-      gtk_menu_shell_append(GTK_MENU_SHELL(internal_list), file_history_on_menu_struct.list[i]);
+    if(file_history_on_menu_struct.list != NULL &&
+       file_history_on_menu_struct.list[i] != NULL) {
+      
+      gtk_menu_shell_append(GTK_MENU_SHELL(internal_list),
+                            file_history_on_menu_struct.list[i]);
+      
+    }
   }
   
   
