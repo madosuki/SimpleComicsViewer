@@ -20,6 +20,8 @@ main_window_data_t window = {};
 
 file_menu_t file_menu_struct = {};
 
+file_history_on_menu_t file_history_on_menu_struct = {};
+
 view_menu_t view_menu_struct = {};
 
 help_menu_t help_menu_struct = {};
@@ -1271,9 +1273,23 @@ GtkWidget *create_menu_bar()
   gtk_menu_shell_append(GTK_MENU_SHELL(file_menu_struct.body), file_menu_struct.load);
   g_signal_connect(G_OBJECT(file_menu_struct.load), "activate", G_CALLBACK(open_file_on_menu), NULL);
 
+  file_menu_struct.file_history = gtk_menu_item_new_with_label("File History");
+  gtk_menu_shell_append(GTK_MENU_SHELL(file_menu_struct.body), file_menu_struct.file_history);
+
+
+  GtkWidget *internal_list = gtk_menu_new();
+  gtk_menu_item_set_submenu(GTK_MENU_ITEM(file_menu_struct.file_history), internal_list);
+
+  file_history_on_menu_struct.first = gtk_menu_item_new_with_label("first");
+  gtk_menu_shell_append(GTK_MENU_SHELL(internal_list), file_history_on_menu_struct.first);
+  
+  
+
   file_menu_struct.quit = gtk_menu_item_new_with_label("Quit");
   gtk_menu_shell_append(GTK_MENU_SHELL(file_menu_struct.body), file_menu_struct.quit);
   g_signal_connect(G_OBJECT(file_menu_struct.quit), "activate", G_CALLBACK(CloseWindow), NULL);
+
+
 
   // View Menu
   view_menu_struct.body = gtk_menu_new();

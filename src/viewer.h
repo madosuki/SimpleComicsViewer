@@ -191,10 +191,20 @@ typedef struct
 
 typedef struct
 {
+  GtkWidget *first;
+  GtkWidget *second;
+  GtkWidget *third;
+  GtkWidget *fourth;
+  GtkWidget *fifth;
+} file_history_on_menu_t;   
+
+typedef struct
+{
   GtkWidget *body;
   GtkWidget *root;
   GtkWidget *load;
   GtkWidget *quit;
+  GtkWidget *file_history;
 } file_menu_t; 
 
 typedef struct
@@ -216,6 +226,8 @@ typedef struct
 extern main_window_data_t window;
 
 extern file_menu_t file_menu_struct;
+
+extern file_history_on_menu_t file_history_on_menu_struct;
 
 extern view_menu_t view_menu_struct;
 
