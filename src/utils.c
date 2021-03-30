@@ -171,11 +171,16 @@ int detect_compress_file(const char *file_name)
     return 0;
   }
 
-  uint64_t sig;
-  int read_count = fread(&sig, 1, 4, fp);
+  /* uint64_t sig; */
+  /* fseek(fp, 0L, SEEK_SET); */
+  /* int read_count = fread(&sig, 1, 4, fp); */
 
-  /* const uint8_t zip_sig[4] = {0x50, 0x4B, 0x03, 0x04}; */
-  /* const uint8_t zip_sig[4] = {0x04, 0x03, 0x4B, 0x50}; */
+  uint8_t sig[8];
+  fseek(fp, 0L, SEEK_SET);
+  int read_count = fread(sig, 1, 4, fp);
+
+
+  const uint8_t zip_sig[4] = {0x50, 0x4B, 0x03, 0x04};
   const uint8_t rar_sig_1[7] = {0x52, 0x61, 0x72, 0x21, 0x1A, 0x07, 0x00};
   const uint8_t rar_sig_2[8] = {0x52, 0x61, 0x72, 0x21, 0x1A, 0x07, 0x01, 0x00};
   const uint8_t seven_z_sig[4] = {0x37, 0x7A, 0xBC, 0xAF};
@@ -183,23 +188,29 @@ int detect_compress_file(const char *file_name)
   
   int is_compress = 0;
 
-  if(sig == 85966670672) {
+  if(*(uint32_t*)sig == *(uint32_t*)zip_sig) {
     is_compress = 1;
   }
-  /* printf("is_compress: %d, sig: %lu, zip_sig: %lu\n", is_compress, sig, *(uint64_t*)zip_sig); */
 
   if(!is_compress) {
     fseek(fp, 0L, SEEK_SET);
     read_count = fread(&sig, 1, 7, fp);
-    if(sig == *(uint64_t*)rar_sig_1) {
-      is_compress = 1;
+    int count = 0;
+    for(int i = 0; i < 7; ++i) {
+      if(sig[i] == rar_sig_1[i])
+        ++count;
+      else
+        break;
     }
+
+    if(count == 7)
+      is_compress = 1;
   }
 
   if(!is_compress) {
     fseek(fp, 0L, SEEK_SET);
     read_count = fread(&sig, 1, 8, fp);
-    if(sig == *(uint64_t*)rar_sig_2) {
+    if(*(uint64_t*)sig == *(uint64_t*)rar_sig_2) {
       is_compress = 1;
     }
   }
@@ -207,17 +218,26 @@ int detect_compress_file(const char *file_name)
   if(!is_compress) {
     fseek(fp, 0L, SEEK_SET);
     read_count = fread(&sig, 1, 4, fp);
-    if(sig == *(uint64_t*)seven_z_sig) {
+    if(*(uint32_t*)sig == *(uint32_t*)seven_z_sig) {
       is_compress = 1;
     }
   }
 
+  
   if(!is_compress) {
     fseek(fp, 0L, SEEK_SET);
     read_count = fread(&sig, 1, 2, fp);
-    if(sig == *(uint64_t*)gz_sig) {
-      is_compress = 1;
+    int count = 0;
+    for(int i = 0; i < 2; ++i) {
+      if(sig[i] == rar_sig_1[i])
+        ++count;
+      else
+        break;
     }
+
+    if(count == 2)
+      is_compress = 1;
+    
   }
 
 
