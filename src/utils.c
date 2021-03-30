@@ -185,12 +185,29 @@ int detect_compress_file(const char *file_name)
   const uint8_t rar_sig_2[8] = {0x52, 0x61, 0x72, 0x21, 0x1A, 0x07, 0x01, 0x00};
   const uint8_t seven_z_sig[4] = {0x37, 0x7A, 0xBC, 0xAF};
   const uint8_t gz_sig[2] = {0x1F, 0x8B};
+  const uint8_t xz_sig[6] = {0xFD, 0x37, 0x7A, 0x58, 0x5A, 0x00};
   
   int is_compress = 0;
 
   if(*(uint32_t*)sig == *(uint32_t*)zip_sig) {
     is_compress = 1;
   }
+
+  if(!is_compress) {
+    fseek(fp, 0L, SEEK_SET);
+    read_count = fread(&sig, 1, 6, fp);
+    int count = 0;
+    for(int i = 0; i < 6; ++i) {
+      if(sig[i] == xz_sig[i])
+        ++count;
+      else
+        break;
+    }
+
+    if(count == 6)
+      is_compress = 1;
+  }
+
 
   if(!is_compress) {
     fseek(fp, 0L, SEEK_SET);
@@ -229,7 +246,7 @@ int detect_compress_file(const char *file_name)
     read_count = fread(&sig, 1, 2, fp);
     int count = 0;
     for(int i = 0; i < 2; ++i) {
-      if(sig[i] == rar_sig_1[i])
+      if(sig[i] == gz_sig[i])
         ++count;
       else
         break;
@@ -237,9 +254,7 @@ int detect_compress_file(const char *file_name)
 
     if(count == 2)
       is_compress = 1;
-    
   }
-
 
 
   fclose(fp);
