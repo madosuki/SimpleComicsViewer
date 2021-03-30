@@ -765,6 +765,8 @@ int resize_when_spread(int page)
     left_pos = page - 1;
     right_pos = page;
   }
+
+  /* printf("%d, %d\n", left_pos, right_pos); */
   
   left_src_width = comic_container->image_container_list[left_pos]->src_width;
   left_src_height = comic_container->image_container_list[left_pos]->src_height;
@@ -956,8 +958,11 @@ int init_image_object(const char *file_name, uint startpage)
             set_image(&comic_container->pages->left, comic_container->pages->current_page);
             set_image(&comic_container->pages->right, comic_container->pages->current_page + 1);
           }
+
+          comic_container->pages->current_page++;
           
         } else {
+
           resize_when_spread(comic_container->pages->current_page);
 
           if(comic_container->pages->page_direction_right) {
@@ -1109,6 +1114,7 @@ void update_page(int isSingleChange)
       }
 
     } else {
+
 
       if(check_valid_cover_mode() && comic_container->pages->current_page == 0) {
         set_image_container(comic_container->pages->current_page);
@@ -1280,8 +1286,10 @@ GtkWidget *create_menu_bar()
   GtkWidget *internal_list = gtk_menu_new();
   gtk_menu_item_set_submenu(GTK_MENU_ITEM(file_menu_struct.file_history), internal_list);
 
-  file_history_on_menu_struct.first = gtk_menu_item_new_with_label("first");
-  gtk_menu_shell_append(GTK_MENU_SHELL(internal_list), file_history_on_menu_struct.first);
+  for(int i = 0; 0 < file_history_on_menu_struct.size; ++i) {
+    if(file_history_on_menu_struct.list != NULL && file_history_on_menu_struct.list[i] != NULL)
+      gtk_menu_shell_append(GTK_MENU_SHELL(internal_list), file_history_on_menu_struct.list[i]);
+  }
   
   
 
@@ -1427,7 +1435,7 @@ void move_right()
     } else {
 
       int tmp = comic_container->pages->current_page + 2;
-      if(tmp < comic_container->detail->image_count) {
+      if(tmp <= comic_container->detail->image_count) {
         comic_container->pages->current_page = tmp;
       }
 
@@ -1438,6 +1446,8 @@ void move_right()
       if(comic_container->pages->current_page > comic_container->detail->image_count && comic_container->pages->isAcceptOverflow) {
         comic_container->pages->current_page = 1;
       }
+
+      /* printf("current page: %d, tmp: %d, image count: %d\n", comic_container->pages->current_page, tmp, comic_container->detail->image_count); */
     }
 
     if(comic_container->pages->current_page >= comic_container->detail->image_count) {
@@ -1452,8 +1462,13 @@ void move_right()
       }
     }
 
-    if(!comic_container->pages->isSingle && comic_container->pages->current_page != 0 && comic_container->pages->current_page % 2 == 0 && comic_container->pages->current_page != comic_container->detail->image_count - 1) {
+    if(!comic_container->pages->isSingle &&
+       comic_container->pages->current_page != 0 &&
+       comic_container->pages->current_page % 2 == 0 &&
+       comic_container->pages->current_page != comic_container->detail->image_count - 1) {
+      
       comic_container->pages->current_page++;
+      
     }
 
     if(comic_container->pages->page_direction_right) {

@@ -191,11 +191,8 @@ typedef struct
 
 typedef struct
 {
-  GtkWidget *first;
-  GtkWidget *second;
-  GtkWidget *third;
-  GtkWidget *fourth;
-  GtkWidget *fifth;
+  GtkWidget **list;
+  int size;
 } file_history_on_menu_t;   
 
 typedef struct
@@ -489,6 +486,8 @@ static void activate(GtkApplication* app, gpointer user_data)
   comic_container->isFirstLoad = TRUE;
   comic_container->isCompressFile = TRUE;
   comic_container->isCoverMode = FALSE;
+
+  file_history_on_menu_struct.size = 0;
 
   cursor_pos.x = 0;
   cursor_pos.y = 0;
