@@ -784,10 +784,10 @@ int resize_when_spread(int page)
   right_x_aspect = (double)comic_container->image_container_list[right_pos]->aspect_raito[0];
   right_y_aspect = (double)comic_container->image_container_list[right_pos]->aspect_raito[1];
 
-  /* printf("page: %d\n", page); */
-  /* printf("left: %d, %d\nright: %d, %d\n\n", left_src_width, left_src_height, right_src_width, right_src_height); */
-  /* printf("diff: %d\n", diff_height_between_window_and_menu_and_button_bar); */
-  /* printf("half width: %d\n", half_width); */
+  printf("page: %d\n", page);
+  printf("left: %d, %d\nright: %d, %d\n\n", left_src_width, left_src_height, right_src_width, right_src_height);
+  printf("diff: %d\n", diff_height_between_window_and_menu_and_button_bar);
+  printf("half width: %d\n", half_width);
 
   if(left_height > diff_height_between_window_and_menu_and_button_bar) {
     scale_when_oversize(&left_width, &left_height, window_width, diff_height_between_window_and_menu_and_button_bar, left_x_aspect, left_y_aspect, FALSE);
