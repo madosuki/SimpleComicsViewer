@@ -13,7 +13,7 @@
 
 ### Features
 - **Load Image(Currently support only JPEG and PNG)**
-- **Load Compressed File(Currently support only supported files by libarchive)**
+- **Load Compressed File(Currently support only zip, rar, 7zip, gz)**
 - **Show Spread**
 
 ### Supported file format
