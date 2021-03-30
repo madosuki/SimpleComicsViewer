@@ -282,15 +282,18 @@ static int open_file(const char *file_name)
       comic_container->isPDFfile = FALSE;
     }
   } else {
-    if(test_open_pdf(file_name)) {
-      is_dir = FALSE; 
-      comic_container->isPDFfile = TRUE;
-      comic_container->isCompressFile = FALSE;
+    if(detect_compress_file(file_name)) {
+      
+      is_dir = FALSE;
+      comic_container->isPDFfile = FALSE;
+      comic_container->isCompressFile = TRUE;
+      
     } else {
-      if(detect_compress_file(file_name)) {
-        is_dir = FALSE;
-        comic_container->isPDFfile = FALSE;
-        comic_container->isCompressFile = TRUE;
+
+      if(test_open_pdf(file_name)) {
+        is_dir = FALSE; 
+        comic_container->isPDFfile = TRUE;
+        comic_container->isCompressFile = FALSE;
       }
     }
 

@@ -9,7 +9,7 @@
 #include <sys/types.h>
 #include <fcntl.h>
 #include <sys/stat.h>
-#include <zlib.h>
+/* #include <zlib.h> */
 #include <stdint.h>
 #include <math.h>
 
@@ -28,10 +28,10 @@ extern const unsigned char png_sig[8];
 extern const short jpg_sig_size;
 extern const unsigned char jpg_sig[2];
 
-extern const short zlib_sig_size;
-extern const unsigned char zlib_no_compression_or_low_sig[2];
-extern const unsigned char zlib_default_compression_sig[2];
-extern const unsigned char zlib_best_compression_sig[2];
+/* extern const short zlib_sig_size; */
+/* extern const unsigned char zlib_no_compression_or_low_sig[2]; */
+/* extern const unsigned char zlib_default_compression_sig[2]; */
+/* extern const unsigned char zlib_best_compression_sig[2]; */
 extern const uint8_t compress_headers_flag;
 
 double mygcd(double x, double y);

@@ -882,8 +882,10 @@ int init_image_object(const char *file_name, uint startpage)
     }
   }
 
-  if(comic_container->isCompressFile) {
 
+  /* printf("isCompress: %d, isPDF: %d\n", comic_container->isCompressFile, comic_container->isPDFfile); */
+  
+  if(comic_container->isCompressFile) {
     if(!set_image_from_compressed_file(file_name)) {
       return FALSE;
     }
