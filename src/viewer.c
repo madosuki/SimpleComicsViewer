@@ -580,8 +580,11 @@ int resize_when_single(int position)
     width = result;
   }
 
+  // GDK_INTERP_BILINEAR
+
   
-  comic_container->image_container_list[position]->dst = gdk_pixbuf_scale_simple(comic_container->image_container_list[position]->src, width, height, GDK_INTERP_BILINEAR);
+  
+  comic_container->image_container_list[position]->dst = gdk_pixbuf_scale_simple(comic_container->image_container_list[position]->src, width, height, GDK_INTERP_HYPER);
   comic_container->image_container_list[position]->dst_width = width;
   comic_container->image_container_list[position]->dst_height = height;
 
@@ -753,7 +756,7 @@ int resize_when_spread(int page)
   comic_container->image_container_list[page]->dst_width = img_width;
   comic_container->image_container_list[page]->dst_height = img_height;
 
-  comic_container->image_container_list[page]->dst = gdk_pixbuf_scale_simple(comic_container->image_container_list[page]->src, img_width, img_height, GDK_INTERP_BILINEAR);
+  comic_container->image_container_list[page]->dst = gdk_pixbuf_scale_simple(comic_container->image_container_list[page]->src, img_width, img_height, GDK_INTERP_HYPER);
 
   return isOverHeight;
 
@@ -807,8 +810,8 @@ int resize_when_spread(int page)
 
   /* printf("dst left: %d, %d\ndst right: %d, %d\n\n", left_width, left_height, right_width, right_height); */
 
-  comic_container->image_container_list[right_pos]->dst = gdk_pixbuf_scale_simple(comic_container->image_container_list[right_pos]->src, right_width, right_height, GDK_INTERP_BILINEAR);
-  comic_container->image_container_list[left_pos]->dst = gdk_pixbuf_scale_simple(comic_container->image_container_list[left_pos]->src, left_width, left_height, GDK_INTERP_BILINEAR);
+  comic_container->image_container_list[right_pos]->dst = gdk_pixbuf_scale_simple(comic_container->image_container_list[right_pos]->src, right_width, right_height, GDK_INTERP_HYPER);
+  comic_container->image_container_list[left_pos]->dst = gdk_pixbuf_scale_simple(comic_container->image_container_list[left_pos]->src, left_width, left_height, GDK_INTERP_HYPER);
 
   return isOverHeight;
 }
