@@ -45,19 +45,37 @@ void set_file_history_on_menu()
 {
 
   if(history != NULL) {
-    for(ssize_t i = 0; history->size; ++i) {
-      free(history->file_path_name_list[i].data);
-      history->file_path_name_list[i].data = NULL;
+    if(history->file_path_name_list != NULL) {
+      for(ssize_t i = 0; i < history->size; ++i) {
+        if(history->file_path_name_list[i] != NULL) {
+          
+          if(history->file_path_name_list[i]->data != NULL) {
+
+            free(history->file_path_name_list[i]->data);
+            history->file_path_name_list[i]->data = NULL;
+
+          }
+          
+          free(history->file_path_name_list[i]);
+          history->file_path_name_list[i] = NULL;
+        }
+      }
+
+      free(history->file_path_name_list);
+      history->file_path_name_list = NULL;
+
     }
+
 
     free(history);
     history = NULL;
   }
 
+
   /* if(file_history_internal_list != NULL) { */
   /*   gtk_container_remove(GTK_CONTAINER(file_menu_struct.file_history), file_history_internal_list); */
 
-  /*   /\* g_free(file_history_internal_list); *\/ */
+  /*   g_free(file_history_internal_list); */
   /* } */
 
   if(file_history_internal_list == NULL) {
@@ -65,7 +83,7 @@ void set_file_history_on_menu()
     gtk_menu_item_set_submenu(GTK_MENU_ITEM(file_menu_struct.file_history), file_history_internal_list);
   }
 
-  
+
   history = (file_history_s*)malloc(sizeof(file_history_s));
   if(history != NULL) {
     int check = get_file_history(&db_info, history);
@@ -77,7 +95,7 @@ void set_file_history_on_menu()
       for(ssize_t i = 0; i < history->size; ++i) {
         /* printf("%s\n", history->file_path_name_list[i].data); */
           
-        GtkWidget *widget = gtk_menu_item_new_with_label(history->file_path_name_list[i].data);
+        GtkWidget *widget = gtk_menu_item_new_with_label(history->file_path_name_list[i]->data);
 
         gtk_menu_shell_append(GTK_MENU_SHELL(file_history_internal_list), widget);
         g_signal_connect(G_OBJECT(widget), "activate", G_CALLBACK(open_file_in_file_history), (gpointer)i);
@@ -509,15 +527,14 @@ void close_variables()
     if(history != NULL) {
       if(history->file_path_name_list != NULL) {
         for(ssize_t i = 0; i < history->size; ++i) {
-          if(history->file_path_name_list[i].data != NULL) {
-            free(history->file_path_name_list[i].data);
-            history->file_path_name_list[i].data = NULL;
+          if(history->file_path_name_list[i]->data != NULL) {
+            free(history->file_path_name_list[i]->data);
+            history->file_path_name_list[i]->data = NULL;
           }
         }
 
         free(history->file_path_name_list);
         history->file_path_name_list = NULL;
-        
       }
 
       free(history);

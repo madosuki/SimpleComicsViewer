@@ -322,7 +322,7 @@ static int open_file(const char *file_name)
     long unixtime = t;
     insert_or_udpate_file_history(&db_info, file_name, strlen(file_name), unixtime);
 
-    /* set_file_history_on_menu(); */
+    set_file_history_on_menu();
     
     update_grid();
   } else {
@@ -338,8 +338,8 @@ static void open_file_in_file_history(GtkWidget *widget, gpointer n)
   if(history != NULL) {
    int i = GPOINTER_TO_INT(n);
 
-   if(history->file_path_name_list != NULL && history->file_path_name_list[i].data != NULL) {
-     int err = open_file(history->file_path_name_list[i].data);
+   if(history->file_path_name_list != NULL && history->file_path_name_list[i]->data != NULL) {
+     int err = open_file(history->file_path_name_list[i]->data);
      if(!err) {
        printf("failed open file in open_file_in_file_history\n");
      }
@@ -524,8 +524,8 @@ static void activate(GtkApplication* app, gpointer user_data)
 
   file_history_on_menu_struct.size = 0;
 
-  db_info.file_path = "test.db";
-
+  db_info.file_path = "/tmp/test.db";
+  create_file_history_table(&db_info);
 
   cursor_pos.x = 0;
   cursor_pos.y = 0;

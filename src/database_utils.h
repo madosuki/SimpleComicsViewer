@@ -54,7 +54,7 @@ typedef struct {
 } sqlite_value_s_list;
 
 typedef struct {
-  created_string_s *file_path_name_list;
+  created_string_s **file_path_name_list;
   ssize_t size;
 } file_history_s;
 

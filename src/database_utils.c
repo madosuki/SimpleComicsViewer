@@ -1,9 +1,6 @@
+
 #include "database_utils.h"
 
-char *create_data()
-{
-  return NULL;
-}
 
 int get_file_history(db_s *db, file_history_s *history)
 {
@@ -28,7 +25,7 @@ int get_file_history(db_s *db, file_history_s *history)
 
   const ssize_t max_list_size = 20;
   ssize_t list_size = 0;
-  created_string_s *list = (created_string_s*)malloc(sizeof(created_string_s)  * max_list_size);
+  created_string_s **list = (created_string_s**)malloc(sizeof(created_string_s*)  * max_list_size);
   if(list == NULL) {
     puts("failed allocate list");
     return 0;
@@ -47,15 +44,15 @@ int get_file_history(db_s *db, file_history_s *history)
       break;
     }
 
-    created_string_s history_data = {};
-    const unsigned char *file_name = sqlite3_column_text(stmt, 1);
-    const ssize_t file_name_size = strlen((const char*)file_name);
+    created_string_s *history_data = (created_string_s*)malloc(sizeof(created_string_s));
+    const char *file_name = (const char*)sqlite3_column_text(stmt, 1);
+    const ssize_t file_name_size = strlen(file_name);
 
-    history_data.data = calloc(file_name_size + 1, 1);
-    memmove(history_data.data, file_name, file_name_size);
-    history_data.data[file_name_size] = '\0';
+    history_data->data = (char*)calloc(file_name_size + 1, 1);
+    memmove(history_data->data, file_name, file_name_size);
+    history_data->data[file_name_size] = '\0';
     
-    history_data.size = file_name_size;
+    history_data->size = file_name_size;
 
     list[list_size] = history_data;
     ++list_size;
@@ -85,7 +82,7 @@ int get_file_history(db_s *db, file_history_s *history)
   history->file_path_name_list = list;
   history->size = list_size;
 
-  /* printf("history size: %zd\n", history->size); */
+  printf("history size: %zd\n", history->size);
 
   return 1;
 }
@@ -127,7 +124,7 @@ int inline create_table(db_s *db, const char *sql)
 int create_file_history_table(db_s *db)
 {
 
-  const char *create_statement = "create table 'file-history' (id integer primary key autoincrement, path text not null, unixtime integer not null)";
+  const char *create_statement = "create table if not exists 'file-history' (id integer primary key autoincrement, filepath text not null, unixtime integer not null)";
 
   return create_table(db, create_statement);
 }
@@ -135,7 +132,7 @@ int create_file_history_table(db_s *db)
 int create_book_shelf_table(db_s *db)
 {
 
-  const char *create_statement = "create table 'book-shelf' (id integer primary key autoincrement, filepath text not null, thumbpath text not null, title text not null)";
+  const char *create_statement = "create table if not exists 'book-shelf' (id integer primary key autoincrement, filepath text not null, thumbpath text not null, title text not null)";
 
   return create_table(db, create_statement);
 }
@@ -147,7 +144,7 @@ int insert_file_history(db_s *db, const char *file_path, const ssize_t file_path
   if(err == SQLITE_ERROR) {
     return -1;
   }
-  const char *sql = "insert into 'file-history' (name, unixtime) values (?, ?)";
+  const char *sql = "insert into 'file-history' (filepath, unixtime) values (?, ?)";
   const ssize_t swl_size = 50;
 
   sqlite3_stmt *stmt;
@@ -199,7 +196,7 @@ int update_file_history(db_s *db, const char *file_name, const ssize_t file_name
   if(err == SQLITE_ERROR) {
     return -1;
   }
-  const char *sql = "update 'file-history' set unixtime = ? where name = ?";
+  const char *sql = "update 'file-history' set unixtime = ? where filepath = ?";
   const ssize_t swl_size = 50;
 
   sqlite3_stmt *stmt;
@@ -252,7 +249,7 @@ int check_exists_row_in_file_history(db_s *db, const char *file_path_name, const
   if(err != SQLITE_OK) {
     return 0;
   }
-  const char *sql = "select id from 'file-history' where name = ?";
+  const char *sql = "select id from 'file-history' where filepath = ?";
   const ssize_t sql_size = 50;
 
   sqlite3_stmt *stmt;
@@ -289,7 +286,6 @@ int check_exists_row_in_file_history(db_s *db, const char *file_path_name, const
 
   sqlite3_close(ppDb);
 
-  printf("id: %d\n", id);
   if(id > 0) {
     return 1;
   }
