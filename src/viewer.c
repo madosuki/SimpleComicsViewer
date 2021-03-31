@@ -44,7 +44,6 @@ file_history_s *history = NULL;
 void set_file_history_on_menu()
 {
 
-
   if(history != NULL) {
     for(ssize_t i = 0; history->size; ++i) {
       free(history->file_path_name_list[i].data);
@@ -55,47 +54,53 @@ void set_file_history_on_menu()
     history = NULL;
   }
 
-  if(file_history_internal_list != NULL) {
-    g_free(file_history_internal_list);
+  /* if(file_history_internal_list != NULL) { */
+  /*   gtk_container_remove(GTK_CONTAINER(file_menu_struct.file_history), file_history_internal_list); */
+
+  /*   /\* g_free(file_history_internal_list); *\/ */
+  /* } */
+
+  if(file_history_internal_list == NULL) {
+    file_history_internal_list = gtk_menu_new();
+    gtk_menu_item_set_submenu(GTK_MENU_ITEM(file_menu_struct.file_history), file_history_internal_list);
   }
 
-  file_history_internal_list = gtk_menu_new();
-  gtk_menu_item_set_submenu(GTK_MENU_ITEM(file_menu_struct.file_history), file_history_internal_list);
-
-
   
-  history = malloc(sizeof(file_history_s));
+  history = (file_history_s*)malloc(sizeof(file_history_s));
   if(history != NULL) {
     int check = get_file_history(&db_info, history);
     if(check) {
-      file_history_on_menu_struct.list = malloc(sizeof(file_history_on_menu_struct) * history->size);
-      if(file_history_on_menu_struct.list != NULL) {
-        file_history_on_menu_struct.size = history->size;
-      
-        for(ssize_t i = 0; i < history->size; ++i) {
-          printf("%s\n", history->file_path_name_list[i].data);
-          
-          GtkWidget *widget = gtk_menu_item_new_with_label(history->file_path_name_list[i].data);
-
-          gtk_menu_shell_append(GTK_MENU_SHELL(file_history_internal_list), widget);
-          g_signal_connect(G_OBJECT(widget), "activate", G_CALLBACK(open_file_in_file_history), (gpointer)i);
-
-          
-          /* free(history->file_path_name_list[i].data); */
-          /* history->file_path_name_list[i].data = NULL; */
-        }
-        
+      if(history->size == 0) {
+        goto none;
       }
+      
+      for(ssize_t i = 0; i < history->size; ++i) {
+        printf("%s\n", history->file_path_name_list[i].data);
+          
+        GtkWidget *widget = gtk_menu_item_new_with_label(history->file_path_name_list[i].data);
+
+        gtk_menu_shell_append(GTK_MENU_SHELL(file_history_internal_list), widget);
+        g_signal_connect(G_OBJECT(widget), "activate", G_CALLBACK(open_file_in_file_history), (gpointer)i);
+      }
+
+      return;
     }
-    
-    /* free(history); */
-    /* history = NULL; */
-  } else {
-    
-    GtkWidget *none = gtk_menu_item_new_with_label("none");
-    gtk_menu_shell_append(GTK_MENU_SHELL(file_history_internal_list), none);
-    
   }
+
+  
+  GtkWidget *none;
+  goto none;
+
+ none:
+  none = gtk_menu_item_new_with_label("none");
+  gtk_menu_shell_append(GTK_MENU_SHELL(file_history_internal_list), none);
+
+  if(history != NULL) {
+    free(history);
+    history = NULL;
+  }
+
+  return;  
 
 }
 
@@ -519,17 +524,11 @@ void close_variables()
       history = NULL;
     }
 
-    if(file_history_on_menu_struct.list != NULL) {
-      /* for(ssize_t i = 0; i < file_history_on_menu_struct.size; ++i) { */
-      /*   if(file_history_on_menu_struct.list[i] != NULL) { */
-      /*     free(file_history_on_menu_struct.list[i]); */
-      /*     file_history_on_menu_struct.list[i] = NULL; */
-      /*   } */
-      /* } */
+    /* if(file_history_on_menu_struct.list != NULL) { */
 
-      free(file_history_on_menu_struct.list);
-      file_history_on_menu_struct.list = NULL;
-    }
+    /*   free(file_history_on_menu_struct.list); */
+    /*   file_history_on_menu_struct.list = NULL; */
+    /* } */
 
     
     if(comic_container->detail != NULL && comic_container->detail->image_path_list != NULL) 

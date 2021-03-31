@@ -203,7 +203,7 @@ typedef struct
 {
   GtkWidget **list;
   int size;
-} file_history_on_menu_t;   
+} file_history_on_menu_t;
 
 typedef struct
 {
@@ -318,7 +318,11 @@ static int open_file(const char *file_name)
 
   if(init_check) {
 
-    /* set_file_history_on_menu(); */
+    time_t t = time(NULL);
+    long unixtime = t;
+    insert_or_udpate_file_history(&db_info, file_name, strlen(file_name), unixtime);
+
+    set_file_history_on_menu();
     
     update_grid();
   } else {
@@ -333,10 +337,8 @@ static void open_file_in_file_history(GtkWidget *widget, gpointer n)
 {
   if(history != NULL) {
    int i = GPOINTER_TO_INT(n);
-   /* printf("%d\n", i); */
 
    if(history->file_path_name_list != NULL && history->file_path_name_list[i].data != NULL) {
-     /* printf("%s\n", history->file_path_name_list[i].data); */
      int err = open_file(history->file_path_name_list[i].data);
      if(!err) {
        printf("failed open file in open_file_in_file_history\n");

@@ -7,11 +7,12 @@ char *create_data()
 
 int get_file_history(db_s *db, file_history_s *history)
 {
+
   sqlite3 *ppDb;
   int condition = sqlite3_open(db->file_path, &ppDb);
   if(condition != SQLITE_OK) {
     puts("sqlite3 open error");
-    return -1;
+    return 0;
   }
 
   const char *select = "select * from 'file-history' order by unixtime asc";
@@ -20,9 +21,9 @@ int get_file_history(db_s *db, file_history_s *history)
   sqlite3_stmt *stmt;
   int err = sqlite3_prepare_v2(ppDb, select, select_size, &stmt, NULL);
   if(err == SQLITE_ERROR) {
-    printf("failed sqlite prepare v2\n");
+    printf("failed sqlite prepare v2 in get_file_history\n");
 
-    return -1;
+    return 0;
   }
 
   const ssize_t max_list_size = 20;
@@ -30,7 +31,7 @@ int get_file_history(db_s *db, file_history_s *history)
   created_string_s *list = (created_string_s*)malloc(sizeof(created_string_s)  * max_list_size);
   if(list == NULL) {
     puts("failed allocate list");
-    return -1;
+    return 0;
   }
 
   
@@ -81,7 +82,7 @@ int get_file_history(db_s *db, file_history_s *history)
   condition = sqlite3_close(ppDb);
   if(condition != SQLITE_OK) {
     puts("sqlite3 close error");
-    return -1;
+    return 0;
   }
 
   history->file_path_name_list = list;
@@ -153,9 +154,9 @@ int insert_file_history(db_s *db, const char *file_path, const ssize_t file_path
   sqlite3_stmt *stmt;
   err = sqlite3_prepare_v2(ppDb, sql, -1, &stmt, NULL);
   if(err == SQLITE_ERROR) {
-    printf("failed sqlite prepare v2\n");
+    printf("failed sqlite prepare v2 in insert_file_history\n");
 
-    return -1;
+    return 0;
   }
 
   err = sqlite3_bind_text(stmt, 1, file_path, file_path_size, SQLITE_TRANSIENT);
@@ -163,7 +164,7 @@ int insert_file_history(db_s *db, const char *file_path, const ssize_t file_path
     sqlite3_finalize(stmt);
     sqlite3_close(ppDb);
 
-    return -1;
+    return 0;
   }
 
   err = sqlite3_bind_int64(stmt, 2, unixtime);
@@ -171,7 +172,7 @@ int insert_file_history(db_s *db, const char *file_path, const ssize_t file_path
     sqlite3_finalize(stmt);
     sqlite3_close(ppDb);
 
-    return -1;
+    return 0;
   }
 
 
@@ -199,15 +200,15 @@ int update_file_history(db_s *db, const char *file_name, const ssize_t file_name
   if(err == SQLITE_ERROR) {
     return -1;
   }
-  const char *sql = "update 'file-history' set unixtime = ? when name = ?";
+  const char *sql = "update 'file-history' set unixtime = ? where name = ?";
   const ssize_t swl_size = 50;
 
   sqlite3_stmt *stmt;
   err = sqlite3_prepare_v2(ppDb, sql, -1, &stmt, NULL);
   if(err == SQLITE_ERROR) {
-    printf("failed sqlite prepare v2\n");
+    printf("failed sqlite prepare v2 in update_file_history\n");
 
-    return -1;
+    return 0;
   }
 
   err = sqlite3_bind_int64(stmt, 1, unixtime);
@@ -215,7 +216,7 @@ int update_file_history(db_s *db, const char *file_name, const ssize_t file_name
     sqlite3_finalize(stmt);
     sqlite3_close(ppDb);
 
-    return -1;
+    return 0;
   }
 
   err = sqlite3_bind_text(stmt, 2, file_name, file_name_size, SQLITE_TRANSIENT);
@@ -223,7 +224,7 @@ int update_file_history(db_s *db, const char *file_name, const ssize_t file_name
     sqlite3_finalize(stmt);
     sqlite3_close(ppDb);
 
-    return -1;
+    return 0;
   }
 
 
@@ -247,39 +248,38 @@ int update_file_history(db_s *db, const char *file_name, const ssize_t file_name
 int check_exists_row_in_file_history(db_s *db, const char *file_path_name, const ssize_t file_path_name_size)
 {
 
-  sqlite3 *ppDb;
+  sqlite3 *ppDb = NULL;
   int err = sqlite3_open(db->file_path, &ppDb);
-  if(err == SQLITE_ERROR) {
-    return -1;
+  if(err != SQLITE_OK) {
+    return 0;
   }
-  const char *sql = "select count(name) from 'file-history' when name = ?";
-  const ssize_t swl_size = 50;
+  const char *sql = "select id from 'file-history' where name = ?";
+  const ssize_t sql_size = 50;
 
   sqlite3_stmt *stmt;
   err = sqlite3_prepare_v2(ppDb, sql, -1, &stmt, NULL);
   if(err == SQLITE_ERROR) {
-    printf("failed sqlite prepare v2\n");
-
-    return -1;
+    printf("failed sqlite prepare v2 in check_exists_row_in_file_history\n");
+    return 0;
   }
 
   err = sqlite3_bind_text(stmt, 1, file_path_name, file_path_name_size, SQLITE_TRANSIENT);
-  if(err == SQLITE_ERROR) {
+  if(err != SQLITE_OK) {
     sqlite3_finalize(stmt);
     sqlite3_close(ppDb);
 
-    return -1;
+    return 0;
   }
 
 
-  int count = 0;
+  int id = -1;
   while(1) {
     err = sqlite3_step(stmt);
 
     if(err == SQLITE_BUSY)
       continue;
 
-    count = sqlite3_column_int(stmt, 0);
+    id = sqlite3_column_int(stmt, 0);
     
     if(err == SQLITE_DONE)
       break;
@@ -289,12 +289,12 @@ int check_exists_row_in_file_history(db_s *db, const char *file_path_name, const
 
   sqlite3_close(ppDb);
 
-  if(!count) {
-    return -1;
+  if(id > -1) {
+    return 1;
   }
   
 
-  return 1;
+  return 0;
 }
 
 int insert_or_udpate_file_history(db_s *db, const char* file_path_name, const ssize_t file_path_name_size, const long unixtime)
@@ -303,6 +303,7 @@ int insert_or_udpate_file_history(db_s *db, const char* file_path_name, const ss
     return -1;
 
   int is_exists = check_exists_row_in_file_history(db, file_path_name, file_path_name_size);
+  printf("%d\n", is_exists);
   if(!is_exists) {
     return insert_file_history(db, file_path_name, file_path_name_size, unixtime);
   }
