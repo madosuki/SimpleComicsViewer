@@ -148,7 +148,7 @@ int insert_file_history(db_s *db, const char *file_path, const ssize_t file_path
   if(err == SQLITE_ERROR) {
     return -1;
   }
-  const char *sql = "insert into 'file-history' (name, unixtime) (?, ?)";
+  const char *sql = "insert into 'file-history' (name, unixtime) values (?, ?)";
   const ssize_t swl_size = 50;
 
   sqlite3_stmt *stmt;
@@ -272,7 +272,7 @@ int check_exists_row_in_file_history(db_s *db, const char *file_path_name, const
   }
 
 
-  int id = -1;
+  int id = 0;
   while(1) {
     err = sqlite3_step(stmt);
 
@@ -289,7 +289,7 @@ int check_exists_row_in_file_history(db_s *db, const char *file_path_name, const
 
   sqlite3_close(ppDb);
 
-  if(id > -1) {
+  if(id > 0) {
     return 1;
   }
   
