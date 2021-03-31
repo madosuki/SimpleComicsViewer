@@ -280,15 +280,17 @@ int check_exists_row_in_file_history(db_s *db, const char *file_path_name, const
       continue;
 
     id = sqlite3_column_int(stmt, 0);
+    break;
     
-    if(err == SQLITE_DONE)
-      break;
+    /* if(err == SQLITE_DONE) */
+    /*   break; */
   }
 
   sqlite3_finalize(stmt);
 
   sqlite3_close(ppDb);
 
+  printf("id: %d\n", id);
   if(id > 0) {
     return 1;
   }
@@ -303,7 +305,6 @@ int insert_or_udpate_file_history(db_s *db, const char* file_path_name, const ss
     return -1;
 
   int is_exists = check_exists_row_in_file_history(db, file_path_name, file_path_name_size);
-  printf("%d\n", is_exists);
   if(!is_exists) {
     return insert_file_history(db, file_path_name, file_path_name_size, unixtime);
   }

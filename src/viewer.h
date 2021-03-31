@@ -322,7 +322,7 @@ static int open_file(const char *file_name)
     long unixtime = t;
     insert_or_udpate_file_history(&db_info, file_name, strlen(file_name), unixtime);
 
-    set_file_history_on_menu();
+    /* set_file_history_on_menu(); */
     
     update_grid();
   } else {

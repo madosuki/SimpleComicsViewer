@@ -75,7 +75,7 @@ void set_file_history_on_menu()
       }
       
       for(ssize_t i = 0; i < history->size; ++i) {
-        printf("%s\n", history->file_path_name_list[i].data);
+        /* printf("%s\n", history->file_path_name_list[i].data); */
           
         GtkWidget *widget = gtk_menu_item_new_with_label(history->file_path_name_list[i].data);
 
