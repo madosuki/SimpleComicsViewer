@@ -102,3 +102,5 @@ Makefile.in
 
 .clangd
 .cache
+
+test.db
