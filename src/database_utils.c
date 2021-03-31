@@ -42,16 +42,15 @@ int get_file_history(db_s *db, file_history_s *history)
       continue;
     }
 
+    
     if(err == SQLITE_DONE) {
       break;
     }
 
-
     created_string_s history_data = {};
     const unsigned char *file_name = sqlite3_column_text(stmt, 1);
-    const ssize_t file_name_size = strlen((char*)file_name);
-    
-    /* history_data.data = (char*)file_name; */
+    const ssize_t file_name_size = strlen((const char*)file_name);
+
     history_data.data = calloc(file_name_size + 1, 1);
     memmove(history_data.data, file_name, file_name_size);
     history_data.data[file_name_size] = '\0';
@@ -60,16 +59,14 @@ int get_file_history(db_s *db, file_history_s *history)
 
     list[list_size] = history_data;
     ++list_size;
-
-    if(max_list_size >= list_size) {
-      history_data.size = list_size;
+    if(list_size == max_list_size)
       break;
-    }
 
 
     if(err == SQLITE_ROW) {
       continue;
     }
+
 
     
     printf("something error\n");
@@ -87,6 +84,8 @@ int get_file_history(db_s *db, file_history_s *history)
 
   history->file_path_name_list = list;
   history->size = list_size;
+
+  /* printf("history size: %zd\n", history->size); */
 
   return 1;
 }
