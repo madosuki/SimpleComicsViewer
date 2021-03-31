@@ -17,6 +17,8 @@
 
 #include "pdf_loader.h"
 
+#include "database_utils.h"
+
 #define LIST_BUFFER 1024
 #define DEFAULT_WINDOW_WIDTH 1280
 #define DEFAULT_WINDOW_HEIGHT 960
@@ -32,6 +34,14 @@ extern GtkWidget *change_direction_button;
 
 extern void *cursor_observer_in_fullscreen_mode(void *data);
 extern pthread_t thread_of_curosr_observer;
+
+extern db_s db_info;
+
+extern GtkWidget *file_history_internal_list;
+
+extern file_history_s *history;
+
+void set_file_history_on_menu();
 
 void show_menu();
 void hide_menu();
@@ -307,6 +317,9 @@ static int open_file(const char *file_name)
   }
 
   if(init_check) {
+
+    /* set_file_history_on_menu(); */
+    
     update_grid();
   } else {
     printf("init image error\n");
@@ -314,6 +327,23 @@ static int open_file(const char *file_name)
   }
 
   return TRUE;
+}
+
+static void open_file_in_file_history(GtkWidget *widget, gpointer n)
+{
+  if(history != NULL) {
+   int i = GPOINTER_TO_INT(n);
+   /* printf("%d\n", i); */
+
+   if(history->file_path_name_list != NULL && history->file_path_name_list[i].data != NULL) {
+     /* printf("%s\n", history->file_path_name_list[i].data); */
+     int err = open_file(history->file_path_name_list[i].data);
+     if(!err) {
+       printf("failed open file in open_file_in_file_history\n");
+     }
+   }
+  }
+  
 }
 
 static void open_file_on_menu()
@@ -491,6 +521,9 @@ static void activate(GtkApplication* app, gpointer user_data)
   comic_container->isCoverMode = FALSE;
 
   file_history_on_menu_struct.size = 0;
+
+  db_info.file_path = "test.db";
+
 
   cursor_pos.x = 0;
   cursor_pos.y = 0;

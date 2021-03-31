@@ -54,9 +54,9 @@ typedef struct {
 } sqlite_value_s_list;
 
 typedef struct {
-  char *file_path;
-  ssize_t file_path_size;
-} file_histoy_s;
+  created_string_s *file_path_name_list;
+  ssize_t size;
+} file_history_s;
 
 typedef struct {
   uint8_t *thumbnail;
@@ -82,7 +82,7 @@ typedef struct {
 } db_s;
 
 
-file_histoy_s *get_file_history(db_s *db);
+int get_file_history(db_s *db, file_history_s *history);
 int create_file_history_table(db_s *db);
 int create_book_shelf_table(db_s *db);
 

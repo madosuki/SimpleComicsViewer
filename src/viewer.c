@@ -30,10 +30,74 @@ GtkWidget *button_menu = NULL;
 
 comic_container_t *comic_container = NULL;
 
+db_s db_info = {};
+
+GtkWidget *file_history_internal_list = NULL;
+
 const char *right_to_left_name = "Current Direction: Right to Left";
 const char *left_to_right_name = "Current Direction: Left to Right";
 
 GtkWidget *change_direction_button = NULL;
+
+file_history_s *history = NULL;
+
+void set_file_history_on_menu()
+{
+
+
+  if(history != NULL) {
+    for(ssize_t i = 0; history->size; ++i) {
+      free(history->file_path_name_list[i].data);
+      history->file_path_name_list[i].data = NULL;
+    }
+
+    free(history);
+    history = NULL;
+  }
+
+  if(file_history_internal_list != NULL) {
+    g_free(file_history_internal_list);
+  }
+
+  file_history_internal_list = gtk_menu_new();
+  gtk_menu_item_set_submenu(GTK_MENU_ITEM(file_menu_struct.file_history), file_history_internal_list);
+
+
+  
+  history = malloc(sizeof(file_history_s));
+  if(history != NULL) {
+    int check = get_file_history(&db_info, history);
+    if(check) {
+      file_history_on_menu_struct.list = malloc(sizeof(file_history_on_menu_struct) * history->size);
+      if(file_history_on_menu_struct.list != NULL) {
+        file_history_on_menu_struct.size = history->size;
+      
+        for(ssize_t i = 0; i < history->size; ++i) {
+          printf("%s\n", history->file_path_name_list[i].data);
+          
+          GtkWidget *widget = gtk_menu_item_new_with_label(history->file_path_name_list[i].data);
+
+          gtk_menu_shell_append(GTK_MENU_SHELL(file_history_internal_list), widget);
+          g_signal_connect(G_OBJECT(widget), "activate", G_CALLBACK(open_file_in_file_history), (gpointer)i);
+
+          
+          /* free(history->file_path_name_list[i].data); */
+          /* history->file_path_name_list[i].data = NULL; */
+        }
+        
+      }
+    }
+    
+    /* free(history); */
+    /* history = NULL; */
+  } else {
+    
+    GtkWidget *none = gtk_menu_item_new_with_label("none");
+    gtk_menu_shell_append(GTK_MENU_SHELL(file_history_internal_list), none);
+    
+  }
+
+}
 
 int inline check_valid_cover_mode()
 {
@@ -436,6 +500,38 @@ void free_image_container()
 void close_variables()
 {
   if(!window.isClose) {
+
+    if(history != NULL) {
+      if(history->file_path_name_list != NULL) {
+        for(ssize_t i = 0; i < history->size; ++i) {
+          if(history->file_path_name_list[i].data != NULL) {
+            free(history->file_path_name_list[i].data);
+            history->file_path_name_list[i].data = NULL;
+          }
+        }
+
+        free(history->file_path_name_list);
+        history->file_path_name_list = NULL;
+        
+      }
+
+      free(history);
+      history = NULL;
+    }
+
+    if(file_history_on_menu_struct.list != NULL) {
+      /* for(ssize_t i = 0; i < file_history_on_menu_struct.size; ++i) { */
+      /*   if(file_history_on_menu_struct.list[i] != NULL) { */
+      /*     free(file_history_on_menu_struct.list[i]); */
+      /*     file_history_on_menu_struct.list[i] = NULL; */
+      /*   } */
+      /* } */
+
+      free(file_history_on_menu_struct.list);
+      file_history_on_menu_struct.list = NULL;
+    }
+
+    
     if(comic_container->detail != NULL && comic_container->detail->image_path_list != NULL) 
     {                                                                                
       free_array_with_alloced((void**)comic_container->detail->image_path_list, comic_container->detail->image_count);    
@@ -1288,24 +1384,7 @@ GtkWidget *create_menu_bar()
   gtk_menu_shell_append(GTK_MENU_SHELL(file_menu_struct.body), file_menu_struct.file_history);
 
 
-  GtkWidget *internal_list = gtk_menu_new();
-  gtk_menu_item_set_submenu(GTK_MENU_ITEM(file_menu_struct.file_history), internal_list);
-
-  if(file_history_on_menu_struct.size == 0) {
-    GtkWidget *none = gtk_menu_item_new_with_label("none");
-    gtk_menu_shell_append(GTK_MENU_SHELL(internal_list), none);
-  }
-  
-  for(int i = 0; 0 < file_history_on_menu_struct.size; ++i) {
-    if(file_history_on_menu_struct.list != NULL &&
-       file_history_on_menu_struct.list[i] != NULL) {
-      
-      gtk_menu_shell_append(GTK_MENU_SHELL(internal_list),
-                            file_history_on_menu_struct.list[i]);
-      
-    }
-  }
-  
+  set_file_history_on_menu();
   
 
   file_menu_struct.quit = gtk_menu_item_new_with_label("Quit");
