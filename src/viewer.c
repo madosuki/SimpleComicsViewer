@@ -40,6 +40,7 @@ const char *left_to_right_name = "Current Direction: Left to Right";
 GtkWidget *change_direction_button = NULL;
 
 file_history_s *history = NULL;
+int is_file_history_none = FALSE;
 
 void set_file_history_on_menu()
 {
@@ -49,29 +50,19 @@ void set_file_history_on_menu()
     free_history_array(history);
 
 
+  int is_reload = FALSE;
   if(file_history_internal_list != NULL) {
 
     GList *child_list = gtk_container_get_children(GTK_CONTAINER(file_history_internal_list));
-
-    /* int count = 0; */
     for(GList *l = child_list; l != NULL; l = l->next) {
 
       gpointer element = l->data;
-
-      /* printf("%p\n", element); */
-      /* printf("%d\n", count); */
-      /* ++count; */
-
       gtk_container_remove(GTK_CONTAINER(file_history_internal_list), element);
+      
     }
+
+    is_reload = TRUE;
   }
-
-
-
-    /* gtkwidget *sub = gtk_menu_item_get_submenu(GTK_MENU_ITEM(file_menu_struct.file_history)); */
-    /* gtk_container_remove(GTK_CONTAINER(file_menu_struct.file_history), file_history_internal_list); */
-
-    /* g_free(file_history_internal_list); */
 
 
   if(file_history_internal_list == NULL) {
@@ -87,6 +78,11 @@ void set_file_history_on_menu()
       if(history->size == 0) {
         goto none;
       }
+
+      if(is_file_history_none) {
+        gtk_widget_set_sensitive(file_menu_struct.file_history, TRUE);
+        is_file_history_none = FALSE;
+      }
       
       for(ssize_t i = 0; i < history->size; ++i) {
         printf("%s\n", history->file_path_name_list[i]->data);
@@ -95,6 +91,9 @@ void set_file_history_on_menu()
 
         gtk_menu_shell_append(GTK_MENU_SHELL(file_history_internal_list), widget);
         g_signal_connect(G_OBJECT(widget), "activate", G_CALLBACK(open_file_in_file_history), (gpointer)i);
+
+        if(is_reload)
+          gtk_widget_show(widget);
       }
 
       return;
@@ -107,6 +106,7 @@ void set_file_history_on_menu()
 
  none:
   gtk_widget_set_sensitive(file_menu_struct.file_history, FALSE);
+  is_file_history_none = TRUE;
 
   if(history != NULL) {
     free(history);
