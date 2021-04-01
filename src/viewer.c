@@ -44,39 +44,39 @@ file_history_s *history = NULL;
 void set_file_history_on_menu()
 {
 
-  if(history != NULL) {
-    if(history->file_path_name_list != NULL) {
-      for(ssize_t i = 0; i < history->size; ++i) {
-        if(history->file_path_name_list[i] != NULL) {
-          
-          if(history->file_path_name_list[i]->data != NULL) {
 
-            free(history->file_path_name_list[i]->data);
-            history->file_path_name_list[i]->data = NULL;
+  if(history != NULL)
+    free_history_array(history);
 
-          }
-          
-          free(history->file_path_name_list[i]);
-          history->file_path_name_list[i] = NULL;
-        }
+
+  if(file_history_internal_list != NULL) {
+
+    GList *child_list = gtk_container_get_children(GTK_CONTAINER(file_history_internal_list));
+    if(child_list != NULL) {
+      GList *first_item = g_list_first(child_list);
+      if(first_item != NULL) {
+
       }
 
-      free(history->file_path_name_list);
-      history->file_path_name_list = NULL;
+      /* if(first_item != NULL) { */
+
+      /*   while(child_list != NULL) { */
+
+      /*     GList *item = g_list_first(child_list); */
+      
+      /*     child_list = g_list_next(child_list); */
+      /*   } */
+      /* } */
 
     }
 
 
-    free(history);
-    history = NULL;
+
+    /* gtkwidget *sub = gtk_menu_item_get_submenu(GTK_MENU_ITEM(file_menu_struct.file_history)); */
+    /* gtk_container_remove(GTK_CONTAINER(file_menu_struct.file_history), file_history_internal_list); */
+
+    /* g_free(file_history_internal_list); */
   }
-
-
-  /* if(file_history_internal_list != NULL) { */
-  /*   gtk_container_remove(GTK_CONTAINER(file_menu_struct.file_history), file_history_internal_list); */
-
-  /*   g_free(file_history_internal_list); */
-  /* } */
 
   if(file_history_internal_list == NULL) {
     file_history_internal_list = gtk_menu_new();
@@ -110,8 +110,7 @@ void set_file_history_on_menu()
   goto none;
 
  none:
-  none = gtk_menu_item_new_with_label("none");
-  gtk_menu_shell_append(GTK_MENU_SHELL(file_history_internal_list), none);
+  gtk_widget_set_sensitive(file_menu_struct.file_history, FALSE);
 
   if(history != NULL) {
     free(history);
@@ -523,22 +522,9 @@ void free_image_container()
 void close_variables()
 {
   if(!window.isClose) {
-
+    
     if(history != NULL) {
-      if(history->file_path_name_list != NULL) {
-        for(ssize_t i = 0; i < history->size; ++i) {
-          if(history->file_path_name_list[i]->data != NULL) {
-            free(history->file_path_name_list[i]->data);
-            history->file_path_name_list[i]->data = NULL;
-          }
-        }
-
-        free(history->file_path_name_list);
-        history->file_path_name_list = NULL;
-      }
-
-      free(history);
-      history = NULL;
+      free_history_array(history);
     }
 
     /* if(file_history_on_menu_struct.list != NULL) { */

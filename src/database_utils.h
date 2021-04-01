@@ -81,6 +81,7 @@ typedef struct {
   ssize_t file_path_length;
 } db_s;
 
+void free_history_array(file_history_s *history);
 
 int get_file_history(db_s *db, file_history_s *history);
 int create_file_history_table(db_s *db);

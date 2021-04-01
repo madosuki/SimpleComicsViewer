@@ -1,6 +1,35 @@
 
 #include "database_utils.h"
 
+void free_history_array(file_history_s *history)
+{
+  if(history != NULL) {
+    if(history->file_path_name_list != NULL) {
+      for(ssize_t i = 0; i < history->size; ++i) {
+        if(history->file_path_name_list[i] != NULL) {
+          
+          if(history->file_path_name_list[i]->data != NULL) {
+
+            free(history->file_path_name_list[i]->data);
+            history->file_path_name_list[i]->data = NULL;
+
+          }
+          
+          free(history->file_path_name_list[i]);
+          history->file_path_name_list[i] = NULL;
+        }
+      }
+
+      free(history->file_path_name_list);
+      history->file_path_name_list = NULL;
+
+    }
+
+    free(history);
+    history = NULL;
+  }
+}
+
 
 int get_file_history(db_s *db, file_history_s *history)
 {
