@@ -23,6 +23,12 @@
 #define DEFAULT_WINDOW_WIDTH 1280
 #define DEFAULT_WINDOW_HEIGHT 960
 
+/* extern char *home_directory; */
+extern const char *db_name;
+extern const ssize_t db_name_size;
+
+extern char *db_path_under_dot_local_share;
+
 extern int status;
 
 extern char *arg_file_name;
@@ -483,6 +489,102 @@ static gint run_cmd_argument(GApplication *app, GApplicationCommandLine *app_cmd
 }
 
 
+static int set_local_share()
+{
+  char *home_directory = NULL;
+  if((home_directory = getenv("HOME")) == NULL ) {
+    puts("missing variable named HOME from env.");
+    
+    return FALSE;
+  } else {
+    const ssize_t home_size = strlen(home_directory);
+
+    const char *dot_local = "/.local";
+    const int dot_local_size = 7;
+    
+    const char *share = "/share";
+    const int share_size = 6;
+
+    int dot_local_path_size = home_size + dot_local_size;
+    char *dot_local_path = (char*)calloc(dot_local_path_size + 1, 1);
+    if(dot_local_path == NULL) {
+      return FALSE;
+    }
+    ssize_t dot_local_path_pos = 0;
+    memmove(dot_local_path, home_directory, home_size);
+    dot_local_path_pos += home_size;
+    memmove(dot_local_path + dot_local_path_pos, dot_local, dot_local_size);
+    dot_local_path[dot_local_path_size] = '\0';
+
+    
+    int err = 0;
+    struct stat stat_dir;
+    stat(dot_local_path, &stat_dir);
+    if(!S_ISDIR(stat_dir.st_mode)) {
+      err = mkdir(dot_local_path, 755);
+      if(err != 0) {
+        free(dot_local_path);
+        dot_local_path = NULL;
+        return FALSE;
+      }
+      
+    }
+
+    const ssize_t local_share_size = dot_local_path_size + share_size;
+    char *local_share = (char*)calloc(local_share_size + 1, 1);
+    if(local_share == NULL) {
+      free(dot_local_path);
+      dot_local_path = NULL;
+      
+      return FALSE;
+    }
+    
+    ssize_t local_share_pos = 0;
+    memmove(local_share, dot_local_path, dot_local_path_size);
+    local_share_pos += dot_local_path_size;
+    free(dot_local_path);
+    dot_local_path = NULL;
+    
+    memmove(local_share + local_share_pos, share, share_size);
+    
+    local_share[local_share_size] = '\0';
+
+    struct stat local_share_stat;
+    stat(local_share, &local_share_stat);
+    if(!S_ISDIR(local_share_stat.st_mode)) {
+      err = mkdir(local_share, 755);
+      if(err == 0) {
+        free(local_share);
+        local_share = NULL;
+        return FALSE;
+      }
+    }
+
+    const ssize_t local_share_with_db_name_size = local_share_size + db_name_size + 1;
+    ssize_t pos = 0;
+    db_path_under_dot_local_share = (char*)calloc(local_share_with_db_name_size + 1, 1);
+    if(db_path_under_dot_local_share == NULL) {
+      free(local_share);
+      local_share = NULL;
+
+      return FALSE;
+    }
+    
+    memmove(db_path_under_dot_local_share, local_share, local_share_size);
+    pos += local_share_size;
+    free(local_share);
+    local_share = NULL;
+
+    memmove(db_path_under_dot_local_share + pos, "/", 1);
+    ++pos;
+
+    memmove(db_path_under_dot_local_share + pos, db_name, db_name_size);
+    db_path_under_dot_local_share[local_share_with_db_name_size] = '\0';
+  }
+
+  return TRUE;
+}
+
 static void activate(GtkApplication* app, gpointer user_data)
 {
   
@@ -522,9 +624,16 @@ static void activate(GtkApplication* app, gpointer user_data)
   comic_container->isCompressFile = TRUE;
   comic_container->isCoverMode = FALSE;
 
+
+  if(set_local_share()) {
+    printf("%s\n", db_path_under_dot_local_share);
+  }
+  
+
+  
   file_history_on_menu_struct.size = 0;
 
-  db_info.file_path = "/tmp/test.db";
+  db_info.file_path = "/tmp/simple_comics_viewer.db";
   create_file_history_table(&db_info);
 
   cursor_pos.x = 0;

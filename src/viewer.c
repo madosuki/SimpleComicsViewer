@@ -1,5 +1,11 @@
 #include "viewer.h"
 
+/* char *home_directory = NULL; */
+const char *db_name = "simple_comic_viewer.db";
+const ssize_t db_name_size = 22;
+
+char *db_path_under_dot_local_share = NULL;
+
 int status = 0;
 
 char *arg_file_name = NULL;
@@ -554,9 +560,17 @@ void close_variables()
 
     fz_clear();
 
+
+    if(db_path_under_dot_local_share != NULL) {
+      free(db_path_under_dot_local_share);
+      db_path_under_dot_local_share = NULL;
+      
+    }
+
+    
     if(window.isFullScreen)
       pthread_detach(thread_of_curosr_observer);
-
+    
     window.isClose = TRUE;
   }
 }
