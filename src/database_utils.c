@@ -41,7 +41,7 @@ int get_file_history(db_s *db, file_history_s *history)
     return 0;
   }
 
-  const char *select = "select * from 'file-history' order by unixtime asc";
+  const char *select = "select * from 'file-history' order by unixtime desc";
   const ssize_t select_size = strlen(select);
 
   sqlite3_stmt *stmt;

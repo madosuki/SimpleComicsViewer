@@ -52,23 +52,19 @@ void set_file_history_on_menu()
   if(file_history_internal_list != NULL) {
 
     GList *child_list = gtk_container_get_children(GTK_CONTAINER(file_history_internal_list));
-    if(child_list != NULL) {
-      GList *first_item = g_list_first(child_list);
-      if(first_item != NULL) {
 
-      }
+    /* int count = 0; */
+    for(GList *l = child_list; l != NULL; l = l->next) {
 
-      /* if(first_item != NULL) { */
+      gpointer element = l->data;
 
-      /*   while(child_list != NULL) { */
+      /* printf("%p\n", element); */
+      /* printf("%d\n", count); */
+      /* ++count; */
 
-      /*     GList *item = g_list_first(child_list); */
-      
-      /*     child_list = g_list_next(child_list); */
-      /*   } */
-      /* } */
-
+      gtk_container_remove(GTK_CONTAINER(file_history_internal_list), element);
     }
+  }
 
 
 
@@ -76,7 +72,7 @@ void set_file_history_on_menu()
     /* gtk_container_remove(GTK_CONTAINER(file_menu_struct.file_history), file_history_internal_list); */
 
     /* g_free(file_history_internal_list); */
-  }
+
 
   if(file_history_internal_list == NULL) {
     file_history_internal_list = gtk_menu_new();
@@ -93,7 +89,7 @@ void set_file_history_on_menu()
       }
       
       for(ssize_t i = 0; i < history->size; ++i) {
-        /* printf("%s\n", history->file_path_name_list[i].data); */
+        printf("%s\n", history->file_path_name_list[i]->data);
           
         GtkWidget *widget = gtk_menu_item_new_with_label(history->file_path_name_list[i]->data);
 
