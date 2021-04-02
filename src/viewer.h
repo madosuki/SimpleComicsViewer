@@ -529,7 +529,7 @@ static int cp(const char* src_file_path, const ssize_t src_file_path_size, const
   /* } */
 
 
-  FILE *dst_fp = fopen(dst_file_path, "wb");
+  FILE *dst_fp = fopen(dst_file_path, "r+");
   if(dst_fp == NULL) {
     free(src_bytes);
     src_bytes = NULL;
@@ -546,9 +546,18 @@ static int cp(const char* src_file_path, const ssize_t src_file_path_size, const
 
     return FALSE;
   }
+  err = ftruncate(fd, 0);
+  if(err != 0) {
+    flock(fd, LOCK_UN);
+    fclose(dst_fp);
+
+    free(src_bytes);
+    src_bytes = NULL;
+
+  }
+
   count = fwrite(src_bytes, 1, src_byte_size, dst_fp);
   if(count < src_byte_size) {
-
 
     flock(fd, LOCK_UN);
     fclose(dst_fp);
@@ -558,6 +567,7 @@ static int cp(const char* src_file_path, const ssize_t src_file_path_size, const
 
     return FALSE;
   }
+  err = fflush(dst_fp);
 
   free(src_bytes);
   src_bytes = NULL;
