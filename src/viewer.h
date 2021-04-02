@@ -13,6 +13,7 @@
 #include <pthread.h>
 #include <dirent.h>
 #include <openssl/sha.h>
+#include <sys/file.h>
 
 #include "utils.h"
 #include "loader.h"
@@ -535,9 +536,21 @@ static int cp(const char* src_file_path, const ssize_t src_file_path_size, const
 
     return FALSE;
   }
-  flockfile(dst_fp);
+  int fd = fileno(dst_fp);
+  int err = flock(fd, LOCK_EX);
+  if(err != 0) {
+    fclose(dst_fp);
+    
+    free(src_bytes);
+    src_bytes = NULL;
+
+    return FALSE;
+  }
   count = fwrite(src_bytes, 1, src_byte_size, dst_fp);
   if(count < src_byte_size) {
+
+
+    flock(fd, LOCK_UN);
     fclose(dst_fp);
     
     free(src_bytes);
@@ -549,6 +562,7 @@ static int cp(const char* src_file_path, const ssize_t src_file_path_size, const
   free(src_bytes);
   src_bytes = NULL;
 
+  flock(fd, LOCK_UN);
   fclose(dst_fp);
   
   return TRUE;
