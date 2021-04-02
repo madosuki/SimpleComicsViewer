@@ -52,9 +52,8 @@ int get_file_history(db_s *db, file_history_s *history)
     return 0;
   }
 
-  const ssize_t max_list_size = 20;
   ssize_t list_size = 0;
-  created_string_s **list = (created_string_s**)malloc(sizeof(created_string_s*)  * max_list_size);
+  created_string_s **list = (created_string_s**)malloc(sizeof(created_string_s*)  * FILE_HISTORY_MAX_LENGTH);
   if(list == NULL) {
     puts("failed allocate list");
     return 0;
@@ -85,7 +84,7 @@ int get_file_history(db_s *db, file_history_s *history)
 
     list[list_size] = history_data;
     ++list_size;
-    if(list_size == max_list_size)
+    if(list_size == FILE_HISTORY_MAX_LENGTH)
       break;
 
 
@@ -111,7 +110,7 @@ int get_file_history(db_s *db, file_history_s *history)
   history->file_path_name_list = list;
   history->size = list_size;
 
-  printf("history size: %zd\n", history->size);
+  /* printf("history size: %zd\n", history->size); */
 
   return 1;
 }
@@ -323,6 +322,136 @@ int check_exists_row_in_file_history(db_s *db, const char *file_path_name, const
   return 0;
 }
 
+int get_file_historY_table_size(db_s *db)
+{
+  sqlite3 *ppDb = NULL;
+  int err = sqlite3_open(db->file_path, &ppDb);
+  if(err != SQLITE_OK) {
+    return 0;
+  }
+  const char *sql = "select count(id) from 'file-history'";
+  const ssize_t sql_size = 36;
+
+  sqlite3_stmt *stmt;
+  err = sqlite3_prepare_v2(ppDb, sql, sql_size, &stmt, NULL);
+  if(err == SQLITE_ERROR) {
+    printf("failed sqlite prepare v2 in check_exists_row_in_file_history\n");
+    return 0;
+  }
+
+  int count = 0;
+  while(1) {
+    err = sqlite3_step(stmt);
+
+    if(err == SQLITE_BUSY)
+      continue;
+
+    count = sqlite3_column_int(stmt, 0);
+    break;
+    
+    /* if(err == SQLITE_DONE) */
+    /*   break; */
+  }
+
+  sqlite3_finalize(stmt);
+
+  sqlite3_close(ppDb);
+
+  if(count > 0) {
+    return 1;
+  }
+  
+
+  return 0;
+}
+
+int get_oldest_data_id_from_file_histor_table(db_s *db)
+{
+  sqlite3 *ppDb = NULL;
+  int err = sqlite3_open(db->file_path, &ppDb);
+  if(err != SQLITE_OK) {
+    return -1;
+  }
+  const char *sql = "select id from 'file-history' order by unixtime asc";
+  const ssize_t sql_size = 51;
+
+  sqlite3_stmt *stmt;
+  err = sqlite3_prepare_v2(ppDb, sql, sql_size, &stmt, NULL);
+  if(err == SQLITE_ERROR) {
+    printf("failed sqlite prepare v2 in check_exists_row_in_file_history\n");
+    return -1;
+  }
+
+  int id = 0;
+  while(1) {
+    err = sqlite3_step(stmt);
+
+    if(err == SQLITE_BUSY)
+      continue;
+
+    id = sqlite3_column_int(stmt, 0);
+    break;
+    
+  }
+
+  sqlite3_finalize(stmt);
+
+  sqlite3_close(ppDb);
+
+  if(id > 0) {
+    return id;
+  }
+  
+
+  return -1;
+}
+
+int delete_row_from_file_histor_table(db_s *db, int id)
+{
+  sqlite3 *ppDb = NULL;
+  int err = sqlite3_open(db->file_path, &ppDb);
+  if(err != SQLITE_OK) {
+    return 0;
+  }
+  const char *sql = "delete 'file-history' where id = ?";
+  const ssize_t sql_size = 51;
+
+  sqlite3_stmt *stmt;
+  err = sqlite3_prepare_v2(ppDb, sql, sql_size, &stmt, NULL);
+  if(err == SQLITE_ERROR) {
+    printf("failed sqlite prepare v2 in check_exists_row_in_file_history\n");
+    return 0;
+  }
+
+  err = sqlite3_bind_int(stmt, 1, id);
+  if(err != SQLITE_OK) {
+    sqlite3_finalize(stmt);
+    sqlite3_close(ppDb);
+
+    return 0;
+  }
+
+
+
+  while(1) {
+    err = sqlite3_step(stmt);
+
+    if(err == SQLITE_BUSY)
+      continue;
+
+
+    break;
+  }
+
+  sqlite3_finalize(stmt);
+
+  sqlite3_close(ppDb);
+
+
+  return 1;
+}
+
+
 int insert_or_udpate_file_history(db_s *db, const char* file_path_name, const ssize_t file_path_name_size, const long unixtime)
 {
   if(file_path_name == NULL || file_path_name_size < 1 || unixtime < 1)
@@ -330,6 +459,17 @@ int insert_or_udpate_file_history(db_s *db, const char* file_path_name, const ss
 
   int is_exists = check_exists_row_in_file_history(db, file_path_name, file_path_name_size);
   if(!is_exists) {
+    int size = get_file_historY_table_size(db);
+
+    if(size >= FILE_HISTORY_MAX_LENGTH) {
+      int id = get_oldest_data_id_from_file_histor_table(db);
+      int check = delete_row_from_file_histor_table(db, id);
+      if(!check) {
+        printf("failed delete row in insert_or_update_file_history\n");
+      }
+    }
+    
+    
     return insert_file_history(db, file_path_name, file_path_name_size, unixtime);
   }
 

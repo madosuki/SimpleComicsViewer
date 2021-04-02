@@ -11,6 +11,8 @@
 #include <fcntl.h>
 #include <time.h>
 #include <pthread.h>
+#include <dirent.h>
+#include <openssl/sha.h>
 
 #include "utils.h"
 #include "loader.h"
@@ -495,6 +497,56 @@ static gint run_cmd_argument(GApplication *app, GApplicationCommandLine *app_cmd
   return 1;
 }
 
+static int cp(const char* src_file_path, const ssize_t src_file_path_size, const char *dst_file_path, const ssize_t dst_file_path_size)
+{
+  struct stat s;
+  stat(src_file_path, &s);
+  if(!(S_ISREG(s.st_mode))) {
+    return FALSE;
+  }
+  ssize_t src_byte_size = s.st_size;
+
+  FILE *src_fp = fopen(src_file_path, "rb");
+  uint8_t *src_bytes = (uint8_t*)calloc(src_byte_size, 1);
+  int count = fread(src_bytes, 1, src_byte_size, src_fp);
+  if(count < src_byte_size) {
+    fclose(src_fp);
+    
+    free(src_bytes);
+    src_bytes = NULL;
+
+    return FALSE;
+  }
+  fclose(src_fp);
+
+  FILE *dst_fp = fopen(dst_file_path, "wb");
+  count = fwrite(src_bytes, 1, src_byte_size, dst_fp);
+  if(count < src_byte_size) {
+    fclose(dst_fp);
+    
+    free(src_bytes);
+    src_bytes = NULL;
+
+    return FALSE;
+  }
+
+  free(src_bytes);
+  src_bytes = NULL;
+
+  fclose(dst_fp);
+  
+  return TRUE;
+}
+
+static int backup_db()
+{
+  if(db_path_under_dot_local_share != NULL && temporary_db_path != NULL) {
+    return cp(temporary_db_path, temporary_db_path_size, db_path_under_dot_local_share, db_path_under_dot_local_share_size);
+  }
+
+  return FALSE;
+}
+
 static int set_temporary()
 {
 
@@ -748,6 +800,11 @@ static void activate(GtkApplication* app, gpointer user_data)
   file_history_on_menu_struct.size = 0;
 
   if(temporary_db_path != NULL) {
+
+    if(db_path_under_dot_local_share != NULL) {
+      cp(db_path_under_dot_local_share, db_path_under_dot_local_share_size, temporary_db_path, temporary_db_path_size);
+    }
+    
     db_info.file_path = temporary_db_path;
     create_file_history_table(&db_info);
   }

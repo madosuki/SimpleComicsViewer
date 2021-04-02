@@ -1,6 +1,5 @@
 #include "viewer.h"
 
-/* char *home_directory = NULL; */
 const char *db_name = "simple_comic_viewer.db";
 const ssize_t db_name_size = 22;
 
@@ -98,7 +97,7 @@ void set_file_history_on_menu()
       }
       
       for(ssize_t i = 0; i < history->size; ++i) {
-        printf("%s\n", history->file_path_name_list[i]->data);
+        /* printf("%s\n", history->file_path_name_list[i]->data); */
           
         GtkWidget *widget = gtk_menu_item_new_with_label(history->file_path_name_list[i]->data);
 
@@ -566,6 +565,10 @@ void close_variables()
     comic_container = NULL;
 
     fz_clear();
+
+    if(db_path_under_dot_local_share != NULL && temporary_db_path != NULL) {
+      backup_db();
+    }
 
 
     if(db_path_under_dot_local_share != NULL) {
