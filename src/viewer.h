@@ -25,7 +25,6 @@
 #define DEFAULT_WINDOW_WIDTH 1280
 #define DEFAULT_WINDOW_HEIGHT 960
 
-/* extern char *home_directory; */
 extern const char *db_name;
 extern const ssize_t db_name_size;
 
@@ -499,14 +498,17 @@ static gint run_cmd_argument(GApplication *app, GApplicationCommandLine *app_cmd
 
 static int cp(const char* src_file_path, const ssize_t src_file_path_size, const char *dst_file_path, const ssize_t dst_file_path_size)
 {
-  struct stat s;
-  stat(src_file_path, &s);
-  if(!(S_ISREG(s.st_mode))) {
+  struct stat src_stat;
+  stat(src_file_path, &src_stat);
+  if(!(S_ISREG(src_stat.st_mode))) {
     return FALSE;
   }
-  ssize_t src_byte_size = s.st_size;
+  ssize_t src_byte_size = src_stat.st_size;
 
   FILE *src_fp = fopen(src_file_path, "rb");
+  if(src_fp == NULL) {
+    return FALSE;
+  }
   uint8_t *src_bytes = (uint8_t*)calloc(src_byte_size, 1);
   int count = fread(src_bytes, 1, src_byte_size, src_fp);
   if(count < src_byte_size) {
@@ -519,7 +521,21 @@ static int cp(const char* src_file_path, const ssize_t src_file_path_size, const
   }
   fclose(src_fp);
 
+  /* struct stat dst_stat; */
+  /* stat(dst_file_path, &dst_stat); */
+  /* if(S_ISREG(src_stat.st_mode)) { */
+    
+  /* } */
+
+
   FILE *dst_fp = fopen(dst_file_path, "wb");
+  if(dst_fp == NULL) {
+    free(src_bytes);
+    src_bytes = NULL;
+
+    return FALSE;
+  }
+  flockfile(dst_fp);
   count = fwrite(src_bytes, 1, src_byte_size, dst_fp);
   if(count < src_byte_size) {
     fclose(dst_fp);
