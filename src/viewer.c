@@ -4,7 +4,14 @@
 const char *db_name = "simple_comic_viewer.db";
 const ssize_t db_name_size = 22;
 
+const char *app_dir = "simple_comics_viewer";
+const ssize_t app_dir_size = 20;
+
 char *db_path_under_dot_local_share = NULL;
+ssize_t db_path_under_dot_local_share_size = 0;
+
+char *temporary_db_path = NULL;
+ssize_t temporary_db_path_size = 0;
 
 int status = 0;
 
@@ -564,7 +571,11 @@ void close_variables()
     if(db_path_under_dot_local_share != NULL) {
       free(db_path_under_dot_local_share);
       db_path_under_dot_local_share = NULL;
-      
+    }
+
+    if(temporary_db_path != NULL) {
+      free(temporary_db_path);
+      temporary_db_path = NULL;
     }
 
     

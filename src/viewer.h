@@ -27,7 +27,14 @@
 extern const char *db_name;
 extern const ssize_t db_name_size;
 
+extern const char *app_dir;
+extern const ssize_t app_dir_size;
+
 extern char *db_path_under_dot_local_share;
+extern ssize_t db_path_under_dot_local_share_size;
+
+extern char *temporary_db_path;
+extern ssize_t temporary_db_path_size;
 
 extern int status;
 
@@ -488,6 +495,73 @@ static gint run_cmd_argument(GApplication *app, GApplicationCommandLine *app_cmd
   return 1;
 }
 
+static int set_temporary()
+{
+
+  int condition = TRUE;
+  const char *temporary = "/tmp";
+  struct stat temporary_stat;
+  stat(temporary, &temporary_stat);
+  if(!S_ISDIR(temporary_stat.st_mode)) {
+    return FALSE;
+  }
+
+  const ssize_t temporary_size = 4;
+  const ssize_t temporary_data_dir_size = temporary_size + app_dir_size + 1;
+  char *temporary_data_dir = (char*)calloc(temporary_data_dir_size + 1, 1);
+  if(temporary_data_dir == NULL) {
+    return FALSE;
+  }
+  
+  ssize_t temporary_data_dir_pos = 0;
+  memmove(temporary_data_dir, temporary, temporary_size);
+  temporary_data_dir_pos += temporary_size;
+  memmove(temporary_data_dir + temporary_data_dir_pos, "/", 1);
+  ++temporary_data_dir_pos;
+  memmove(temporary_data_dir + temporary_data_dir_pos, app_dir, app_dir_size);
+  temporary_data_dir[temporary_data_dir_size] = '\0';
+
+  struct stat temporary_data_dir_stat;
+  stat(temporary_data_dir, &temporary_data_dir_stat);
+  if(!S_ISDIR(temporary_data_dir_stat.st_mode)) {
+    if(mkdir(temporary_data_dir, 0755) != 0) {
+      condition = FALSE;
+    
+      goto end_temporary_data_dir;
+    }
+  }
+
+  temporary_db_path_size = temporary_data_dir_size + db_name_size + 1;
+  temporary_db_path = calloc(temporary_db_path_size + 1, 1);
+  if(temporary_db_path == NULL) {
+    condition = FALSE;
+    temporary_db_path_size = 0;
+    
+    goto end_temporary_data_dir;
+  }
+  ssize_t temporary_db_path_pos = 0;
+  memmove(temporary_db_path, temporary_data_dir, temporary_data_dir_size);
+  temporary_db_path_pos += temporary_data_dir_size;
+  free(temporary_data_dir);
+  temporary_data_dir = NULL;
+
+  memmove(temporary_db_path + temporary_db_path_pos, "/", 1);
+  ++temporary_db_path_pos;
+
+  
+  memmove(temporary_db_path + temporary_db_path_pos, db_name, db_name_size);
+  temporary_db_path[temporary_db_path_size] = '\0';
+
+
+  return condition;
+
+
+ end_temporary_data_dir:
+  free(temporary_data_dir);
+  temporary_data_dir = NULL;
+      
+  return condition;
+}
 
 static int set_local_share()
 {
@@ -521,7 +595,7 @@ static int set_local_share()
     struct stat stat_dir;
     stat(dot_local_path, &stat_dir);
     if(!S_ISDIR(stat_dir.st_mode)) {
-      err = mkdir(dot_local_path, 755);
+      err = mkdir(dot_local_path, 0755);
       if(err != 0) {
         free(dot_local_path);
         dot_local_path = NULL;
@@ -552,7 +626,7 @@ static int set_local_share()
     struct stat local_share_stat;
     stat(local_share, &local_share_stat);
     if(!S_ISDIR(local_share_stat.st_mode)) {
-      err = mkdir(local_share, 755);
+      err = mkdir(local_share, 0755);
       if(err == 0) {
         free(local_share);
         local_share = NULL;
@@ -560,26 +634,62 @@ static int set_local_share()
       }
     }
 
-    const ssize_t local_share_with_db_name_size = local_share_size + db_name_size + 1;
-    ssize_t pos = 0;
-    db_path_under_dot_local_share = (char*)calloc(local_share_with_db_name_size + 1, 1);
-    if(db_path_under_dot_local_share == NULL) {
+    const ssize_t app_dir_in_local_share_size = local_share_size + app_dir_size + 1;
+    char *app_dir_in_local_share = (char*)calloc(app_dir_in_local_share_size + 1, 1);
+    if(app_dir_in_local_share == NULL) {
       free(local_share);
       local_share = NULL;
 
       return FALSE;
     }
+    ssize_t app_dir_in_local_share_pos = 0;
     
-    memmove(db_path_under_dot_local_share, local_share, local_share_size);
-    pos += local_share_size;
+    memmove(app_dir_in_local_share, local_share, local_share_size);
+    app_dir_in_local_share_pos += local_share_size;
     free(local_share);
     local_share = NULL;
+    
+    memmove(app_dir_in_local_share + app_dir_in_local_share_pos, "/", 1);
+    ++app_dir_in_local_share_pos;
+    
+    memmove(app_dir_in_local_share + app_dir_in_local_share_pos, app_dir, app_dir_size);
+    app_dir_in_local_share[app_dir_in_local_share_size] = '\0';
+
+    struct stat app_dir_in_local_share_stat;
+    stat(local_share, &app_dir_in_local_share_stat);
+    if(!S_ISDIR(app_dir_in_local_share_stat.st_mode)) {
+      err = mkdir(app_dir_in_local_share, 0755);
+      if(err == 0) {
+        free(app_dir_in_local_share);
+        app_dir_in_local_share = NULL;
+        return FALSE;
+      }
+    }
+    
+    db_path_under_dot_local_share_size = app_dir_in_local_share_size + db_name_size + 1;
+    ssize_t pos = 0;
+    db_path_under_dot_local_share = (char*)calloc(db_path_under_dot_local_share_size + 1, 1);
+    if(db_path_under_dot_local_share == NULL) {
+      free(app_dir_in_local_share);
+      app_dir_in_local_share = NULL;
+
+      db_path_under_dot_local_share_size = 0;
+
+      return FALSE;
+    }
+    
+    memmove(db_path_under_dot_local_share, app_dir_in_local_share, app_dir_in_local_share_size);
+    pos += app_dir_in_local_share_size;
+    free(app_dir_in_local_share);
+    app_dir_in_local_share = NULL;
 
     memmove(db_path_under_dot_local_share + pos, "/", 1);
     ++pos;
 
     memmove(db_path_under_dot_local_share + pos, db_name, db_name_size);
-    db_path_under_dot_local_share[local_share_with_db_name_size] = '\0';
+    db_path_under_dot_local_share[db_path_under_dot_local_share_size] = '\0';
+
+
   }
 
   return TRUE;
@@ -625,16 +735,22 @@ static void activate(GtkApplication* app, gpointer user_data)
   comic_container->isCoverMode = FALSE;
 
 
-  if(set_local_share()) {
-    printf("%s\n", db_path_under_dot_local_share);
+  if(!set_local_share()) {
+    puts("failed set_local_share");
+  }
+
+  if(!set_temporary()) {
+    puts("failed set_temporay");
   }
   
 
   
   file_history_on_menu_struct.size = 0;
 
-  db_info.file_path = "/tmp/simple_comics_viewer.db";
-  create_file_history_table(&db_info);
+  if(temporary_db_path != NULL) {
+    db_info.file_path = temporary_db_path;
+    create_file_history_table(&db_info);
+  }
 
   cursor_pos.x = 0;
   cursor_pos.y = 0;
