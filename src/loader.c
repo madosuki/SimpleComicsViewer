@@ -47,7 +47,8 @@ int copy_data_on_memory(struct archive *archive_read, uncompress_data_t *data, s
   const void *buf;
   size_t size;
   la_int64_t offset;
-  unsigned char *result = (unsigned char*)calloc(file_size + 1, 1);
+  /* unsigned char *result = (unsigned char*)calloc(file_size + 1, 1); */
+  unsigned char *result = (unsigned char*)calloc(file_size, 1);
   ssize_t current_size = 0;
   size_t previous_size = 0;
 
@@ -66,7 +67,7 @@ int copy_data_on_memory(struct archive *archive_read, uncompress_data_t *data, s
 
     previous_size = current_size;
     current_size += size;
-    memcpy(result + previous_size, buf, size);
+    memmove(result + previous_size, buf, size);
 
   } while (condition != ARCHIVE_EOF);
 
@@ -77,7 +78,7 @@ int copy_data_on_memory(struct archive *archive_read, uncompress_data_t *data, s
     return NON_IMAGE_MESSAGE;
   }
 
-  result[current_size] = '\0';
+  /* result[current_size] = '\0'; */
   data->data = result;
   data->file_size = current_size;
 
@@ -86,7 +87,6 @@ int copy_data_on_memory(struct archive *archive_read, uncompress_data_t *data, s
 
 int load_from_compress_file(const char* filename, uncompress_data_set_t *result_list)
 {
-
   struct archive *arc = archive_read_new();
   archive_read_support_filter_all(arc);
   archive_read_support_format_all(arc);
@@ -124,10 +124,8 @@ int load_from_compress_file(const char* filename, uncompress_data_set_t *result_
     const char *pathname = archive_entry_pathname(entry);
     const ssize_t pathname_size = strlen(pathname);
 
-    ssize_t file_size = archive_entry_size(entry);
-
-
-    // printf("%s\n", pathname);
+    const ssize_t file_size = archive_entry_size(entry);
+    /* printf("%s, size: %zd\n", pathname, file_size); */
 
     /* condition = archive_write_header(extract, entry); */
     /* if(condition != ARCHIVE_OK) */
@@ -143,8 +141,12 @@ int load_from_compress_file(const char* filename, uncompress_data_set_t *result_
       }
 
       if (condition != NON_IMAGE_MESSAGE) {
-        data_list[read_count]->file_name = (char*)calloc(pathname_size + 1, 1);
-        strncpy(data_list[read_count]->file_name, pathname, pathname_size);
+        const ssize_t size = pathname_size + 1;
+        
+        data_list[read_count]->file_name = (uint8_t*)calloc(size, 1);
+        memmove(data_list[read_count]->file_name, pathname, pathname_size);
+        data_list[read_count]->file_name[size - 1] = '\0';
+        
         is_image = 1;
       }
 

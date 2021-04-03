@@ -6,12 +6,27 @@ const unsigned char png_sig[8] = {137, 80, 78, 71, 13, 10, 26, 10};
 const short jpg_sig_size = 2;
 const unsigned char jpg_sig[2] = {0xFF, 0xD8};
 
-const short zlib_sig_size = 2;
-const unsigned char zlib_no_compression_or_low_sig[2] = {120, 1};
-const unsigned char zlib_default_compression_sig[2] = {120, 156};
-const unsigned char zlib_best_compression_sig[2] = {120, 218};
+/* const short zlib_sig_size = 2; */
+/* const unsigned char zlib_no_compression_or_low_sig[2] = {120, 1}; */
+/* const unsigned char zlib_default_compression_sig[2] = {120, 156}; */
+/* const unsigned char zlib_best_compression_sig[2] = {120, 218}; */
 
 const uint8_t compress_headers_flag = UTILS_ZIP;
+
+int get_hash(uint8_t *bytes, const ssize_t bytes_size, uint8_t *result)
+{
+  
+  if(bytes == NULL || bytes_size < 0 || result == NULL) {
+    return 0;
+  }
+
+  SHA256_CTX ctx;
+  SHA256_Init(&ctx);
+  SHA256_Update(&ctx, bytes, bytes_size);
+  SHA256_Final(result, &ctx);
+  
+  return 1;
+}
 
 double mygcd(double x, double y)
 {
@@ -146,20 +161,6 @@ int detect_image_from_file(const char *file_name)
 
 int detect_compress_file(const char *file_name)
 {
-  struct archive *arc = archive_read_new();
-  archive_read_support_filter_all(arc);
-  archive_read_support_format_all(arc);
-
-  int condition = archive_read_open_filename(arc, file_name, get_file_size(file_name));
-  if (condition != ARCHIVE_OK) {
-    return -1;
-  }
-
-  archive_read_close(arc);
-  archive_read_free(arc);
-
-  return 1;
-  /*
   FILE *fp;
 
   int fd = open(file_name, O_RDONLY);
@@ -179,28 +180,107 @@ int detect_compress_file(const char *file_name)
   fstat(fd, &stbuf);
 
   long file_size = stbuf.st_size;
-  if(file_size < 4) {
+  if(file_size < 9) {
     fclose(fp);
     close(fd);
     return 0;
   }
 
-  uint32_t sig;
-  int read_count = fread(&sig, 1, 4, fp);
+  /* uint64_t sig; */
+  /* fseek(fp, 0L, SEEK_SET); */
+  /* int read_count = fread(&sig, 1, 4, fp); */
 
-  if(sig == 67324752)
-  {
-    fclose(fp);
-    close(fd);
+  uint8_t sig[8];
+  fseek(fp, 0L, SEEK_SET);
+  int read_count = fread(sig, 1, 4, fp);
 
-    return UTILS_ZIP;
+
+  const uint8_t zip_sig[4] = {0x50, 0x4B, 0x03, 0x04};
+  const uint8_t rar_sig_1[7] = {0x52, 0x61, 0x72, 0x21, 0x1A, 0x07, 0x00};
+  const uint8_t rar_sig_2[8] = {0x52, 0x61, 0x72, 0x21, 0x1A, 0x07, 0x01, 0x00};
+  const uint8_t seven_z_sig[4] = {0x37, 0x7A, 0xBC, 0xAF};
+  const uint8_t gz_sig[2] = {0x1F, 0x8B};
+  const uint8_t xz_sig[6] = {0xFD, 0x37, 0x7A, 0x58, 0x5A, 0x00};
+  
+  int is_compress = 0;
+
+  if(*(uint32_t*)sig == *(uint32_t*)zip_sig) {
+    is_compress = 1;
   }
+
+  if(!is_compress) {
+    fseek(fp, 0L, SEEK_SET);
+    read_count = fread(&sig, 1, 6, fp);
+    int count = 0;
+    for(int i = 0; i < 6; ++i) {
+      if(sig[i] == xz_sig[i])
+        ++count;
+      else
+        break;
+    }
+
+    if(count == 6)
+      is_compress = 1;
+  }
+
+
+  if(!is_compress) {
+    fseek(fp, 0L, SEEK_SET);
+    read_count = fread(&sig, 1, 7, fp);
+    int count = 0;
+    for(int i = 0; i < 7; ++i) {
+      if(sig[i] == rar_sig_1[i])
+        ++count;
+      else
+        break;
+    }
+
+    if(count == 7)
+      is_compress = 1;
+  }
+
+  if(!is_compress) {
+    fseek(fp, 0L, SEEK_SET);
+    read_count = fread(&sig, 1, 8, fp);
+    if(*(uint64_t*)sig == *(uint64_t*)rar_sig_2) {
+      is_compress = 1;
+    }
+  }
+
+  if(!is_compress) {
+    fseek(fp, 0L, SEEK_SET);
+    read_count = fread(&sig, 1, 4, fp);
+    if(*(uint32_t*)sig == *(uint32_t*)seven_z_sig) {
+      is_compress = 1;
+    }
+  }
+
+  
+  if(!is_compress) {
+    fseek(fp, 0L, SEEK_SET);
+    read_count = fread(&sig, 1, 2, fp);
+    int count = 0;
+    for(int i = 0; i < 2; ++i) {
+      if(sig[i] == gz_sig[i])
+        ++count;
+      else
+        break;
+    }
+
+    if(count == 2)
+      is_compress = 1;
+  }
+
 
   fclose(fp);
   close(fd);
 
+  
+  if(is_compress) {
+    return 1;
+  }
+
   return 0;
-  */
 }
 
 char *get_directory_path_from_filename(const char *file_name)

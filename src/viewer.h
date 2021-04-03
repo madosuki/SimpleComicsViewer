@@ -11,15 +11,32 @@
 #include <fcntl.h>
 #include <time.h>
 #include <pthread.h>
+#include <dirent.h>
+#include <openssl/sha.h>
+#include <sys/file.h>
 
 #include "utils.h"
 #include "loader.h"
 
 #include "pdf_loader.h"
 
+#include "database_utils.h"
+
 #define LIST_BUFFER 1024
 #define DEFAULT_WINDOW_WIDTH 1280
 #define DEFAULT_WINDOW_HEIGHT 960
+
+extern const char *db_name;
+extern const ssize_t db_name_size;
+
+extern const char *app_dir;
+extern const ssize_t app_dir_size;
+
+extern char *db_path_under_dot_local_share;
+extern ssize_t db_path_under_dot_local_share_size;
+
+extern char *temporary_db_path;
+extern ssize_t temporary_db_path_size;
 
 extern int status;
 
@@ -32,6 +49,14 @@ extern GtkWidget *change_direction_button;
 
 extern void *cursor_observer_in_fullscreen_mode(void *data);
 extern pthread_t thread_of_curosr_observer;
+
+extern db_s db_info;
+
+extern GtkWidget *file_history_internal_list;
+
+extern file_history_s *history;
+
+void set_file_history_on_menu();
 
 void show_menu();
 void hide_menu();
@@ -191,10 +216,17 @@ typedef struct
 
 typedef struct
 {
+  GtkWidget **list;
+  int size;
+} file_history_on_menu_t;
+
+typedef struct
+{
   GtkWidget *body;
   GtkWidget *root;
   GtkWidget *load;
   GtkWidget *quit;
+  GtkWidget *file_history;
 } file_menu_t; 
 
 typedef struct
@@ -216,6 +248,8 @@ typedef struct
 extern main_window_data_t window;
 
 extern file_menu_t file_menu_struct;
+
+extern file_history_on_menu_t file_history_on_menu_struct;
 
 extern view_menu_t view_menu_struct;
 
@@ -253,7 +287,7 @@ static void change_direction()
     gtk_button_set_label(GTK_BUTTON(change_direction_button), right_to_left_name);
   }
 
-  if(comic_container->pages->left != NULL) {
+  if(comic_container->pages->left != NULL || comic_container->pages->right != NULL) {
     update_page(FALSE);
   }
   
@@ -273,15 +307,18 @@ static int open_file(const char *file_name)
       comic_container->isPDFfile = FALSE;
     }
   } else {
-    if(test_open_pdf(file_name)) {
-      is_dir = FALSE; 
-      comic_container->isPDFfile = TRUE;
-      comic_container->isCompressFile = FALSE;
+    if(detect_compress_file(file_name)) {
+      
+      is_dir = FALSE;
+      comic_container->isPDFfile = FALSE;
+      comic_container->isCompressFile = TRUE;
+      
     } else {
-      if(detect_compress_file(file_name)) {
-        is_dir = FALSE;
-        comic_container->isPDFfile = FALSE;
-        comic_container->isCompressFile = TRUE;
+
+      if(test_open_pdf(file_name)) {
+        is_dir = FALSE; 
+        comic_container->isPDFfile = TRUE;
+        comic_container->isCompressFile = FALSE;
       }
     }
 
@@ -295,6 +332,13 @@ static int open_file(const char *file_name)
   }
 
   if(init_check) {
+
+    time_t t = time(NULL);
+    long unixtime = t;
+    insert_or_udpate_file_history(&db_info, file_name, strlen(file_name), unixtime);
+
+    set_file_history_on_menu();
+    
     update_grid();
   } else {
     printf("init image error\n");
@@ -302,6 +346,21 @@ static int open_file(const char *file_name)
   }
 
   return TRUE;
+}
+
+static void open_file_in_file_history(GtkWidget *widget, gpointer n)
+{
+  if(history != NULL) {
+   int i = GPOINTER_TO_INT(n);
+
+   if(history->file_path_name_list != NULL && history->file_path_name_list[i]->data != NULL) {
+     int err = open_file(history->file_path_name_list[i]->data);
+     if(!err) {
+       printf("failed open file in open_file_in_file_history\n");
+     }
+   }
+  }
+  
 }
 
 static void open_file_on_menu()
@@ -438,6 +497,397 @@ static gint run_cmd_argument(GApplication *app, GApplicationCommandLine *app_cmd
   return 1;
 }
 
+static int check_hash_from_cp(const char *dst_file_path, const ssize_t dst_byte_size, uint8_t *src_bytes, const ssize_t src_byte_size)
+{
+
+  uint8_t *dst_bytes = (uint8_t*)calloc(dst_byte_size, 1);
+  FILE *dst_fp = fopen(dst_file_path, "rb");
+  if(dst_fp == NULL) {
+    free(dst_bytes);
+    dst_bytes = NULL;
+
+    return FALSE;
+  }
+
+
+    
+  int count = fread(dst_bytes, 1, dst_byte_size, dst_fp);
+  if(count < dst_byte_size) {
+    fclose(dst_fp);
+
+    free(dst_bytes);
+    dst_bytes = NULL;
+    
+    return FALSE;
+  }
+  fclose(dst_fp);
+
+
+
+  uint8_t *src_sha256 = (uint8_t*)calloc(SHA256_DIGEST_LENGTH, 1);
+  if(src_sha256 == NULL) {
+    free(dst_bytes);
+    dst_bytes = NULL;
+
+    return FALSE;
+  }
+
+  int check = get_hash(src_bytes, src_byte_size, src_sha256);
+  if(!check) {
+    free(dst_bytes);
+    dst_bytes = NULL;
+
+    free(src_sha256);
+    src_sha256 = NULL;
+
+    return FALSE;
+    
+  }
+  
+  uint8_t *dst_sha256 = (uint8_t*)calloc(SHA256_DIGEST_LENGTH, 1);
+  if(dst_sha256 == NULL) {
+    free(dst_bytes);
+    dst_bytes = NULL;
+    
+    free(src_sha256);
+    src_sha256 = NULL;
+    return FALSE;
+  }
+
+  check = get_hash(dst_bytes, dst_byte_size, dst_sha256);
+  if(!check) {
+    free(dst_bytes);
+    dst_bytes = NULL;
+
+    free(src_sha256);
+    src_sha256 = NULL;
+
+    free(dst_sha256);
+    dst_sha256 = NULL;
+
+    return FALSE;
+    
+  }
+
+
+
+  int condition = FALSE;
+  if(memcmp(src_sha256, dst_sha256, SHA256_DIGEST_LENGTH) == 0)
+    condition = TRUE;
+
+  free(dst_bytes);
+  dst_bytes = NULL;
+    
+  free(src_sha256);
+  src_sha256 = NULL;
+
+  free(dst_sha256);
+  dst_sha256 = NULL;
+
+
+  return condition;
+}
+
+static int cp(const char* src_file_path, const ssize_t src_file_path_size, const char *dst_file_path, const ssize_t dst_file_path_size)
+{
+  struct stat src_stat;
+  stat(src_file_path, &src_stat);
+  if(!(S_ISREG(src_stat.st_mode))) {
+    return FALSE;
+  }
+  ssize_t src_byte_size = src_stat.st_size;
+
+  FILE *src_fp = fopen(src_file_path, "rb");
+  if(src_fp == NULL) {
+    return FALSE;
+  }
+  uint8_t *src_bytes = (uint8_t*)calloc(src_byte_size, 1);
+  int count = fread(src_bytes, 1, src_byte_size, src_fp);
+  if(count < src_byte_size) {
+    fclose(src_fp);
+    
+    free(src_bytes);
+    src_bytes = NULL;
+
+    return FALSE;
+  }
+  fclose(src_fp);
+
+  
+  struct stat dst_stat;
+  stat(dst_file_path, &dst_stat);
+  if(S_ISREG(dst_stat.st_mode)) {
+
+    int check = check_hash_from_cp(dst_file_path, dst_stat.st_size, src_bytes, src_byte_size);
+    if(check) {
+      free(src_bytes);
+      src_bytes = NULL;
+
+      /* printf("was don't copy because same hash between src and dst.\n"); */
+
+      return FALSE;
+    }
+    
+  }
+
+
+  FILE *dst_fp = fopen(dst_file_path, "r+");
+  if(dst_fp == NULL) {
+    free(src_bytes);
+    src_bytes = NULL;
+
+    return FALSE;
+  }
+  int fd = fileno(dst_fp);
+  int err = flock(fd, LOCK_EX);
+  if(err != 0) {
+    fclose(dst_fp);
+    
+    free(src_bytes);
+    src_bytes = NULL;
+
+    return FALSE;
+  }
+  err = ftruncate(fd, 0);
+  if(err != 0) {
+    flock(fd, LOCK_UN);
+    fclose(dst_fp);
+
+    free(src_bytes);
+    src_bytes = NULL;
+
+  }
+
+  count = fwrite(src_bytes, 1, src_byte_size, dst_fp);
+  if(count < src_byte_size) {
+
+    flock(fd, LOCK_UN);
+    fclose(dst_fp);
+    
+    free(src_bytes);
+    src_bytes = NULL;
+
+    return FALSE;
+  }
+  err = fflush(dst_fp);
+
+  free(src_bytes);
+  src_bytes = NULL;
+
+  flock(fd, LOCK_UN);
+  fclose(dst_fp);
+  
+  return TRUE;
+}
+
+static int backup_db()
+{
+  if(db_path_under_dot_local_share != NULL && temporary_db_path != NULL) {
+    return cp(temporary_db_path, temporary_db_path_size, db_path_under_dot_local_share, db_path_under_dot_local_share_size);
+  }
+
+  return FALSE;
+}
+
+static int set_temporary()
+{
+
+  int condition = TRUE;
+  const char *temporary = "/tmp";
+  struct stat temporary_stat;
+  stat(temporary, &temporary_stat);
+  if(!S_ISDIR(temporary_stat.st_mode)) {
+    return FALSE;
+  }
+
+  const ssize_t temporary_size = 4;
+  const ssize_t temporary_data_dir_size = temporary_size + app_dir_size + 1;
+  char *temporary_data_dir = (char*)calloc(temporary_data_dir_size + 1, 1);
+  if(temporary_data_dir == NULL) {
+    return FALSE;
+  }
+  
+  ssize_t temporary_data_dir_pos = 0;
+  memmove(temporary_data_dir, temporary, temporary_size);
+  temporary_data_dir_pos += temporary_size;
+  memmove(temporary_data_dir + temporary_data_dir_pos, "/", 1);
+  ++temporary_data_dir_pos;
+  memmove(temporary_data_dir + temporary_data_dir_pos, app_dir, app_dir_size);
+  temporary_data_dir[temporary_data_dir_size] = '\0';
+
+  struct stat temporary_data_dir_stat;
+  stat(temporary_data_dir, &temporary_data_dir_stat);
+  if(!S_ISDIR(temporary_data_dir_stat.st_mode)) {
+    if(mkdir(temporary_data_dir, 0755) != 0) {
+      condition = FALSE;
+    
+      goto end_temporary_data_dir;
+    }
+  }
+
+  temporary_db_path_size = temporary_data_dir_size + db_name_size + 1;
+  temporary_db_path = calloc(temporary_db_path_size + 1, 1);
+  if(temporary_db_path == NULL) {
+    condition = FALSE;
+    temporary_db_path_size = 0;
+    
+    goto end_temporary_data_dir;
+  }
+  ssize_t temporary_db_path_pos = 0;
+  memmove(temporary_db_path, temporary_data_dir, temporary_data_dir_size);
+  temporary_db_path_pos += temporary_data_dir_size;
+  free(temporary_data_dir);
+  temporary_data_dir = NULL;
+
+  memmove(temporary_db_path + temporary_db_path_pos, "/", 1);
+  ++temporary_db_path_pos;
+
+  
+  memmove(temporary_db_path + temporary_db_path_pos, db_name, db_name_size);
+  temporary_db_path[temporary_db_path_size] = '\0';
+
+
+  return condition;
+
+
+ end_temporary_data_dir:
+  free(temporary_data_dir);
+  temporary_data_dir = NULL;
+      
+  return condition;
+}
+
+static int set_local_share()
+{
+  char *home_directory = NULL;
+  if((home_directory = getenv("HOME")) == NULL ) {
+    puts("missing variable named HOME from env.");
+    
+    return FALSE;
+  } else {
+    const ssize_t home_size = strlen(home_directory);
+
+    const char *dot_local = "/.local";
+    const int dot_local_size = 7;
+    
+    const char *share = "/share";
+    const int share_size = 6;
+
+    int dot_local_path_size = home_size + dot_local_size;
+    char *dot_local_path = (char*)calloc(dot_local_path_size + 1, 1);
+    if(dot_local_path == NULL) {
+      return FALSE;
+    }
+    ssize_t dot_local_path_pos = 0;
+    memmove(dot_local_path, home_directory, home_size);
+    dot_local_path_pos += home_size;
+    memmove(dot_local_path + dot_local_path_pos, dot_local, dot_local_size);
+    dot_local_path[dot_local_path_size] = '\0';
+
+    
+    int err = 0;
+    struct stat stat_dir;
+    stat(dot_local_path, &stat_dir);
+    if(!S_ISDIR(stat_dir.st_mode)) {
+      err = mkdir(dot_local_path, 0755);
+      if(err != 0) {
+        free(dot_local_path);
+        dot_local_path = NULL;
+        return FALSE;
+      }
+      
+    }
+
+    const ssize_t local_share_size = dot_local_path_size + share_size;
+    char *local_share = (char*)calloc(local_share_size + 1, 1);
+    if(local_share == NULL) {
+      free(dot_local_path);
+      dot_local_path = NULL;
+      
+      return FALSE;
+    }
+    
+    ssize_t local_share_pos = 0;
+    memmove(local_share, dot_local_path, dot_local_path_size);
+    local_share_pos += dot_local_path_size;
+    free(dot_local_path);
+    dot_local_path = NULL;
+    
+    memmove(local_share + local_share_pos, share, share_size);
+    
+    local_share[local_share_size] = '\0';
+
+    struct stat local_share_stat;
+    stat(local_share, &local_share_stat);
+    if(!S_ISDIR(local_share_stat.st_mode)) {
+      err = mkdir(local_share, 0755);
+      if(err == 0) {
+        free(local_share);
+        local_share = NULL;
+        return FALSE;
+      }
+    }
+
+    const ssize_t app_dir_in_local_share_size = local_share_size + app_dir_size + 1;
+    char *app_dir_in_local_share = (char*)calloc(app_dir_in_local_share_size + 1, 1);
+    if(app_dir_in_local_share == NULL) {
+      free(local_share);
+      local_share = NULL;
+
+      return FALSE;
+    }
+    ssize_t app_dir_in_local_share_pos = 0;
+    
+    memmove(app_dir_in_local_share, local_share, local_share_size);
+    app_dir_in_local_share_pos += local_share_size;
+    free(local_share);
+    local_share = NULL;
+    
+    memmove(app_dir_in_local_share + app_dir_in_local_share_pos, "/", 1);
+    ++app_dir_in_local_share_pos;
+    
+    memmove(app_dir_in_local_share + app_dir_in_local_share_pos, app_dir, app_dir_size);
+    app_dir_in_local_share[app_dir_in_local_share_size] = '\0';
+
+    struct stat app_dir_in_local_share_stat;
+    stat(local_share, &app_dir_in_local_share_stat);
+    if(!S_ISDIR(app_dir_in_local_share_stat.st_mode)) {
+      err = mkdir(app_dir_in_local_share, 0755);
+      if(err == 0) {
+        free(app_dir_in_local_share);
+        app_dir_in_local_share = NULL;
+        return FALSE;
+      }
+    }
+    
+    db_path_under_dot_local_share_size = app_dir_in_local_share_size + db_name_size + 1;
+    ssize_t pos = 0;
+    db_path_under_dot_local_share = (char*)calloc(db_path_under_dot_local_share_size + 1, 1);
+    if(db_path_under_dot_local_share == NULL) {
+      free(app_dir_in_local_share);
+      app_dir_in_local_share = NULL;
+
+      db_path_under_dot_local_share_size = 0;
+
+      return FALSE;
+    }
+    
+    memmove(db_path_under_dot_local_share, app_dir_in_local_share, app_dir_in_local_share_size);
+    pos += app_dir_in_local_share_size;
+    free(app_dir_in_local_share);
+    app_dir_in_local_share = NULL;
+
+    memmove(db_path_under_dot_local_share + pos, "/", 1);
+    ++pos;
+
+    memmove(db_path_under_dot_local_share + pos, db_name, db_name_size);
+    db_path_under_dot_local_share[db_path_under_dot_local_share_size] = '\0';
+
+
+  }
+
+  return TRUE;
+}
 
 static void activate(GtkApplication* app, gpointer user_data)
 {
@@ -477,6 +927,29 @@ static void activate(GtkApplication* app, gpointer user_data)
   comic_container->isFirstLoad = TRUE;
   comic_container->isCompressFile = TRUE;
   comic_container->isCoverMode = FALSE;
+
+
+  if(!set_local_share()) {
+    puts("failed set_local_share");
+  }
+
+  if(!set_temporary()) {
+    puts("failed set_temporay");
+  }
+  
+
+  
+  file_history_on_menu_struct.size = 0;
+
+  if(temporary_db_path != NULL) {
+
+    if(db_path_under_dot_local_share != NULL) {
+      cp(db_path_under_dot_local_share, db_path_under_dot_local_share_size, temporary_db_path, temporary_db_path_size);
+    }
+    
+    db_info.file_path = temporary_db_path;
+    create_file_history_table(&db_info);
+  }
 
   cursor_pos.x = 0;
   cursor_pos.y = 0;
