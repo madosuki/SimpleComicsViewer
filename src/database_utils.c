@@ -406,18 +406,15 @@ int get_oldest_data_id_from_file_histor_table(db_s *db)
   return -1;
 }
 
-int delete_row_from_file_histor_table(db_s *db, int id, int is_over)
+int reset_autoincrement_count_from_file_history_table(db_s *db)
 {
   sqlite3 *ppDb = NULL;
   int err = sqlite3_open(db->file_path, &ppDb);
   if(err != SQLITE_OK) {
     return 0;
   }
-  char *sql = "delete 'file-history' where id = ?";
-  if(is_over) {
-    sql = "delete 'file-history";
-  }
-  const ssize_t sql_size = 51;
+  const char *sql = "delete sqlite_sequence where name = 'file-history'";
+  const ssize_t sql_size = 50;
 
   sqlite3_stmt *stmt;
   err = sqlite3_prepare_v2(ppDb, sql, sql_size, &stmt, NULL);
@@ -425,16 +422,6 @@ int delete_row_from_file_histor_table(db_s *db, int id, int is_over)
     printf("failed sqlite prepare v2 in check_exists_row_in_file_history\n");
     return 0;
   }
-
-  err = sqlite3_bind_int(stmt, 1, id);
-  if(err != SQLITE_OK) {
-    sqlite3_finalize(stmt);
-    sqlite3_close(ppDb);
-
-    return 0;
-  }
-
-
 
   while(1) {
     err = sqlite3_step(stmt);
@@ -452,6 +439,56 @@ int delete_row_from_file_histor_table(db_s *db, int id, int is_over)
 
 
   return 1;
+  
+}
+
+int delete_row_from_file_histor_table(db_s *db, int id, int is_over)
+{
+  sqlite3 *ppDb = NULL;
+  int err = sqlite3_open(db->file_path, &ppDb);
+  if(err != SQLITE_OK) {
+    return 0;
+  }
+  char *sql = "delete 'file-history' where id = ?";
+  ssize_t sql_size = 51;
+  if(is_over) {
+    sql = "delete 'file-history";
+    sql_size = 21;
+  }
+
+
+  sqlite3_stmt *stmt;
+  err = sqlite3_prepare_v2(ppDb, sql, sql_size, &stmt, NULL);
+  if(err == SQLITE_ERROR) {
+    printf("failed sqlite prepare v2 in check_exists_row_in_file_history\n");
+    return 0;
+  }
+
+  err = sqlite3_bind_int(stmt, 1, id);
+  if(err != SQLITE_OK) {
+    sqlite3_finalize(stmt);
+    sqlite3_close(ppDb);
+
+    return 0;
+  }
+
+
+  while(1) {
+    err = sqlite3_step(stmt);
+
+    if(err == SQLITE_BUSY)
+      continue;
+
+
+    break;
+  }
+
+  sqlite3_finalize(stmt);
+
+  sqlite3_close(ppDb);
+
+
+  return reset_autoincrement_count_from_file_history_table(db);
 }
 
 
