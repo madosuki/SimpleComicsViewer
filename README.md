@@ -7,6 +7,7 @@
 - **GDK3**
 - **[libarchive](https://www.libarchive.org/)**
 - **[MuPDF](https://github.com/ArtifexSoftware/mupdf)**
+- **[OpenSSL](https://www.openssl.org/)**
 
 ### LICENCE
 **GPLv3**
@@ -61,9 +62,13 @@ chmod +x ./Simple_Comics_Viewer-x86_64.AppImage
 
 ### How to Build
 ```
-sudo apt-get install libgtk-3-dev build-essential automake autoconf libharfbuzz-dev libjpeg-dev libopenjp2-7-dev libjbig2dec0-dev libpng-dev libfreetype6-dev libarchive-dev libmupdf-dev libjpeg62
+sudo apt-get install libgtk-3-dev build-essential automake autoconf libharfbuzz-dev libjpeg-dev libopenjp2-7-dev libjbig2dec0-dev libpng-dev libfreetype6-dev libarchive-dev libmupdf-dev libjpeg62 libssl-dev
 ```
 After move to project dir.
 ```
 ./autogen.sh && ./configure && make
 ```
+
+## file-history table column
+| id | filepath | unixtime |
+---- | ---- | ---- 
