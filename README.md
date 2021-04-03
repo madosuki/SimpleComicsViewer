@@ -70,5 +70,5 @@ After move to project dir.
 ```
 
 ## file-history table column
-| id | name | unixtime |
+| id | filepath | unixtime |
 ---- | ---- | ---- 
