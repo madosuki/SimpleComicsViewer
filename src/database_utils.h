@@ -8,7 +8,7 @@
 #include <sqlite3.h>
 #include <time.h>
 
-#define FILE_HISTORY_MAX_LENGTH 20
+#define FILE_HISTORY_MAX_LENGTH 32
 
 typedef enum SQLITE_TYPE_ENUM{
   INTEGER,
