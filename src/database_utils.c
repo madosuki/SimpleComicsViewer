@@ -406,14 +406,17 @@ int get_oldest_data_id_from_file_histor_table(db_s *db)
   return -1;
 }
 
-int delete_row_from_file_histor_table(db_s *db, int id)
+int delete_row_from_file_histor_table(db_s *db, int id, int is_over)
 {
   sqlite3 *ppDb = NULL;
   int err = sqlite3_open(db->file_path, &ppDb);
   if(err != SQLITE_OK) {
     return 0;
   }
-  const char *sql = "delete 'file-history' where id = ?";
+  char *sql = "delete 'file-history' where id = ?";
+  if(is_over) {
+    sql = "delete 'file-history";
+  }
   const ssize_t sql_size = 51;
 
   sqlite3_stmt *stmt;
@@ -461,12 +464,19 @@ int insert_or_udpate_file_history(db_s *db, const char* file_path_name, const ss
   if(!is_exists) {
     int size = get_file_historY_table_size(db);
 
-    if(size >= FILE_HISTORY_MAX_LENGTH) {
+    if(size == FILE_HISTORY_MAX_LENGTH) {
       int id = get_oldest_data_id_from_file_histor_table(db);
-      int check = delete_row_from_file_histor_table(db, id);
+      int check = delete_row_from_file_histor_table(db, id, 0);
       if(!check) {
         printf("failed delete row in insert_or_update_file_history\n");
       }
+    } else if(size > FILE_HISTORY_MAX_LENGTH) {
+      int id = get_oldest_data_id_from_file_histor_table(db);
+      int check = delete_row_from_file_histor_table(db, id, 1);
+      if(!check) {
+        printf("failed delete row in insert_or_update_file_history\n");
+      }
+      
     }
     
     

@@ -4,6 +4,6 @@ simple_comics_viewer_SOURCES = main.c loader.c loader.h utils.c utils.h viewer.c
 
 simple_comics_viewer_CFLAGS = -O2 @GTK_CFLAGS@  
 
-simple_comics_viewer_LDADD = -lsqlite3 -lmupdf -lmupdf-third -lm -lpthread -lfreetype -lharfbuzz -ljpeg -lpng -lopenjp2 -ljbig2dec -larchive @GTK_LIBS@
+simple_comics_viewer_LDADD = -lssl -lcrypto -lsqlite3 -lmupdf -lmupdf-third -lm -lpthread -lfreetype -lharfbuzz -ljpeg -lpng -lopenjp2 -ljbig2dec -larchive @GTK_LIBS@
 
 CLEANFILES = *~

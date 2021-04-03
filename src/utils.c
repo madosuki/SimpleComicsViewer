@@ -13,6 +13,21 @@ const unsigned char jpg_sig[2] = {0xFF, 0xD8};
 
 const uint8_t compress_headers_flag = UTILS_ZIP;
 
+int get_hash(uint8_t *bytes, const ssize_t bytes_size, uint8_t *result)
+{
+  
+  if(bytes == NULL || bytes_size < 0 || result == NULL) {
+    return 0;
+  }
+
+  SHA256_CTX ctx;
+  SHA256_Init(&ctx);
+  SHA256_Update(&ctx, bytes, bytes_size);
+  SHA256_Final(result, &ctx);
+  
+  return 1;
+}
+
 double mygcd(double x, double y)
 {
   if(x < 0 || y == 0)

@@ -497,6 +497,97 @@ static gint run_cmd_argument(GApplication *app, GApplicationCommandLine *app_cmd
   return 1;
 }
 
+static int check_hash_from_cp(const char *dst_file_path, const ssize_t dst_byte_size, uint8_t *src_bytes, const ssize_t src_byte_size)
+{
+
+  uint8_t *dst_bytes = (uint8_t*)calloc(dst_byte_size, 1);
+  FILE *dst_fp = fopen(dst_file_path, "rb");
+  if(dst_fp == NULL) {
+    free(dst_bytes);
+    dst_bytes = NULL;
+
+    return FALSE;
+  }
+
+
+    
+  int count = fread(dst_bytes, 1, dst_byte_size, dst_fp);
+  if(count < dst_byte_size) {
+    fclose(dst_fp);
+
+    free(dst_bytes);
+    dst_bytes = NULL;
+    
+    return FALSE;
+  }
+  fclose(dst_fp);
+
+
+
+  uint8_t *src_sha256 = (uint8_t*)calloc(SHA256_DIGEST_LENGTH, 1);
+  if(src_sha256 == NULL) {
+    free(dst_bytes);
+    dst_bytes = NULL;
+
+    return FALSE;
+  }
+
+  int check = get_hash(src_bytes, src_byte_size, src_sha256);
+  if(!check) {
+    free(dst_bytes);
+    dst_bytes = NULL;
+
+    free(src_sha256);
+    src_sha256 = NULL;
+
+    return FALSE;
+    
+  }
+  
+  uint8_t *dst_sha256 = (uint8_t*)calloc(SHA256_DIGEST_LENGTH, 1);
+  if(dst_sha256 == NULL) {
+    free(dst_bytes);
+    dst_bytes = NULL;
+    
+    free(src_sha256);
+    src_sha256 = NULL;
+    return FALSE;
+  }
+
+  check = get_hash(dst_bytes, dst_byte_size, dst_sha256);
+  if(!check) {
+    free(dst_bytes);
+    dst_bytes = NULL;
+
+    free(src_sha256);
+    src_sha256 = NULL;
+
+    free(dst_sha256);
+    dst_sha256 = NULL;
+
+    return FALSE;
+    
+  }
+
+
+
+  int condition = FALSE;
+  if(memcmp(src_sha256, dst_sha256, SHA256_DIGEST_LENGTH) == 0)
+    condition = TRUE;
+
+  free(dst_bytes);
+  dst_bytes = NULL;
+    
+  free(src_sha256);
+  src_sha256 = NULL;
+
+  free(dst_sha256);
+  dst_sha256 = NULL;
+
+
+  return condition;
+}
+
 static int cp(const char* src_file_path, const ssize_t src_file_path_size, const char *dst_file_path, const ssize_t dst_file_path_size)
 {
   struct stat src_stat;
@@ -522,11 +613,22 @@ static int cp(const char* src_file_path, const ssize_t src_file_path_size, const
   }
   fclose(src_fp);
 
-  /* struct stat dst_stat; */
-  /* stat(dst_file_path, &dst_stat); */
-  /* if(S_ISREG(src_stat.st_mode)) { */
+  
+  struct stat dst_stat;
+  stat(dst_file_path, &dst_stat);
+  if(S_ISREG(dst_stat.st_mode)) {
+
+    int check = check_hash_from_cp(dst_file_path, dst_stat.st_size, src_bytes, src_byte_size);
+    if(check) {
+      free(src_bytes);
+      src_bytes = NULL;
+
+      /* printf("was don't copy because same hash between src and dst.\n"); */
+
+      return FALSE;
+    }
     
-  /* } */
+  }
 
 
   FILE *dst_fp = fopen(dst_file_path, "r+");

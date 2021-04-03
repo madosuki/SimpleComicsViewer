@@ -9,10 +9,11 @@
 #include <sys/types.h>
 #include <fcntl.h>
 #include <sys/stat.h>
-/* #include <zlib.h> */
 #include <stdint.h>
 #include <math.h>
 
+#include <openssl/sha.h>
+    
 #include <archive.h>
 
 #include "loader.h"
@@ -33,6 +34,8 @@ extern const unsigned char jpg_sig[2];
 /* extern const unsigned char zlib_default_compression_sig[2]; */
 /* extern const unsigned char zlib_best_compression_sig[2]; */
 extern const uint8_t compress_headers_flag;
+
+int get_hash(uint8_t *bytes, const ssize_t bytes_size, uint8_t *result);
 
 double mygcd(double x, double y);
 
