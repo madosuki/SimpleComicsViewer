@@ -635,16 +635,7 @@ static int cp(const char* src_file_path, const ssize_t src_file_path_size, const
   }
 
 
-  FILE *prepare = fopen(dst_file_path, "wb");
-  if(prepare == NULL) {
-    free(src_bytes);
-    src_bytes = NULL;
-
-    return FALSE;
-  }
-  fclose(prepare);
-  
-  FILE *dst_fp = fopen(dst_file_path, "rb+");
+  FILE *dst_fp = fopen(dst_file_path, "wb");
   if(dst_fp == NULL) {
     free(src_bytes);
     src_bytes = NULL;
@@ -653,30 +644,10 @@ static int cp(const char* src_file_path, const ssize_t src_file_path_size, const
 
     return FALSE;
   }
-  int fd = fileno(dst_fp);
-  int err = flock(fd, LOCK_EX);
-  if(err != 0) {
-    fclose(dst_fp);
-    
-    free(src_bytes);
-    src_bytes = NULL;
-
-    return FALSE;
-  }
-  err = ftruncate(fd, 0);
-  if(err != 0) {
-    flock(fd, LOCK_UN);
-    fclose(dst_fp);
-
-    free(src_bytes);
-    src_bytes = NULL;
-
-  }
 
   count = fwrite(src_bytes, 1, src_byte_size, dst_fp);
   if(count < src_byte_size) {
 
-    flock(fd, LOCK_UN);
     fclose(dst_fp);
     
     free(src_bytes);
@@ -684,12 +655,10 @@ static int cp(const char* src_file_path, const ssize_t src_file_path_size, const
 
     return FALSE;
   }
-  err = fflush(dst_fp);
 
   free(src_bytes);
   src_bytes = NULL;
 
-  flock(fd, LOCK_UN);
   fclose(dst_fp);
   
   return TRUE;
