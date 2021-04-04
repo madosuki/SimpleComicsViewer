@@ -1,7 +1,7 @@
 #include "viewer.h"
 
-const char *db_name = "simple_comic_viewer.db";
-const ssize_t db_name_size = 22;
+const char *db_name = "simple_comics_viewer.db";
+const ssize_t db_name_size = 23;
 
 const char *app_dir = "simple_comics_viewer";
 const ssize_t app_dir_size = 20;
