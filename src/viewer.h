@@ -590,9 +590,13 @@ static int check_hash_from_cp(const char *dst_file_path, const ssize_t dst_byte_
 
 static int cp(const char* src_file_path, const ssize_t src_file_path_size, const char *dst_file_path, const ssize_t dst_file_path_size)
 {
+
+  /* printf("%s, %s\n", src_file_path, dst_file_path); */
+  
   struct stat src_stat;
   stat(src_file_path, &src_stat);
   if(!(S_ISREG(src_stat.st_mode))) {
+    puts("not found src");
     return FALSE;
   }
   ssize_t src_byte_size = src_stat.st_size;
@@ -613,10 +617,11 @@ static int cp(const char* src_file_path, const ssize_t src_file_path_size, const
   }
   fclose(src_fp);
 
-  
   struct stat dst_stat;
   stat(dst_file_path, &dst_stat);
   if(S_ISREG(dst_stat.st_mode)) {
+
+    /* printf("exists dst file\n"); */
 
     int check = check_hash_from_cp(dst_file_path, dst_stat.st_size, src_bytes, src_byte_size);
     if(check) {
@@ -627,14 +632,24 @@ static int cp(const char* src_file_path, const ssize_t src_file_path_size, const
 
       return FALSE;
     }
-    
   }
 
 
-  FILE *dst_fp = fopen(dst_file_path, "r+");
+  FILE *prepare = fopen(dst_file_path, "wb");
+  if(prepare == NULL) {
+    free(src_bytes);
+    src_bytes = NULL;
+
+    return FALSE;
+  }
+  fclose(prepare);
+  
+  FILE *dst_fp = fopen(dst_file_path, "rb+");
   if(dst_fp == NULL) {
     free(src_bytes);
     src_bytes = NULL;
+
+    puts("failed fopen dst");
 
     return FALSE;
   }
@@ -683,7 +698,10 @@ static int cp(const char* src_file_path, const ssize_t src_file_path_size, const
 static int backup_db()
 {
   if(db_path_under_dot_local_share != NULL && temporary_db_path != NULL) {
-    return cp(temporary_db_path, temporary_db_path_size, db_path_under_dot_local_share, db_path_under_dot_local_share_size);
+    int err = cp(temporary_db_path, temporary_db_path_size, db_path_under_dot_local_share, db_path_under_dot_local_share_size);
+    /* printf("backup_db: %d\n", err); */
+    
+    return err;
   }
 
   return FALSE;
@@ -944,7 +962,8 @@ static void activate(GtkApplication* app, gpointer user_data)
   if(temporary_db_path != NULL) {
 
     if(db_path_under_dot_local_share != NULL) {
-      cp(db_path_under_dot_local_share, db_path_under_dot_local_share_size, temporary_db_path, temporary_db_path_size);
+      int check = cp(db_path_under_dot_local_share, db_path_under_dot_local_share_size, temporary_db_path, temporary_db_path_size);
+      /* printf("check: %d\n", check); */
     }
     
     db_info.file_path = temporary_db_path;
