@@ -805,7 +805,12 @@ static int set_local_share()
     local_share[local_share_size] = '\0';
 
     struct stat local_share_stat;
-    stat(local_share, &local_share_stat);
+    err = stat(local_share, &local_share_stat);
+    if(err != 0) {
+      free(local_share);
+      local_share = NULL;
+      return FALSE;
+    }
     if(!S_ISDIR(local_share_stat.st_mode)) {
       err = mkdir(local_share, 0755);
       if(err == 0) {
@@ -837,7 +842,12 @@ static int set_local_share()
     app_dir_in_local_share[app_dir_in_local_share_size] = '\0';
 
     struct stat app_dir_in_local_share_stat;
-    stat(local_share, &app_dir_in_local_share_stat);
+    err = stat(app_dir_in_local_share, &app_dir_in_local_share_stat);
+    if(err != 0) {
+      free(app_dir_in_local_share);
+      app_dir_in_local_share = NULL;
+      return FALSE;
+    }
     if(!S_ISDIR(app_dir_in_local_share_stat.st_mode)) {
       err = mkdir(app_dir_in_local_share, 0755);
       if(err == 0) {
