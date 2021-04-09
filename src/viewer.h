@@ -596,7 +596,7 @@ static int cp(const char* src_file_path, const ssize_t src_file_path_size, const
   struct stat src_stat;
   stat(src_file_path, &src_stat);
   if(!(S_ISREG(src_stat.st_mode))) {
-    puts("not found src");
+    puts("not found src in cp");
     return FALSE;
   }
   ssize_t src_byte_size = src_stat.st_size;
@@ -621,8 +621,6 @@ static int cp(const char* src_file_path, const ssize_t src_file_path_size, const
   stat(dst_file_path, &dst_stat);
   if(S_ISREG(dst_stat.st_mode)) {
 
-    /* printf("exists dst file\n"); */
-
     int check = check_hash_from_cp(dst_file_path, dst_stat.st_size, src_bytes, src_byte_size);
     if(check) {
       free(src_bytes);
@@ -634,13 +632,14 @@ static int cp(const char* src_file_path, const ssize_t src_file_path_size, const
     }
   }
 
+  printf("%s\n", dst_file_path);
 
   FILE *dst_fp = fopen(dst_file_path, "wb");
   if(dst_fp == NULL) {
     free(src_bytes);
     src_bytes = NULL;
 
-    puts("failed fopen dst");
+    puts("failed fopen dst in cp");
 
     return FALSE;
   }
@@ -682,8 +681,8 @@ static int set_temporary()
   int condition = TRUE;
   const char *temporary = "/tmp";
   struct stat temporary_stat;
-  stat(temporary, &temporary_stat);
-  if(!S_ISDIR(temporary_stat.st_mode)) {
+  int err = stat(temporary, &temporary_stat);
+  if(err != 0 || !S_ISDIR(temporary_stat.st_mode)) {
     return FALSE;
   }
 
@@ -703,8 +702,10 @@ static int set_temporary()
   temporary_data_dir[temporary_data_dir_size] = '\0';
 
   struct stat temporary_data_dir_stat;
-  stat(temporary_data_dir, &temporary_data_dir_stat);
-  if(!S_ISDIR(temporary_data_dir_stat.st_mode)) {
+  err = stat(temporary_data_dir, &temporary_data_dir_stat);
+  /* printf("%d\n", temporary_data_dir_stat.st_mode); */
+  if(err != 0 || !S_ISDIR(temporary_data_dir_stat.st_mode)) {
+
     if(mkdir(temporary_data_dir, 0755) != 0) {
       condition = FALSE;
     
@@ -732,7 +733,6 @@ static int set_temporary()
   
   memmove(temporary_db_path + temporary_db_path_pos, db_name, db_name_size);
   temporary_db_path[temporary_db_path_size] = '\0';
-
 
   return condition;
 
@@ -772,10 +772,9 @@ static int set_local_share()
     dot_local_path[dot_local_path_size] = '\0';
 
     
-    int err = 0;
     struct stat stat_dir;
-    stat(dot_local_path, &stat_dir);
-    if(!S_ISDIR(stat_dir.st_mode)) {
+    int err = stat(dot_local_path, &stat_dir);
+    if(err != 0 || !S_ISDIR(stat_dir.st_mode)) {
       err = mkdir(dot_local_path, 0755);
       if(err != 0) {
         free(dot_local_path);
@@ -806,14 +805,9 @@ static int set_local_share()
 
     struct stat local_share_stat;
     err = stat(local_share, &local_share_stat);
-    if(err != 0) {
-      free(local_share);
-      local_share = NULL;
-      return FALSE;
-    }
-    if(!S_ISDIR(local_share_stat.st_mode)) {
+    if(err != 0 || !S_ISDIR(local_share_stat.st_mode)) {
       err = mkdir(local_share, 0755);
-      if(err == 0) {
+      if(err != 0) {
         free(local_share);
         local_share = NULL;
         return FALSE;
@@ -841,16 +835,12 @@ static int set_local_share()
     memmove(app_dir_in_local_share + app_dir_in_local_share_pos, app_dir, app_dir_size);
     app_dir_in_local_share[app_dir_in_local_share_size] = '\0';
 
+
     struct stat app_dir_in_local_share_stat;
     err = stat(app_dir_in_local_share, &app_dir_in_local_share_stat);
-    if(err != 0) {
-      free(app_dir_in_local_share);
-      app_dir_in_local_share = NULL;
-      return FALSE;
-    }
-    if(!S_ISDIR(app_dir_in_local_share_stat.st_mode)) {
+    if(err != 0 || !S_ISDIR(app_dir_in_local_share_stat.st_mode)) {
       err = mkdir(app_dir_in_local_share, 0755);
-      if(err == 0) {
+      if(err != 0) {
         free(app_dir_in_local_share);
         app_dir_in_local_share = NULL;
         return FALSE;
@@ -942,11 +932,12 @@ static void activate(GtkApplication* app, gpointer user_data)
 
     if(db_path_under_dot_local_share != NULL) {
       int check = cp(db_path_under_dot_local_share, db_path_under_dot_local_share_size, temporary_db_path, temporary_db_path_size);
-      /* printf("check: %d\n", check); */
+
+      db_info.file_path = temporary_db_path;
+      create_file_history_table(&db_info);
+
     }
     
-    db_info.file_path = temporary_db_path;
-    create_file_history_table(&db_info);
   }
 
   cursor_pos.x = 0;
