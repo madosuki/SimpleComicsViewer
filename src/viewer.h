@@ -23,8 +23,8 @@
 #include "database_utils.h"
 
 #define LIST_BUFFER 1024
-#define DEFAULT_WINDOW_WIDTH 1280
-#define DEFAULT_WINDOW_HEIGHT 960
+#define DEFAULT_WINDOW_WIDTH 1024
+#define DEFAULT_WINDOW_HEIGHT 768
 
 extern const char *db_name;
 extern const ssize_t db_name_size;
@@ -974,6 +974,7 @@ static void activate(GtkApplication* app, gpointer user_data)
   GtkWidget *goto_left_button = gtk_button_new_with_label("Left");
   gtk_grid_attach(GTK_GRID(button_menu), goto_left_button, 0, 0, 1, 1);
   g_signal_connect(G_OBJECT(goto_left_button), "clicked", G_CALLBACK(move_left), NULL);
+  /* gtk_widget_set_hexpand(goto_left_button, TRUE); */
 
   GtkWidget *goto_right_button = gtk_button_new_with_label("Right");
   gtk_grid_attach_next_to(GTK_GRID(button_menu), goto_right_button, goto_left_button, GTK_POS_RIGHT, 1, 1);
