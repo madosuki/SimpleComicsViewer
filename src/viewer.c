@@ -1046,10 +1046,10 @@ int init_image_object(const char *file_name, uint startpage)
 
         if(!(check_valid_cover_mode() ) ) {
           set_image_container(comic_container->pages->current_page + 1);
-          int is_over_height = resize_when_spread(comic_container->pages->current_page + 1);
+          is_over_height = resize_when_spread(comic_container->pages->current_page + 1);
 
         } else {
-          resize_when_spread(comic_container->pages->current_page);
+          is_over_height = resize_when_spread(comic_container->pages->current_page);
         }
 
 
@@ -1060,6 +1060,8 @@ int init_image_object(const char *file_name, uint startpage)
             set_image(&comic_container->pages->right, comic_container->pages->current_page);
             set_image(&comic_container->pages->left, comic_container->pages->current_page + 1);
             comic_container->pages->current_page++;
+
+            /* set_margin_left_page(comic_container->pages->current_page, is_over_height, FALSE); */
           }
         } else {
           if(check_valid_cover_mode() ) {
@@ -1073,10 +1075,11 @@ int init_image_object(const char *file_name, uint startpage)
         
       } else {
         set_image_container(comic_container->pages->current_page);
-        
+
+        int is_over_height = 0;
         if(!(check_valid_cover_mode()) ) {
           set_image_container(comic_container->pages->current_page + 1);
-          resize_when_spread(comic_container->pages->current_page + 1);
+          is_over_height = resize_when_spread(comic_container->pages->current_page + 1);
 
           if(comic_container->pages->page_direction_right) {
             set_image(&comic_container->pages->left, comic_container->pages->current_page + 1);
@@ -1090,7 +1093,7 @@ int init_image_object(const char *file_name, uint startpage)
           
         } else {
 
-          resize_when_spread(comic_container->pages->current_page);
+          is_over_height = resize_when_spread(comic_container->pages->current_page);
 
           if(comic_container->pages->page_direction_right) {
             set_image(&comic_container->pages->left, comic_container->pages->current_page);
