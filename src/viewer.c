@@ -736,7 +736,16 @@ gboolean detect_resize_window(GtkWidget *widget, GdkEvent *event, gpointer data)
 
           unref_dst();
 
-          int isOverHeight = resize_when_single(comic_container->pages->current_page);
+          int isOverHeight = 0;
+          int isOddSinglePage = FALSE;
+          if(comic_container->pages->current_page == comic_container->detail->image_count - 1) {
+            isOddSinglePage = TRUE;
+          }
+          
+          if(!isOddSinglePage)
+            resize_when_spread(comic_container->pages->current_page);
+          else
+            resize_when_single(comic_container->pages->current_page);
           
           if(comic_container->pages->left != NULL)
             gtk_image_clear((GtkImage*)comic_container->pages->left);
@@ -744,8 +753,12 @@ gboolean detect_resize_window(GtkWidget *widget, GdkEvent *event, gpointer data)
           if(comic_container->pages->right != NULL)
             gtk_image_clear((GtkImage*)comic_container->pages->right);
 
-          gtk_image_set_from_pixbuf((GtkImage*)comic_container->pages->left, comic_container->image_container_list[comic_container->pages->current_page]->dst);
-
+          if (!isOddSinglePage) {
+            gtk_image_set_from_pixbuf((GtkImage*)comic_container->pages->left, comic_container->image_container_list[comic_container->pages->current_page]->dst);
+            gtk_image_set_from_pixbuf((GtkImage*)comic_container->pages->right, comic_container->image_container_list[comic_container->pages->current_page - 1]->dst);
+          } else {
+            gtk_image_set_from_pixbuf((GtkImage*)comic_container->pages->left, comic_container->image_container_list[comic_container->pages->current_page]->dst);
+          }
         } else {
 
           unref_dst();
@@ -1089,8 +1102,7 @@ int init_image_object(const char *file_name, uint startpage)
             set_image(&comic_container->pages->right, comic_container->pages->current_page + 1);
           }
 
-          comic_container->pages->current_page++;
-          
+          comic_container->pages->current_page++;          
         } else {
 
           is_over_height = resize_when_spread(comic_container->pages->current_page);
@@ -1163,8 +1175,6 @@ void fullscreen()
     window.isFullScreen = TRUE;
 
     int error = pthread_create(&thread_of_curosr_observer, NULL, cursor_observer_in_fullscreen_mode, NULL);
-
-    
   }
 }
 
