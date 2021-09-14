@@ -62,7 +62,7 @@ chmod +x ./Simple_Comics_Viewer-x86_64.AppImage
 
 ### How to Build
 ```
-sudo apt-get install libgtk-3-dev build-essential automake autoconf libharfbuzz-dev libjpeg-dev libopenjp2-7-dev libjbig2dec0-dev libpng-dev libfreetype6-dev libarchive-dev libmupdf-dev libjpeg62 libssl-dev libmujs-dev
+sudo apt-get install libgtk-3-dev build-essential automake autoconf libharfbuzz-dev libjpeg-dev libopenjp2-7-dev libjbig2dec0-dev libpng-dev libfreetype6-dev libarchive-dev libmupdf-dev libjpeg62 libssl-dev libmujs-dev libsqlite3-dev
 ```
 When Debian buster or lower or Ubuntu 20.10 or lower ,  must replace -lmujs to -lmupdf-third in src/Makefile.am .  
 After move to project dir.
