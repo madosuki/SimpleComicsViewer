@@ -719,8 +719,6 @@ int resize_when_single(int position)
 
 gboolean detect_resize_window(GtkWidget *widget, GdkEvent *event, gpointer data)
 {
-  printf("page: %d, max: %d\n", comic_container->pages->current_page, comic_container->detail->image_count);
-  printf("isOdd: %d\n", comic_container->detail->isOdd);
   if(!comic_container->isFirstLoad) {
     gint width = 0;
     gint height = 0;
