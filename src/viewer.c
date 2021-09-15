@@ -737,7 +737,7 @@ gboolean detect_resize_window(GtkWidget *widget, GdkEvent *event, gpointer data)
         if(comic_container->pages->current_page == comic_container->detail->image_count - 1) {
           isOddSinglePage = TRUE;
         }
-        printf("isOddSindle: %d\n", isOddSinglePage);
+        // printf("isOddSindle: %d\n", isOddSinglePage);
           
         if(!isOddSinglePage)
           resize_when_spread(comic_container->pages->current_page);
