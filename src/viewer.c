@@ -343,29 +343,22 @@ int set_image_path_list(const char *dirname)
 
 void unref_dst()
 {
-  if(comic_container->pages != NULL && comic_container->image_container_list != NULL) {
+  int is_not_null = comic_container->pages != NULL && comic_container->image_container_list != NULL && comic_container->image_container_list[comic_container->pages->current_page] != NULL;
+  if(is_not_null) {
+    if(comic_container->image_container_list[comic_container->pages->current_page]->dst != NULL) {
+      g_object_unref(G_OBJECT(comic_container->image_container_list[comic_container->pages->current_page]->dst));
+    }
+
+    if(comic_container->pages->isSingle) {
+      return;
+    }
+
+    if(comic_container->pages->current_page == comic_container->detail->image_count - 1) {
+      return;
+    }
     
-    if(comic_container->image_container_list[comic_container->pages->current_page] != NULL) {
-      if(comic_container->pages->isSingle) {
-
-        if(comic_container->image_container_list[comic_container->pages->current_page]->dst != NULL) {
-          g_object_unref(G_OBJECT(comic_container->image_container_list[comic_container->pages->current_page]->dst));
-        }
-        
-        return;
-      }
-
-      if(comic_container->image_container_list[comic_container->pages->current_page]->dst != NULL) {
-        g_object_unref(G_OBJECT(comic_container->image_container_list[comic_container->pages->current_page]->dst));
-      }
-
-      if(comic_container->pages->current_page == comic_container->detail->image_count - 1) {
-        return;
-      }
-
-      if((comic_container->pages->current_page - 1) > -1 && comic_container->image_container_list[comic_container->pages->current_page - 1] != NULL && comic_container->image_container_list[comic_container->pages->current_page - 1]->dst != NULL) {
-        g_object_unref(G_OBJECT(comic_container->image_container_list[comic_container->pages->current_page - 1]->dst));
-      }
+    if((comic_container->pages->current_page - 1) > -1 && comic_container->image_container_list[comic_container->pages->current_page - 1] != NULL && comic_container->image_container_list[comic_container->pages->current_page - 1]->dst != NULL) {
+      g_object_unref(G_OBJECT(comic_container->image_container_list[comic_container->pages->current_page - 1]->dst));
     }
   }
 }
@@ -744,7 +737,7 @@ gboolean detect_resize_window(GtkWidget *widget, GdkEvent *event, gpointer data)
         if(comic_container->pages->current_page == comic_container->detail->image_count - 1) {
           isOddSinglePage = TRUE;
         }
-        printf("isOddSindle: %d\n", isOddSinglePage);
+        // printf("isOddSindle: %d\n", isOddSinglePage);
           
         if(!isOddSinglePage)
           resize_when_spread(comic_container->pages->current_page);
