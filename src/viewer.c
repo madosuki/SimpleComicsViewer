@@ -432,11 +432,13 @@ gboolean my_key_press_function(GtkWidget *widget, GdkEventKey *event, gpointer d
 
   if ((keyval == GDK_KEY_Escape || (keyval == GDK_KEY_Return && isAlt))
       && window.isFullScreen) {
+    
     cancel_fullscreen();
     return TRUE;
   }
 
   if(keyval == GDK_KEY_Return && isAlt) {
+    
     fullscreen();
 
     return TRUE;
@@ -1170,10 +1172,10 @@ int init_image_object(const char *file_name, uint startpage)
 
 void cancel_fullscreen()
 {
-  gtk_window_unfullscreen(GTK_WINDOW(window.window));
   show_menu();
   show_mouse();
   window.isFullScreen = FALSE;
+  gtk_window_unfullscreen(GTK_WINDOW(window.window));
 
   int error = pthread_join(thread_of_curosr_observer, NULL);
 }
@@ -1186,12 +1188,11 @@ void fullscreen()
     gtk_window_fullscreen(GTK_WINDOW(window.window));
     
     hide_menu();
-    
     hide_mouse();
-    
     window.isFullScreen = TRUE;
 
     int error = pthread_create(&thread_of_curosr_observer, NULL, cursor_observer_in_fullscreen_mode, NULL);
+
   }
 }
 
