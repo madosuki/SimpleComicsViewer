@@ -1184,16 +1184,15 @@ void fullscreen()
 {
   if(window.isFullScreen) {
     cancel_fullscreen();
-  } else {
-    gtk_window_fullscreen(GTK_WINDOW(window.window));
-    
-    hide_menu();
-    hide_mouse();
-    window.isFullScreen = TRUE;
-
-    int error = pthread_create(&thread_of_curosr_observer, NULL, cursor_observer_in_fullscreen_mode, NULL);
-
+    return;
   }
+
+  hide_menu();
+  hide_mouse();
+  window.isFullScreen = TRUE;
+  gtk_window_fullscreen(GTK_WINDOW(window.window));
+
+  int error = pthread_create(&thread_of_curosr_observer, NULL, cursor_observer_in_fullscreen_mode, NULL);
 }
 
 // isSingleChange is mode change of spread to single or spread to single.
