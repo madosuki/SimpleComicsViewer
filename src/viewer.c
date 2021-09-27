@@ -1198,154 +1198,146 @@ void fullscreen()
 // isSingleChange is mode change of spread to single or spread to single.
 void update_page(int isSingleChange)
 {
-  if(!comic_container->isFirstLoad) {
-    if(isSingleChange) {
+  if(comic_container->isFirstLoad) {
+    return;
+  }
+  
+
+  if(isSingleChange) {
       
-      if(comic_container->pages->isSingle) {
-        if(comic_container->detail->isOdd && comic_container->pages->current_page == (comic_container->detail->image_count - 1)) {
-          if(comic_container->pages->right != NULL)
-            gtk_image_clear(GTK_IMAGE(comic_container->pages->right));
-        } else {
-          
-          if(comic_container->pages->left != NULL) {
-            gtk_image_clear(GTK_IMAGE(comic_container->pages->left));
-          }
-          if(comic_container->pages->right != NULL) {
-            gtk_image_clear(GTK_IMAGE(comic_container->pages->right));
-          }
-
-        }
-
-        comic_container->pages->current_page -= 1;
-
-        if(comic_container->pages->current_page < 0) {
-          comic_container->pages->current_page = 0;
-        }
-
-        set_image_container(comic_container->pages->current_page);
-
-        resize_when_single(comic_container->pages->current_page);
-
-        set_image(&comic_container->pages->left, comic_container->pages->current_page);
-
-        update_grid();
+    if(comic_container->pages->isSingle) {
+      if(comic_container->detail->isOdd && comic_container->pages->current_page == (comic_container->detail->image_count - 1)) {
+        if(comic_container->pages->right != NULL)
+          gtk_image_clear(GTK_IMAGE(comic_container->pages->right));
       } else {
-
-        if(check_valid_cover_mode() && comic_container->pages->current_page == 0) {
           
-          set_image_container(comic_container->pages->current_page);
-          int isOverHeight = resize_when_spread(comic_container->pages->current_page);
-          set_margin_left_page(comic_container->pages->current_page, isOverHeight, FALSE);
-          
-          if(comic_container->pages->page_direction_right) {
-            gtk_image_clear(GTK_IMAGE(comic_container->pages->left));
-            set_image(&comic_container->pages->left, comic_container->pages->current_page);
-          } else {
-            gtk_image_clear(GTK_IMAGE(comic_container->pages->right));
-            set_image(&comic_container->pages->right, comic_container->pages->current_page);
-          }
-          
-          
-          update_grid();
-        } else {
+        if(comic_container->pages->left != NULL) {
           gtk_image_clear(GTK_IMAGE(comic_container->pages->left));
-
-          comic_container->pages->current_page++;
-
-          int latest_page = comic_container->detail->image_count - 1;
-          if(comic_container->pages->current_page >= latest_page) {
-            comic_container->pages->current_page = latest_page - 1;
-          }
-          set_image_container(comic_container->pages->current_page - 1);
-          set_image_container(comic_container->pages->current_page);
-
-          int isOverHeight = resize_when_spread(comic_container->pages->current_page);
-          set_margin_left_page(comic_container->pages->current_page, isOverHeight, FALSE);
-
-          set_image(&comic_container->pages->right, comic_container->pages->current_page - 1);
-          set_image(&comic_container->pages->left, comic_container->pages->current_page);
-
-
-          update_grid();
         }
-      }
-
-    } else {
-
-
-      if(check_valid_cover_mode() && comic_container->pages->current_page == 0) {
-        set_image_container(comic_container->pages->current_page);
-      } else {
-        set_image_container(comic_container->pages->current_page);
-        set_image_container(comic_container->pages->current_page - 1);
-      }
-
-      if(comic_container->pages->right != NULL) {
-        gtk_image_clear(GTK_IMAGE(comic_container->pages->right));
-      }
-
-      if(comic_container->pages->left != NULL) {
-        gtk_image_clear(GTK_IMAGE(comic_container->pages->left));
-      }
-
-
-
-      if(comic_container->detail->isOdd && comic_container->pages->current_page >= comic_container->detail->image_count - 1) {
-        unref_dst();
-
-        int isOverHeight;
-        isOverHeight = resize_when_spread(comic_container->pages->current_page);
-
-        if(comic_container->pages->page_direction_right) {
-
-          gtk_image_set_from_pixbuf(GTK_IMAGE(comic_container->pages->right), comic_container->image_container_list[comic_container->pages->current_page]->dst);
-          set_margin_left_page(comic_container->pages->current_page, isOverHeight, TRUE);
-
-        } else {
-          
-          gtk_image_set_from_pixbuf(GTK_IMAGE(comic_container->pages->left), comic_container->image_container_list[comic_container->pages->current_page]->dst);
-          
+        if(comic_container->pages->right != NULL) {
+          gtk_image_clear(GTK_IMAGE(comic_container->pages->right));
         }
 
-      } else {
-
-        unref_dst();
-
-        int isOverHeight = FALSE;
-        isOverHeight = resize_when_spread(comic_container->pages->current_page);
-
-        if(comic_container->pages->page_direction_right) {
-
-          if(check_valid_cover_mode() && comic_container->pages->current_page == 0) {
-            gtk_image_set_from_pixbuf(GTK_IMAGE(comic_container->pages->left), comic_container->image_container_list[comic_container->pages->current_page]->dst);
-            
-          } else {
-            
-            gtk_image_set_from_pixbuf(GTK_IMAGE(comic_container->pages->right), comic_container->image_container_list[comic_container->pages->current_page - 1]->dst);
-            gtk_image_set_from_pixbuf(GTK_IMAGE(comic_container->pages->left), comic_container->image_container_list[comic_container->pages->current_page]->dst);
-            
-          }
-
-        } else {
-
-          if(check_valid_cover_mode() && comic_container->pages->current_page == 0) {
-            
-            gtk_image_set_from_pixbuf(GTK_IMAGE(comic_container->pages->right), comic_container->image_container_list[comic_container->pages->current_page]->dst);
-            
-          } else {
-            
-            gtk_image_set_from_pixbuf(GTK_IMAGE(comic_container->pages->left), comic_container->image_container_list[comic_container->pages->current_page - 1]->dst);
-            gtk_image_set_from_pixbuf(GTK_IMAGE(comic_container->pages->right), comic_container->image_container_list[comic_container->pages->current_page]->dst);
-            
-          }
-        }
-
-
-        set_margin_left_page(comic_container->pages->current_page, isOverHeight, FALSE);
       }
+
+      comic_container->pages->current_page -= 1;
+
+      if(comic_container->pages->current_page < 0) {
+        comic_container->pages->current_page = 0;
+      }
+
+      set_image_container(comic_container->pages->current_page);
+
+      resize_when_single(comic_container->pages->current_page);
+
+      set_image(&comic_container->pages->left, comic_container->pages->current_page);
+
+      update_grid();
+      return;
     }
 
+    if(check_valid_cover_mode() && comic_container->pages->current_page == 0) {
+          
+      set_image_container(comic_container->pages->current_page);
+      int isOverHeight = resize_when_spread(comic_container->pages->current_page);
+      set_margin_left_page(comic_container->pages->current_page, isOverHeight, FALSE);
+          
+      if(comic_container->pages->page_direction_right) {
+        gtk_image_clear(GTK_IMAGE(comic_container->pages->left));
+        set_image(&comic_container->pages->left, comic_container->pages->current_page);
+      } else {
+        gtk_image_clear(GTK_IMAGE(comic_container->pages->right));
+        set_image(&comic_container->pages->right, comic_container->pages->current_page);
+      }
+          
+          
+      update_grid();
+      return;
+    }
+    gtk_image_clear(GTK_IMAGE(comic_container->pages->left));
+
+    comic_container->pages->current_page++;
+
+    int latest_page = comic_container->detail->image_count - 1;
+    if(comic_container->pages->current_page >= latest_page) {
+      comic_container->pages->current_page = latest_page - 1;
+    }
+    set_image_container(comic_container->pages->current_page - 1);
+    set_image_container(comic_container->pages->current_page);
+
+    int isOverHeight = resize_when_spread(comic_container->pages->current_page);
+    set_margin_left_page(comic_container->pages->current_page, isOverHeight, FALSE);
+
+    set_image(&comic_container->pages->right, comic_container->pages->current_page - 1);
+    set_image(&comic_container->pages->left, comic_container->pages->current_page);
+
+    update_grid();
+    return;
   }
+
+  // below codes is when not single change
+
+  if(check_valid_cover_mode() && comic_container->pages->current_page == 0) {
+    set_image_container(comic_container->pages->current_page);
+  } else {
+    set_image_container(comic_container->pages->current_page);
+    set_image_container(comic_container->pages->current_page - 1);
+  }
+
+  if(comic_container->pages->right != NULL) {
+    gtk_image_clear(GTK_IMAGE(comic_container->pages->right));
+  }
+
+  if(comic_container->pages->left != NULL) {
+    gtk_image_clear(GTK_IMAGE(comic_container->pages->left));
+  }
+
+
+  if(comic_container->detail->isOdd && comic_container->pages->current_page >= comic_container->detail->image_count - 1) {
+    unref_dst();
+
+    int isOverHeight;
+    isOverHeight = resize_when_spread(comic_container->pages->current_page);
+
+    if(comic_container->pages->page_direction_right) {
+
+      gtk_image_set_from_pixbuf(GTK_IMAGE(comic_container->pages->right), comic_container->image_container_list[comic_container->pages->current_page]->dst);
+      set_margin_left_page(comic_container->pages->current_page, isOverHeight, TRUE);
+
+    } else {
+          
+      gtk_image_set_from_pixbuf(GTK_IMAGE(comic_container->pages->left), comic_container->image_container_list[comic_container->pages->current_page]->dst);
+          
+    }
+
+    return;
+
+  }
+
+  unref_dst();
+
+  int isOverHeight = FALSE;
+  isOverHeight = resize_when_spread(comic_container->pages->current_page);
+
+  if(comic_container->pages->page_direction_right) {
+    if(check_valid_cover_mode() && comic_container->pages->current_page == 0) {
+      gtk_image_set_from_pixbuf(GTK_IMAGE(comic_container->pages->left), comic_container->image_container_list[comic_container->pages->current_page]->dst);
+    } else {
+      gtk_image_set_from_pixbuf(GTK_IMAGE(comic_container->pages->right), comic_container->image_container_list[comic_container->pages->current_page - 1]->dst);
+      gtk_image_set_from_pixbuf(GTK_IMAGE(comic_container->pages->left), comic_container->image_container_list[comic_container->pages->current_page]->dst);
+    }
+    
+  } else {
+    if(check_valid_cover_mode() && comic_container->pages->current_page == 0) {
+      gtk_image_set_from_pixbuf(GTK_IMAGE(comic_container->pages->right), comic_container->image_container_list[comic_container->pages->current_page]->dst);
+    } else {
+      gtk_image_set_from_pixbuf(GTK_IMAGE(comic_container->pages->left), comic_container->image_container_list[comic_container->pages->current_page - 1]->dst);
+      gtk_image_set_from_pixbuf(GTK_IMAGE(comic_container->pages->right), comic_container->image_container_list[comic_container->pages->current_page]->dst);
+    }
+  }
+
+
+  set_margin_left_page(comic_container->pages->current_page, isOverHeight, FALSE);
 }
 
 void update_grid()
