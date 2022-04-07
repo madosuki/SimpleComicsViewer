@@ -901,6 +901,7 @@ static void activate(GtkApplication* app, gpointer user_data)
   g_signal_connect(G_OBJECT(window.window), "key-press-event", G_CALLBACK(my_key_press_function), NULL);
 
   g_signal_connect(G_OBJECT(window.window), "configure-event", G_CALLBACK(detect_resize_window), NULL);
+  g_signal_connect(G_OBJECT(window.window), "window-state-event", G_CALLBACK(detect_resize_window), NULL);
 
   /* gtk_widget_add_events(window.window, GDK_TOUCH_MASK); */
   /* g_signal_connect(G_OBJECT(window.window), "touch-event", G_CALLBACK(my_detect_touch_function), NULL); */
