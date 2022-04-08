@@ -1178,6 +1178,7 @@ void cancel_fullscreen()
   gtk_window_unfullscreen(GTK_WINDOW(window.window));
 
   int error = pthread_join(thread_of_curosr_observer, NULL);
+  printf("pthread_join result: %d\n", error);
 }
 
 void fullscreen()
@@ -1193,6 +1194,7 @@ void fullscreen()
   gtk_window_fullscreen(GTK_WINDOW(window.window));
 
   int error = pthread_create(&thread_of_curosr_observer, NULL, cursor_observer_in_fullscreen_mode, NULL);
+  printf("pthread_create result: %d\n", error);
 }
 
 // isSingleChange is mode change of spread to single or spread to single.
