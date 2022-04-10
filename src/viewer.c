@@ -989,7 +989,7 @@ void set_margin_left_page(int position, int isOverHeight, int isFinalPage)
       return;
     }
 
-    printf("%d, %d\n", window.width, window.height);
+    // printf("%d, %d\n", window.width, window.height);
 
     int double_width = comic_container->image_container_list[position]->dst_width * 2;
     if(comic_container->pages->page_direction_right) {
