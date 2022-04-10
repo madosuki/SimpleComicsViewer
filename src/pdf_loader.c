@@ -222,7 +222,7 @@ int load_pdf(const char *filename, const int width, const int height)
      fz_data_struct->page_max = page_max;
      fz_data_struct->rotate = rotate;
      fz_data_struct->zoom = zoom;
-     */
+  */
 
   fz_pixmap_collection_struct = (fz_pixmap_collection_t*)malloc(sizeof(fz_pixmap_collection_t));
   fz_pixmap_collection_struct->fz_pixmap_collection = NULL;
@@ -289,21 +289,21 @@ int set_fz_pixmap_collection(const int width, const int height)
       // pix = fz_new_pixmap_from_page(fz_data_struct->ctx, page, fz_data_struct->ctm, fz_device_rgb(fz_data_struct->ctx), 0);
 
       if(pix->h < height && !isMinimum) {
-        
+
         float zoom = (float)height / (float)pix->h;
         fz_drop_pixmap(fz_data_struct->ctx, pix);
         fz_data_struct->ctm = fz_scale(zoom, zoom);
         
-        /* bbox = fz_transform_rect(bbox, fz_data_struct->ctm); */
+        // bbox = fz_transform_rect(bbox, fz_data_struct->ctm);
 
-        /* fz_drop_display_list(fz_data_struct->ctx, list); */
-        /* list = fz_new_display_list(fz_data_struct->ctx, bbox); */
+        // fz_drop_display_list(fz_data_struct->ctx, list);
+        // list = fz_new_display_list(fz_data_struct->ctx, bbox);
 
-        /* dev = fz_new_list_device(fz_data_struct->ctx, list); */
+        // dev = fz_new_list_device(fz_data_struct->ctx, list); 
         
-        /* fz_run_page(fz_data_struct->ctx, page, dev, fz_identity, NULL); */
-        /* fz_close_device(fz_data_struct->ctx, dev); */
-        /* fz_drop_device(fz_data_struct->ctx, dev); */
+        // fz_run_page(fz_data_struct->ctx, page, dev, fz_identity, NULL);
+        // fz_close_device(fz_data_struct->ctx, dev); 
+        // fz_drop_device(fz_data_struct->ctx, dev);
 
 
         

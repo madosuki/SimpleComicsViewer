@@ -1073,7 +1073,9 @@ int init_image_object(const char *file_name, uint startpage)
 
     } else {
 
+      // when even page
       if(!comic_container->detail->isOdd) {
+        // set_image_container is function of load page
         set_image_container(comic_container->pages->current_page);
 
         if(!(check_valid_cover_mode() ) ) {
@@ -1121,7 +1123,7 @@ int init_image_object(const char *file_name, uint startpage)
             set_image(&comic_container->pages->right, comic_container->pages->current_page + 1);
           }
 
-          comic_container->pages->current_page++;          
+          comic_container->pages->current_page++;
         } else {
 
           is_over_height = resize_when_spread(comic_container->pages->current_page);
@@ -1137,18 +1139,10 @@ int init_image_object(const char *file_name, uint startpage)
       }
     }
 
-    if(is_over_height && !comic_container->pages->isSingle) {
-      if(comic_container->pages->current_page == comic_container->detail->image_count)
-        set_margin_left_page(comic_container->pages->current_page, TRUE, TRUE);
-      else
-        set_margin_left_page(comic_container->pages->current_page, TRUE, FALSE);
-    }
-
-
     int is_final = 0;
     if(comic_container->pages->current_page == comic_container->detail->image_count - 1)
       is_final = TRUE;
-    
+
     if(comic_container->pages->isSingle) {
       if(comic_container->isFirstLoad)
         set_margin_left_page(comic_container->pages->current_page, is_over_height, is_final);
