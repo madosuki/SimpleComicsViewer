@@ -723,6 +723,9 @@ gboolean detect_resize_window(GtkWidget *widget, GdkEvent *event, gpointer data)
   gtk_window_get_size((GtkWindow*)window.window, &width, &height);
 
   if(width != window.width || height != window.height) {
+    window.width = width;
+    window.height = height;
+
     if(comic_container->pages->isSingle) {
 
       unref_dst();
@@ -742,12 +745,15 @@ gboolean detect_resize_window(GtkWidget *widget, GdkEvent *event, gpointer data)
       if(comic_container->pages->current_page == comic_container->detail->image_count - 1) {
         isOddSinglePage = TRUE;
       }
-      // printf("isOddSindle: %d\n", isOddSinglePage);
+      printf("isOddSindle: %d\n", isOddSinglePage);
+      resize_when_spread(comic_container->pages->current_page);
           
+      /*
       if(!isOddSinglePage)
         resize_when_spread(comic_container->pages->current_page);
       else
         resize_when_single(comic_container->pages->current_page);
+      */
         
       if(comic_container->pages->left != NULL)
         gtk_image_clear((GtkImage*)comic_container->pages->left);
@@ -763,7 +769,6 @@ gboolean detect_resize_window(GtkWidget *widget, GdkEvent *event, gpointer data)
             gtk_image_set_from_pixbuf((GtkImage*)comic_container->pages->left, comic_container->image_container_list[comic_container->pages->current_page]->dst);
             gtk_image_set_from_pixbuf((GtkImage*)comic_container->pages->right, comic_container->image_container_list[comic_container->pages->current_page - 1]->dst);
               
-            set_margin_left_page(comic_container->pages->current_page, isOverHeight, FALSE);
           } else {
             gtk_image_set_from_pixbuf((GtkImage*)comic_container->pages->right, comic_container->image_container_list[comic_container->pages->current_page]->dst);
           }
@@ -776,12 +781,14 @@ gboolean detect_resize_window(GtkWidget *widget, GdkEvent *event, gpointer data)
             gtk_image_set_from_pixbuf((GtkImage*)comic_container->pages->left, comic_container->image_container_list[comic_container->pages->current_page - 1]->dst);
             gtk_image_set_from_pixbuf((GtkImage*)comic_container->pages->right, comic_container->image_container_list[comic_container->pages->current_page]->dst);
               
-            set_margin_left_page(comic_container->pages->current_page, isOverHeight, FALSE);
           } else {
             gtk_image_set_from_pixbuf((GtkImage*)comic_container->pages->left, comic_container->image_container_list[comic_container->pages->current_page]->dst);
           }
         }
       }
+
+      // printf("nyan, %d, %d\n", isOverHeight, comic_container->pages->isFinalPage);
+      set_margin_left_page(comic_container->pages->current_page, isOverHeight, isOddSinglePage);
         
     } else {
 
@@ -975,21 +982,23 @@ void set_margin_left_page(int position, int isOverHeight, int isFinalPage)
   // this function can call only when spread mode.
   /* int left_pos = 0; */
   /* int right_pos = 0; */
-    int mix_width = 0;
-
-    mix_width = (comic_container->image_container_list[position - 1]->dst_width + comic_container->image_container_list[position]->dst_width);
-
-    int margin_left = (fmax(mix_width, window.width) - fmin(mix_width, window.width)) / 2;
-
-    if(isFinalPage) {
-      if(comic_container->pages->page_direction_right) {
-        gtk_widget_set_margin_start(comic_container->pages->left, margin_left);
-      } else {
-        gtk_widget_set_margin_start(comic_container->pages->left, 0);
-      }
-      
-    } else {
+    if (!isFinalPage) {
+      int mix_width = (comic_container->image_container_list[position - 1]->dst_width + comic_container->image_container_list[position]->dst_width);
+      int margin_left = (fmax(mix_width, window.width) - fmin(mix_width, window.width)) / 2;
       gtk_widget_set_margin_start(comic_container->pages->left, (gint)margin_left);
+      return;
+    }
+
+    printf("%d, %d\n", window.width, window.height);
+
+    int double_width = comic_container->image_container_list[position]->dst_width * 2;
+    if(comic_container->pages->page_direction_right) {
+      int margin_left_edge = (fmax(double_width, window.width) - fmin(double_width, window.width)) / 2;
+      int margin_left = margin_left_edge + comic_container->image_container_list[position]->dst_width;
+      gtk_widget_set_margin_start(comic_container->pages->left, margin_left);
+    } else {
+      int margin_left = (fmax(double_width, window.width) - fmin(double_width, window.width)) / 2;
+      gtk_widget_set_margin_start(comic_container->pages->left, margin_left);
     }
 }
 
@@ -1188,7 +1197,6 @@ void update_page(int isSingleChange)
   if(comic_container->isFirstLoad) {
     return;
   }
-  
 
   if(isSingleChange) {
       
@@ -1262,7 +1270,7 @@ void update_page(int isSingleChange)
     return;
   }
 
-  // below codes is when not single change
+  // below codes for when not single mode
 
   if(check_valid_cover_mode() && comic_container->pages->current_page == 0) {
     set_image_container(comic_container->pages->current_page);
@@ -1289,13 +1297,14 @@ void update_page(int isSingleChange)
     if(comic_container->pages->page_direction_right) {
 
       gtk_image_set_from_pixbuf(GTK_IMAGE(comic_container->pages->right), comic_container->image_container_list[comic_container->pages->current_page]->dst);
-      set_margin_left_page(comic_container->pages->current_page, isOverHeight, TRUE);
 
     } else {
           
       gtk_image_set_from_pixbuf(GTK_IMAGE(comic_container->pages->left), comic_container->image_container_list[comic_container->pages->current_page]->dst);
           
     }
+
+    set_margin_left_page(comic_container->pages->current_page, isOverHeight, TRUE);
 
     return;
 
