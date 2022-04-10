@@ -975,7 +975,6 @@ void set_margin_left_page(int position, int isOverHeight, int isFinalPage)
   // this function can call only when spread mode.
   /* int left_pos = 0; */
   /* int right_pos = 0; */
-  if(isOverHeight) {
     int mix_width = 0;
 
     mix_width = (comic_container->image_container_list[position - 1]->dst_width + comic_container->image_container_list[position]->dst_width);
@@ -989,15 +988,6 @@ void set_margin_left_page(int position, int isOverHeight, int isFinalPage)
     } else {
       gtk_widget_set_margin_start(comic_container->pages->left, (gint)margin_left);
     }
-  } else {
-
-    if(isFinalPage) {
-      gtk_widget_set_margin_start(comic_container->pages->left, 0);
-    } else {
-      gtk_widget_set_margin_start(comic_container->pages->left, 0);
-    }
-  }
-
 }
 
 int init_image_object(const char *file_name, uint startpage)
