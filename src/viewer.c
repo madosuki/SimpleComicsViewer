@@ -982,8 +982,11 @@ void set_margin_left_page(int position, int isOverHeight, int isFinalPage)
     int margin_left = (fmax(mix_width, window.width) - fmin(mix_width, window.width)) / 2;
 
     if(isFinalPage) {
-      if(comic_container->pages->page_direction_right)
-        gtk_widget_set_margin_start(comic_container->pages->left, comic_container->image_container_list[position]->dst_width);
+      if(comic_container->pages->page_direction_right) {
+        gtk_widget_set_margin_start(comic_container->pages->left, margin_left);
+      } else {
+        gtk_widget_set_margin_start(comic_container->pages->left, 0);
+      }
       
     } else {
       gtk_widget_set_margin_start(comic_container->pages->left, (gint)margin_left);
