@@ -60,7 +60,7 @@ chmod +x ./Simple_Comics_Viewer-x86_64.AppImage
 ./src/simple_comics_viewer
 ```
 
-### Support Distributation
+### Support Distribution
 - Ubuntu 22.04
 
 ### How to Build
