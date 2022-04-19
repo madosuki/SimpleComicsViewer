@@ -10,7 +10,7 @@ AC_CONFIG_HEADERS([config.h])
 # Checks for programs.
 AC_PROG_CC
 
-AM_PATH_GTK_3_0()
+PKG_CHECK_MODULES([GTK], [gtk+-3.0])
 
 # Checks for libraries.
 # FIXME: Replace `main' with a function in `-lm':
