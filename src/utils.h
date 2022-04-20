@@ -12,7 +12,7 @@
 #include <stdint.h>
 #include <math.h>
 
-#include <openssl/sha.h>
+#include <openssl/evp.h>
     
 #include <archive.h>
 
