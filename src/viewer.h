@@ -554,6 +554,8 @@ static int check_hash_from_cp(const char *dst_file_path, const ssize_t dst_byte_
     return FALSE;
   }
 
+  uint32_t dst_sha256_size = 0;
+
   check = get_hash(dst_bytes, dst_byte_size, dst_sha256);
   if(!check) {
     free(dst_bytes);

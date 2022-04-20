@@ -20,10 +20,25 @@ int get_hash(uint8_t *bytes, const ssize_t bytes_size, uint8_t *result)
     return 0;
   }
 
+  /*
   SHA256_CTX ctx;
   SHA256_Init(&ctx);
   SHA256_Update(&ctx, bytes, bytes_size);
   SHA256_Final(result, &ctx);
+  */
+
+  OpenSSL_add_all_digests();
+
+  EVP_MD_CTX *md_ctx = EVP_MD_CTX_create();
+  const EVP_MD *md = EVP_sha256();
+
+  EVP_DigestInit_ex(md_ctx, md, NULL);
+  EVP_DigestUpdate(md_ctx, bytes, bytes_size);
+
+  uint32_t result_size = 0;
+  EVP_DigestFinal_ex(md_ctx, result, &result_size);
+  EVP_MD_CTX_destroy(md_ctx);
+  EVP_cleanup();
   
   return 1;
 }
