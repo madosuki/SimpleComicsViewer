@@ -38,13 +38,13 @@ AC_CONFIG_FILES([Makefile
 AC_OUTPUT
 
 # Arg
-AC_ARG_ENABLE([buster], 
+AC_ARG_ENABLE(buster, 
               [ --enable-buster  change ld_flag], 
               [case "${enableval}" in 
                yes) buster=true ;;
                no) buster=false ;;
                *) AC_MSG_ERROR([bad value ${enableval} for --enable-buster-mode]);;
-           esac], [buster=false])
+           esac], buster=false)
 
 # Condition
-AM_CONDITIONAL([BUSTER], [test x$buster = x$true])
+AM_CONDITIONAL(BUSTER, test x$buster = xtrue)

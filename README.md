@@ -64,9 +64,12 @@ chmod +x ./Simple_Comics_Viewer-x86_64.AppImage
 - Ubuntu 22.04
 
 ### How to Build
+#### step 1
 ```
 sudo apt-get install libgtk-3-dev build-essential automake autoconf libharfbuzz-dev libjpeg-dev libopenjp2-7-dev libjbig2dec0-dev libpng-dev libfreetype6-dev libarchive-dev libmupdf-dev libjpeg62 libssl-dev libmujs-dev libsqlite3-dev libgumbo-dev
 ```
+**When Bullseye and Buster, must remove -lmupdf-third in src/Makefile.am**  
+#### step 2
 After move to project dir.
 ```
 ./autogen.sh && ./configure && make
