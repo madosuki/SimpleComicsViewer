@@ -44,7 +44,7 @@ AC_ARG_ENABLE([buster],
                yes) buster=true ;;
                no) buster=false ;;
                *) AC_MSG_ERROR([bad value ${enableval} for --enable-buster-mode]);;
-           esac], [buster=false])
+           esac], buster=false)
 
 # Condition
-AM_CONDITIONAL([BUSTER], [test x$buster = x$true])
+AM_CONDITIONAL([BUSTER], [test "$buster" = true])
