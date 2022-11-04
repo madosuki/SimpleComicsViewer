@@ -1,5 +1,0 @@
-#!/bin/sh
-
-cd "$(dirname "$0")"
-# exec ./simple_comics_viewer
-./simple_comics_viewer ${@}

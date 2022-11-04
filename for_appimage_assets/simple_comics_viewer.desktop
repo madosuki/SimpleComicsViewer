@@ -5,3 +5,5 @@ Name=Simple Comics Viewer
 Icon=icon
 Terminal=false
 Categories=Graphics;
+Exec=simple_comics_viewer
+X-AppImage-Version=e8b34a3
