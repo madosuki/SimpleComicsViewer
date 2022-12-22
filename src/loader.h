@@ -72,8 +72,8 @@ void free_uncompress_data_set(uncompress_data_set_t *data);
 
 int load_from_compress_file(const char *file_name, uncompress_data_set_t *data_set);
 
-ssize_t get_file_size(const char *filename);
+int get_file_size(const char *filename, size_t *file_size_ptr);
 
-int copy_data_on_memory(struct archive *archive_read, uncompress_data_t *data, ssize_t file_size);
+int copy_data_on_memory(struct archive *archive_read, uncompress_data_t *data, size_t file_size);
 
 #endif // LOADER_H
