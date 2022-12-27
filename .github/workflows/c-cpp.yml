@@ -15,8 +15,8 @@ jobs:
     - uses: actions/checkout@v3
     - name: install libraries
       run: |
-        apt update &&
-        apt install libgtk-3-dev build-essential automake autoconf libharfbuzz-dev libjpeg-dev libopenjp2-7-dev libjbig2dec0-dev libpng-dev libfreetype6-dev libarchive-dev libmupdf-dev libjpeg62 libssl-dev libmujs-dev libsqlite3-dev libgumbo-dev
+        sudo apt update &&
+        sudo apt install libgtk-3-dev build-essential automake autoconf libharfbuzz-dev libjpeg-dev libopenjp2-7-dev libjbig2dec0-dev libpng-dev libfreetype6-dev libarchive-dev libmupdf-dev libjpeg62 libssl-dev libmujs-dev libsqlite3-dev libgumbo-dev
     - name: run autogen
       run: ./autogen.sh
     - name: configure
