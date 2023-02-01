@@ -1,0 +1,70 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'
+    release:
+      types:
+        - created
+  
+
+env:
+  ARCH: x86_64
+  TAG_NAME: |-
+    ${{ github.event.release.tag_name || github.event.inputs.version }}
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: install libraries
+      run: |
+        sudo apt update
+        sudo apt install libgtk-3-dev build-essential automake autoconf libharfbuzz-dev libjpeg-dev libopenjp2-7-dev libjbig2dec0-dev libpng-dev libfreetype6-dev libarchive-dev libmupdf-dev libjpeg62 libssl-dev libmujs-dev libsqlite3-dev libgumbo-dev libfuse2
+    - name: run autogen
+      run: ./autogen.sh
+    - name: configure
+      run: ./configure
+    - name: make
+      run: make -j $(nproc)
+    - name: get AppImageTool
+      run: |
+        wget -c https://github.com/AppImage/AppImageKit/releases/download/13/appimagetool-x86_64.AppImage
+        chmod +x ./appimagetool-x86_64.AppImage
+    - name: get linuxdeploy/linuxdeploy
+      run: |
+        wget -c https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+        chmod +x ./linuxdeploy-x86_64.AppImage
+    - name: run linuxdeploy
+      run: |
+        ./linuxdeploy-x86_64.AppImage -e ./src/simple_comics_viewer -d ./for_appimage_assets/simple_comics_viewer.desktop -i ./for_appimage_assets/icon.svg --appdir ./appimage_dir
+    - name: run AppImageTool
+      run: |
+        ./appimagetool-x86_64.AppImage ./appimage_dir
+        rm -rf ./appimage_dir
+    - uses: actions/upload-artifact@v3
+      with:
+        name: Simple_Comics_Viewer-x86_64.AppImage
+        path: ./Simple_Comics_Viewer-x86_64.AppImage
+
+  release:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+      - name: Download Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: Simple_Comics_Viewer-x86_64.AppImage
+          path: ./artifact
+      - name: Upload AppImage to Release assets
+        uses: softprops/action-gh-release@v1
+        with:
+          prelease: ${{ github.event.inputs.prelease }}
+          files: Simple_Comics_Viewer-x86_64.AppImage
+          tag_name: ${{ env.TAG_NAME }}
+          target_commitsh: ${{ github.sha }}
