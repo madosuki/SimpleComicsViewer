@@ -7,6 +7,9 @@ on:
     tags:
       - '*'
 
+env:
+  ARCH: x86_64
+
 jobs:
   build:
     runs-on: ubuntu-22.04
@@ -32,9 +35,11 @@ jobs:
         wget -c https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
         chmod +x ./linuxdeploy-x86_64.AppImage
     - name: run AppImageTool
-      run: ARCH=x86_64 appimagetool-x86_64.AppImage ./appimage_dir
+      run: ./appimagetool-x86_64.AppImage ./appimage_dir
     - name: run linuxdeploy
-      run: linuxdeploy-x86_64.AppImage -e ./src/simple_comics_viewer -d ./for_appimage_assets/simple_comics_viewer.desktop -i ./for_appimage_assets/icon.svg --appdir appimage_dir
+      run: |
+        ./linuxdeploy-x86_64.AppImage -e ./src/simple_comics_viewer -d ./for_appimage_assets/simple_comics_viewer.desktop -i ./for_appimage_assets/icon.svg --appdir ./appimage_dir
+        rm -rf ./appimage_dir
     - uses: actions/upload-artifact@v3
       with:
         name: Simple_Comics_Viewer-${{ github.ref_name }}x86_64.AppImage
