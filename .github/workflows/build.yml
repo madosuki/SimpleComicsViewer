@@ -30,7 +30,7 @@ jobs:
     - name: get linuxdeploy/linuxdeploy
       run: |
         wget -c https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
-        chmod +x ./linxdeploy-x86_64.AppImage
+        chmod +x ./linuxdeploy-x86_64.AppImage
     - name: run AppImageTool
       run: ARCH=x86_64 appimagetool-x86_64.AppImage ./appimage_dir
     - name: run linuxdeploy
