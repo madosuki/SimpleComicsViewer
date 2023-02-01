@@ -53,6 +53,7 @@ jobs:
         path: ./Simple_Comics_Viewer-x86_64.AppImage
 
   release:
+    if: (github.event.release.tag_name || github.event.inputs.version) != ""
     needs: [build]
     runs-on: ubuntu-22.04
     steps:
@@ -65,7 +66,7 @@ jobs:
       - name: Upload AppImage to Release assets
         uses: softprops/action-gh-release@v1
         with:
-          prelease: ${{ github.event.inputs.prerelease }}
+          prerelease: ${{ github.event.inputs.prerelease }}
           files: Simple_Comics_Viewer-x86_64.AppImage
           tag_name: ${{ env.TAG_NAME }}
           target_commitish: ${{ github.sha }}
