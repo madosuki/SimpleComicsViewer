@@ -67,6 +67,6 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           prerelease: ${{ github.event.inputs.prerelease }}
-          files: Simple_Comics_Viewer-x86_64.AppImage
+          files: ./artifact/Simple_Comics_Viewer-x86_64.AppImage
           tag_name: ${{ env.TAG_NAME }}
           target_commitish: ${{ github.sha }}
