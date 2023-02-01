@@ -53,7 +53,7 @@ jobs:
         path: ./Simple_Comics_Viewer-x86_64.AppImage
 
   release:
-    if: (github.event.release.tag_name || github.event.inputs.version) != ""
+    if: (github.event.release.tag_name || github.event.inputs.version) != ''
     needs: [build]
     runs-on: ubuntu-22.04
     steps:
