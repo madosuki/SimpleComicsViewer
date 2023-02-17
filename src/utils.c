@@ -43,38 +43,15 @@ int get_hash(uint8_t *bytes, const ssize_t bytes_size, uint8_t *result)
   return 1;
 }
 
-double mygcd(double x, double y)
+double *calc_aspect_raito(int width, int height)
 {
-  if(x < 0 || y == 0)
-    return 1;
-  
-
-  if(x == y)
-    return 1;
-
-
-  double left = fmin(x, y);
-  double right = fmod(fmax(x, y), fmin(x, y));
-  while(1) {
-    double tmp = fmod(left, right);
-    if(tmp <= 0.0)
-      return right;
-
-    left = right;
-    right = tmp;
-
-  }
-}
-
-double *calc_aspect_raito(int width, int height, double gcd)
-{
-  double width_aspect = width / gcd;
-  double height_aspect = height / gcd;
+  double for_width_aspect = (double)width / height;
+  double for_height_aspect = (double)height / width;
 
   double *tuple = (double*)calloc(2, sizeof(double));
 
-  tuple[0] = width_aspect;
-  tuple[1] = height_aspect;
+  tuple[0] = for_width_aspect;
+  tuple[1] = for_height_aspect;
 
   return tuple;
 }

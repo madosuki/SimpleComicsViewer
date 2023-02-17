@@ -37,9 +37,7 @@ extern const uint8_t compress_headers_flag;
 
 int get_hash(uint8_t *bytes, const ssize_t bytes_size, uint8_t *result);
 
-double mygcd(double x, double y);
-
-double *calc_aspect_raito(int width, int height, double gcd);
+double *calc_aspect_raito(int width, int height);
 
 int detect_image(uint8_t *buf, int size);
 
