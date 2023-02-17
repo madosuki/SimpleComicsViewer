@@ -608,7 +608,7 @@ void set_image_container(ulong position)
         int width = comic_container->image_container_list[position]->src_width;
         int height = comic_container->image_container_list[position]->src_height;
 
-        comic_container->image_container_list[position]->aspect_raito = calc_aspect_raito(width, height, mygcd(width, height));
+        comic_container->image_container_list[position]->aspect_raito = calc_aspect_raito(width, height);
 
       }
 
@@ -661,7 +661,7 @@ void set_image_container(ulong position)
     int width = comic_container->image_container_list[position]->src_width;
     int height = comic_container->image_container_list[position]->src_height;
 
-    comic_container->image_container_list[position]->aspect_raito = calc_aspect_raito(width, height, mygcd(width, height));
+    comic_container->image_container_list[position]->aspect_raito = calc_aspect_raito(width, height);
 
   }
 
@@ -697,7 +697,7 @@ int resize_when_single(int position)
 
     isOverHeight = TRUE;
     
-    int result = (int)ceil((double)height * (w_aspect / h_aspect));
+    int result = (int)ceil((double)height / h_aspect);
     width = result;
   }
 
@@ -835,14 +835,14 @@ void scale_when_oversize(int *x, int *y, int window_width, int window_height, do
   if(isOverWidth) {
     int diff = *x - window_width;
     int width = *x - diff;
-    int height = (int)ceil((double)width * (h_aspect / w_aspect));
+    int height = (int)ceil((double)width / w_aspect);
 
     *x = width;
     *y = height;
   } else {
     int diff = *y - window_height;
     int height = *y - diff;
-    int width = (int)ceil((double)height * (w_aspect / h_aspect));
+    int width = (int)ceil((double)height / h_aspect);
 
     *x = width;
     *y = height;
@@ -907,7 +907,7 @@ int resize_when_spread(int page)
   img_y_aspect = (double)comic_container->image_container_list[page]->aspect_raito[1];
 
   img_width = half_width;
-  img_height = (int)ceil((double)img_width * (img_y_aspect / img_x_aspect));
+  img_height = (int)ceil((double)img_width / img_x_aspect);
 
   if(img_height > diff_height_between_window_and_menu_and_button_bar) {
     scale_when_oversize(&img_width, &img_height, window_width, diff_height_between_window_and_menu_and_button_bar, img_x_aspect, img_y_aspect, FALSE);
@@ -938,7 +938,7 @@ int resize_when_spread(int page)
   left_y_aspect = (double)comic_container->image_container_list[left_pos]->aspect_raito[1];
 
   left_width = half_width;
-  left_height = (int)ceil((double)left_width * (left_y_aspect / left_x_aspect));
+  left_height = (int)ceil((double)left_width / left_x_aspect);
 
   right_src_width = comic_container->image_container_list[right_pos]->src_width;
   right_src_height = comic_container->image_container_list[right_pos]->src_height;
@@ -959,7 +959,7 @@ int resize_when_spread(int page)
   comic_container->image_container_list[left_pos]->dst_height = left_height;
 
   right_width = half_width;
-  right_height = (int)ceil((double)right_width * (right_y_aspect / right_x_aspect));
+  right_height = (int)ceil((double)right_width / right_x_aspect);
 
   if(right_height > diff_height_between_window_and_menu_and_button_bar) {
     scale_when_oversize(&right_width, &right_height, window_width, diff_height_between_window_and_menu_and_button_bar, right_x_aspect, right_y_aspect, FALSE);
