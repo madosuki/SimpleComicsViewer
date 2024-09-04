@@ -894,7 +894,7 @@ static void activate(GtkApplication* app, gpointer user_data)
   // g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(Close), NULL);
 
   // Set Window Title
-  gtk_window_set_title(GTK_WINDOW(window.window), "Simple Comix Viewer");
+  gtk_window_set_title(GTK_WINDOW(window.window), "Simple Comics Viewer");
 
   // Set Window Size
   gtk_window_set_default_size(GTK_WINDOW(window.window), window.width, window.height);

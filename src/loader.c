@@ -63,15 +63,14 @@ int copy_data_on_memory(struct archive *archive_read, uncompress_data_t *data, s
 
   int condition;
   const void *buf;
-  size_t size;
   la_int64_t offset;
-  /* unsigned char *result = (unsigned char*)calloc(file_size + 1, 1); */
+
   unsigned char *result = (unsigned char*)calloc(file_size, 1);
   size_t current_size = 0;
   size_t previous_size = 0;
-
   do {
-    condition = archive_read_data_block(archive_read, &buf, &size, &offset);
+    size_t readed_size;
+    condition = archive_read_data_block(archive_read, &buf, &readed_size, &offset);
 
     if (condition == ARCHIVE_EOF)
       break;
@@ -84,8 +83,8 @@ int copy_data_on_memory(struct archive *archive_read, uncompress_data_t *data, s
     }
 
     previous_size = current_size;
-    current_size += size;
-    memmove(result + previous_size, buf, size);
+    current_size += readed_size;
+    memmove(result + previous_size, buf, readed_size);
 
   } while (condition != ARCHIVE_EOF);
 
