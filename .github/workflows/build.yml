@@ -34,7 +34,7 @@ jobs:
       run: make -j $(nproc)
     - name: get AppImageTool
       run: |
-        wget -c https://github.com/AppImage/AppImageKit/releases/download/13/appimagetool-x86_64.AppImage
+        wget -c https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage
         chmod +x ./appimagetool-x86_64.AppImage
     - name: get linuxdeploy/linuxdeploy
       run: |
