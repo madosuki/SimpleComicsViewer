@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
     - name: install libraries
       run: |
         sudo apt update
@@ -47,7 +47,7 @@ jobs:
       run: |
         ./appimagetool-x86_64.AppImage ./appimage_dir
         rm -rf ./appimage_dir
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: Simple_Comics_Viewer-x86_64.AppImage
         path: ./Simple_Comics_Viewer-x86_64.AppImage
@@ -57,14 +57,14 @@ jobs:
     needs: [build]
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v5
       - name: Download Artifact
         uses: actions/download-artifact@v4
         with:
           name: Simple_Comics_Viewer-x86_64.AppImage
           path: ./artifact
       - name: Upload AppImage to Release assets
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           prerelease: ${{ github.event.inputs.prerelease }}
           files: ./artifact/Simple_Comics_Viewer-x86_64.AppImage
