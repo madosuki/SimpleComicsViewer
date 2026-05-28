@@ -10,7 +10,7 @@
 - **[OpenSSL](https://www.openssl.org/)**
 
 ### LICENCE
-**GPLv3**
+**AGPLv3**
 
 ### Features
 - **Load Image(Currently support only JPEG and PNG)**
